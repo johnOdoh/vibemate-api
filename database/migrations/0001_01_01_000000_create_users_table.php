@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_subscribed')->default(false);
             $table->boolean('has_badge')->default(false);
+            $table->string('status')->default('active');
             $table->string('email_token')->nullable();
             $table->string('reset_token')->nullable();
             $table->timestamps();

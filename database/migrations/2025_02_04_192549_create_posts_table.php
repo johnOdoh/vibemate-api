@@ -15,10 +15,10 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            $table->string('title');
-            $table->string('image');
-            $table->text('body');
-            $table->unsignedbigInteger('no_of_likes')->default(0);
+            $table->string('url')->nullable();
+            $table->string('is_image')->default(true);
+            $table->text('body')->nullable();
+            $table->unsignedbigInteger('no_of_engagements')->default(0);
             $table->string('hashtags')->nullable();
             $table->timestamps();
         });

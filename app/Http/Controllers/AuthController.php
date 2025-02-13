@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LoginResource;
@@ -10,7 +10,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -58,7 +57,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
         if ($request->isSocial) {//if user used a social signin
-            if($user) {//if user exiats
+            if($user) {//if user exists
                 if($user->is_verified) { //if user has verified account
                     $user->token = $user->createToken("android device")->plainTextToken;
                     return new LoginResource($user);
