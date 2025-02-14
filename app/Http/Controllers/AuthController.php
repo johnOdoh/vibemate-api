@@ -20,7 +20,7 @@ class AuthController extends Controller
             'firstname' => 'required|string',
             'lastname' => 'required|string',
             'email' => 'required|string|unique:users,email',
-            'password' => 'required|string',
+            'password' => 'required|string|confirmed',
             'isSocial' => 'required|boolean'
         ]);
 
@@ -97,9 +97,9 @@ class AuthController extends Controller
         ]);
         // if($validator->fails()) abort(422);
 
-        $token = random_int(100000, 999999);
         $user = User::firstWhere('email', $request->email);
         if(!$user) abort(404);
+        $token = random_int(100000, 999999);
         Mail::to($request->email)->send(new VerifyEmail($token));
         $user->email_token = $token;
         $user->save();
@@ -112,9 +112,9 @@ class AuthController extends Controller
             'email' => 'required|email'
         ]);
 
-        $token = random_int(100000, 999999);
         $user = User::firstWhere('email', $request->email);
         if(!$user) abort(404);
+        $token = random_int(100000, 999999);
         Mail::to($request->email)->send(new ResetToken($token));
         $user->reset_token = $token;
         $user->save();
@@ -123,6 +123,11 @@ class AuthController extends Controller
 
     public function resetPassword(Request $request) //on success, user should be directed to login page
     {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required|numeric',
+            'password' => 'required|string|confirmed'
+        ]);
         $user = User::firstWhere('email', $request->email);
         if($user && ($user->reset_token == $request->token)) {
             $user->password = Hash::make($request->password);

@@ -31,6 +31,6 @@ class ResetToken extends Mailable
     public function build()
     {
         return $this->subject(config('app.name') . " password reset token")
-                    ->markdown('reset_token');
+                    ->markdown('email.reset_token');
     }
 }

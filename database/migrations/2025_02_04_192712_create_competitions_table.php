@@ -19,6 +19,8 @@ return new class extends Migration
             $table->text('description');
             $table->decimal('prize');
             $table->string('category');
+            $table->string('hashtag');
+            $table->string('image');
             $table->string('type');
             $table->date('start');
             $table->date('end');

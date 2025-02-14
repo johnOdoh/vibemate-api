@@ -67,6 +67,16 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'follower_following', 'follower_id', 'following_id');
     }
 
+    public function swipes()
+    {
+        return $this->belongsToMany(User::class, 'matches', 'sender_id', 'receiver_id')->withPivot('is_accepted');
+    }
+
+    public function requests()
+    {
+        return $this->belongsToMany(User::class, 'matches', 'receiver_id', 'sender_id')->withPivot('is_accepted');
+    }
+
     public function interests()
     {
         return $this->belongsToMany(Interest::class, 'user_interest');
