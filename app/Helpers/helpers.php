@@ -16,7 +16,7 @@ function getCountryFromIp()
     if ($ip == '127.0.0.1' || $ip == '::1') {
         $ip = getUserRealIp();
     }
-    $dbPath = storage_path('app/private/GeoLite2-Country.mmdb'); // Private folder
+    $dbPath = storage_path('app/public/geolite/GeoLite2-Country.mmdb');
 
     if (!file_exists($dbPath)) {
         return response()->json(['error' => 'GeoIP database not found'], 401);
