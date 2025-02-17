@@ -81,4 +81,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Interest::class, 'user_interest');
     }
+
+    public function referrals()
+    {
+        return $this->belongsToMany(User::class, 'affiliates', 'referrer_id', 'referee_id');
+    }
+
+    public function referredBy()
+    {
+        return $this->belongsToMany(User::class, 'affiliates', 'referee_id', 'referrer_id');
+    }
 }

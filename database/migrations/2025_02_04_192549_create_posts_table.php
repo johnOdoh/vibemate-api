@@ -18,8 +18,12 @@ return new class extends Migration
             $table->string('url')->nullable();
             $table->string('is_image')->default(true);
             $table->text('body')->nullable();
-            $table->unsignedbigInteger('no_of_engagements')->default(0);
+            $table->unsignedBigInteger('no_of_engagements')->default(0);
             $table->string('hashtags')->nullable();
+            $table->string('privacy');
+            $table->string('location')->nullable();
+            $table->boolean('allow_comments');
+            $table->boolean('allow_like_counts');
             $table->timestamps();
         });
     }

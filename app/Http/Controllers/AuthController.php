@@ -17,10 +17,11 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'username' => 'required|string|unique:users,username',
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
+            // 'firstname' => 'required|string',
+            // 'lastname' => 'required|string',
             'email' => 'required|string|unique:users,email',
-            'password' => 'required|string|confirmed',
+            'password' => 'required|string',
+            'referrer' => 'nullable|string',
             'isSocial' => 'required|boolean'
         ]);
 
@@ -35,14 +36,18 @@ class AuthController extends Controller
         }
         $user = new User([
             'username' => $data['username'],
-            'firstname' => $data['firstname'],
-            'lastname' => $data['lastname'],
+            // 'firstname' => $data['firstname'],
+            // 'lastname' => $data['lastname'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'is_verified' => $verified,
             'email_token' => $token
         ]);
         $user->save();
+        if ($request->referrer) {
+            $referrer = User::firstWhere('username', $request->referrer);
+            if($referrer) $referrer->referrals->attach($user->id);
+        }
         return response($user->id, 201);
     }
 

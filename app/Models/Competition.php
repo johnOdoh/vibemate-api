@@ -11,6 +11,7 @@ class Competition extends Model
     protected $casts = [
         'start' => 'date',
         'end' => 'date',
+        'is_approved' => 'boolean'
     ];
 
     public function user()

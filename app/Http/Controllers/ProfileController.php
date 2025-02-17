@@ -31,11 +31,14 @@ class ProfileController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'firstname' => 'required|string',
+            'lastname' => 'required|string',
             'dob' => 'required|date',
-            'height' => 'required|numeric',
+            'connect_with' => 'required|string',
             'gender' => 'required|string',
             'phone' => 'required|string',
-            'here_for' => 'required|string',
+            'here_for' => 'required|array',
+            'interests' => 'required|array',
             'image' => 'required|image'
         ]);
         $imageName = $request->user()->username.'.'.$request->file('image')->getClientOriginalExtension();
@@ -44,7 +47,10 @@ class ProfileController extends Controller
         $data['image'] = $imageUrl;
         $data['user_id'] = $request->user()->id;
         $data['location'] = getCountryFromIp();
+        $data['here_for'] = implode(', ', $data['here_for']);
+        unset($data['interests']);
         $profile = new Profile($data);
+        $request->user()->interests()->attach($request->interests);
         $profile->save();
         return response()->json($profile, 201);
     }

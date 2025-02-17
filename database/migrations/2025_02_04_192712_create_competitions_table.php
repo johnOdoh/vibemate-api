@@ -15,11 +15,12 @@ return new class extends Migration
         Schema::create('competitions', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->text('description');
             $table->decimal('prize');
             $table->string('category');
-            $table->string('hashtag');
+            $table->string('hashtag')->unique();
+            $table->boolean('is_approved')->default(false);
             $table->string('image');
             $table->string('type');
             $table->date('start');

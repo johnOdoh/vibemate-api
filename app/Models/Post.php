@@ -8,6 +8,12 @@ class Post extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'allow_comments' => 'boolean',
+        'allow_like_counts' => 'boolean',
+        'is_image' => 'boolean'
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
