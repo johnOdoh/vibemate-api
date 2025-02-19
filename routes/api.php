@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 
@@ -19,4 +20,5 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/auth/signout', [UserController::class, 'signout']);
 
     Route::resource('profile', ProfileController::class);
+    Route::resource('post', PostController::class);
 });

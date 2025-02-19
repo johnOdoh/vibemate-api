@@ -16,13 +16,15 @@ class AuthController extends Controller
     public function register(Request $request) //on success, user should be directed to page to enter email verification token
     {
         $data = $request->validate([
-            'username' => 'required|string|unique:users,username',
+            'username' => 'required|string|regex:/^[a-zA-Z0-9_]+$/|min:3|max:20|unique:users,username',
             // 'firstname' => 'required|string',
             // 'lastname' => 'required|string',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string',
             'referrer' => 'nullable|string',
             'isSocial' => 'required|boolean'
+        ], [
+            'username.regex' => 'Username can only contain letters, numbers and underscores. No spaces are allowed'
         ]);
 
         // $data = $validator->getData();

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
@@ -13,6 +15,32 @@ class Post extends Model
         'allow_like_counts' => 'boolean',
         'is_image' => 'boolean'
     ];
+
+    public function getTopHashtags($limit, $duration)
+    {
+        // Get posts from the last 7 days
+        $posts = DB::table('posts')
+        ->where('created_at', '>=', Carbon::now()->subDays($duration))
+        ->pluck('hashtags'); // Get only the hashtags column
+
+        $hashtagCounts = [];
+
+        foreach ($posts as $hashtags) {
+            $tagsArray = explode(', ', $hashtags); // Split by comma
+            foreach ($tagsArray as $tag) {
+                $tag = trim($tag); // Remove spaces
+                if ($tag) {
+                    $hashtagCounts[$tag] = ($hashtagCounts[$tag] ?? 0) + 1;
+                }
+            }
+        }
+
+        // Sort hashtags by usage count (descending)
+        arsort($hashtagCounts);
+
+        // Return the top N hashtags
+        return array_slice($hashtagCounts, 0, $limit, true);
+    }
 
     public function user()
     {

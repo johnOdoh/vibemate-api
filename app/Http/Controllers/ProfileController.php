@@ -31,8 +31,8 @@ class ProfileController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'firstname' => 'required|string',
-            'lastname' => 'required|string',
+            'firstname' => 'required|string|regex:/^[a-zA-ZÀ-ÖØ-öø-ÿ\'-]+$/|max:255',
+            'lastname' => 'required|string|regex:/^[a-zA-ZÀ-ÖØ-öø-ÿ\'-]+$/|max:255',
             'dob' => 'required|date',
             'connect_with' => 'required|string',
             'gender' => 'required|string',
@@ -40,6 +40,9 @@ class ProfileController extends Controller
             'here_for' => 'required|array',
             'interests' => 'required|array',
             'image' => 'required|image'
+        ], [
+            'firstname.regex' => 'First name must contain only letters, hyphens, and apostrophes. No spaces allowed.',
+            'lastname.regex' => 'Last name must contain only letters, hyphens, and apostrophes. No spaces allowed.'
         ]);
         $imageName = $request->user()->username.'.'.$request->file('image')->getClientOriginalExtension();
         $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
@@ -50,8 +53,8 @@ class ProfileController extends Controller
         $data['here_for'] = implode(', ', $data['here_for']);
         unset($data['interests']);
         $profile = new Profile($data);
-        $request->user()->interests()->attach($request->interests);
         $profile->save();
+        $request->user()->interests()->attach($request->interests);
         return response()->json($profile, 201);
     }
 
