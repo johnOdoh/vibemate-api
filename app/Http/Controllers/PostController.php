@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        return PostResource::collection(Post::all());
     }
 
     /**
@@ -29,29 +30,30 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id' => 'required|integer',
             'privacy' => 'required|string',
             'allow_comments' => 'required|boolean',
             'allow_like_counts' => 'required|boolean',
             'body' => 'nullable|string',
             'hashtags' => 'nullable|string',
             'location' => 'nullable|string',
-            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
+            'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
         ]);
-        $file = $request->file('file');
-        $path = null;
-        if($file) {
-            if(str_starts_with($file->getMimeType(), 'image/')) {
-                $fileName = time().'.'.$file->getClientOriginalExtension();
-                $path = $file->storeAs('posts/images', $fileName, 'public');
-            }
-            else {
-                $fileName = time().'.'.$file->getClientOriginalExtension();
-                $path = $file->storeAs('posts/videos', $fileName, 'public');
+        $path = [];
+        if($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                if(str_starts_with($file->getMimeType(), 'image/')) {
+                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+                    $path[] = $file->storeAs('posts/images', $fileName, 'public');
+                }
+                else {
+                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+                    $path[] = $file->storeAs('posts/videos', $fileName, 'public');
+                }
             }
         }
-        unset($data['file']);
-        $data['file_url'] = $path;
+        unset($data['files']);
+        $data['file_url'] = implode(', ', $path);
+        $data['user_id'] = $request->user()->id;
         $post = new Post($data);
         $post->save();
         return response($post, 201);
@@ -60,9 +62,9 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Post $post)
     {
-        //
+        return new PostResource($post);
     }
 
     /**
@@ -76,16 +78,78 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        if($request->user()->id !== $post->user_id) abort(403);
+        return $request->all();
+        $data = $request->validate([
+            'privacy' => 'required|string',
+            'allow_comments' => 'required|boolean',
+            'allow_like_counts' => 'required|boolean',
+            'body' => 'nullable|string',
+            'hashtags' => 'nullable|string',
+            'location' => 'nullable|string',
+            'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
+        ]);
+        if($post->file_url){
+            $files = explode(', ', $post->file_url);
+            foreach ($files as $file) {
+                unlink(public_path('storage/'.$file));
+            }
+        }
+        $path = [];
+        if($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                if(str_starts_with($file->getMimeType(), 'image/')) {
+                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+                    $path[] = $file->storeAs('posts/images', $fileName, 'public');
+                }
+                else {
+                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+                    $path[] = $file->storeAs('posts/videos', $fileName, 'public');
+                }
+            }
+        }
+        unset($data['files']);
+        $data['file_url'] = implode(', ', $path);
+        $post->update($data);
+        return response($post, 201);
+    }
+
+    /**
+     * Like the specified post.
+     */
+    public function like(Post $post)
+    {
+        $post->likes()->create(['user_id' => request()->user()->id]);
+        $post->no_of_engagements++;
+        $post->save();
+        return response($post, 200);
+    }
+
+    /**
+     * Like the specified post.
+     */
+    public function unlike(Post $post)
+    {
+        $post->likes()->where('user_id', request()->user()->id)->delete();
+        if($post->no_of_engagements > 0) $post->no_of_engagements--;
+        $post->save();
+        return response($post, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Post $post)
     {
-        //
+        if($post->file_url){
+            $files = explode(', ', $post->file_url);
+            foreach ($files as $file) {
+                unlink(public_path('storage/'.$file));
+            }
+        }
+        $post->delete();
+        return response(null, 204);
     }
 }

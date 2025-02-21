@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('matches', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sender_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('receiver_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('sender_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('receiver_id')->constrained('users')->cascadeOnDelete();
             $table->boolean('is_accepted')->default(false);
             $table->timestamps();
         });

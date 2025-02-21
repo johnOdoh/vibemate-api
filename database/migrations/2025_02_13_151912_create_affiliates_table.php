@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('affiliates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('referrer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('referee_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('referrer_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('referee_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
 
             $table->unique(['referee_id', 'referrer_id']);
