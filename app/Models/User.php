@@ -44,7 +44,7 @@ class User extends Authenticatable
 
     public function setUsernameAttribute($value)
     {
-        $this->attributes['username'] = ucwords(strtolower(trim($value)));
+        $this->attributes['username'] = strtolower(trim($value));
     }
 
     public function profile()

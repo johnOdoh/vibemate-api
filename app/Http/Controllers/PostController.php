@@ -34,7 +34,7 @@ class PostController extends Controller
             'allow_comments' => 'required|boolean',
             'allow_like_counts' => 'required|boolean',
             'body' => 'nullable|string',
-            'hashtags' => 'nullable|string',
+            'hashtags' => 'nullable|array',
             'location' => 'nullable|string',
             'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
         ]);
@@ -53,6 +53,7 @@ class PostController extends Controller
         }
         unset($data['files']);
         $data['file_url'] = implode(', ', $path);
+        $data['hashtags'] = implode(', ', $data['hashtags']);
         $data['user_id'] = $request->user()->id;
         $post = new Post($data);
         $post->save();
@@ -81,13 +82,13 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         if($request->user()->id !== $post->user_id) abort(403);
-        return $request->all();
+        // return $request->all();
         $data = $request->validate([
             'privacy' => 'required|string',
             'allow_comments' => 'required|boolean',
             'allow_like_counts' => 'required|boolean',
             'body' => 'nullable|string',
-            'hashtags' => 'nullable|string',
+            'hashtags' => 'nullable|array',
             'location' => 'nullable|string',
             'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
         ]);
@@ -112,6 +113,7 @@ class PostController extends Controller
         }
         unset($data['files']);
         $data['file_url'] = implode(', ', $path);
+        $data['hashtags'] = implode(', ', $data['hashtags']);
         $post->update($data);
         return response($post, 201);
     }
@@ -136,6 +138,11 @@ class PostController extends Controller
         if($post->no_of_engagements > 0) $post->no_of_engagements--;
         $post->save();
         return response($post, 200);
+    }
+
+    public function getTopHashtags()
+    {
+        return Post::getTopHashtags(10, 7);
     }
 
     /**

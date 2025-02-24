@@ -16,9 +16,8 @@ class Post extends Model
         'is_image' => 'boolean'
     ];
 
-    public function getTopHashtags($limit, $duration)
+    public static function getTopHashtags($limit, $duration)
     {
-        // Get posts from the last 7 days
         $posts = DB::table('posts')
         ->where('created_at', '>=', Carbon::now()->subDays($duration))
         ->pluck('hashtags'); // Get only the hashtags column

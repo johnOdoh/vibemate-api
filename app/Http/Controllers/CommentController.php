@@ -61,6 +61,7 @@ class CommentController extends Controller
      */
     public function update(Request $request, Comment $comment)
     {
+        if(request()->user()->id !== $comment->user_id) abort(403);
         $request->validate([
             'body' => 'required|string'
         ]);
@@ -73,6 +74,7 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
+        if(request()->user()->id !== $comment->user_id) abort(403);
         $comment->post->no_of_engagements -= $comment->replies->count() + 1;
         $comment->post->save();
         $comment->delete();

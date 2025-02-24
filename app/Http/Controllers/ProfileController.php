@@ -39,7 +39,9 @@ class ProfileController extends Controller
             'phone' => 'required|string',
             'here_for' => 'required|array',
             'interests' => 'required|array',
-            'image' => 'required|image'
+            'image' => 'required|image',
+            'city' => 'required|string',
+            'country' => 'required|string'
         ], [
             'firstname.regex' => 'First name must contain only letters, hyphens, and apostrophes. No spaces allowed.',
             'lastname.regex' => 'Last name must contain only letters, hyphens, and apostrophes. No spaces allowed.'
@@ -49,7 +51,7 @@ class ProfileController extends Controller
         $imageUrl = asset("storage/$path");
         $data['image'] = $imageUrl;
         $data['user_id'] = $request->user()->id;
-        $data['location'] = getCountryFromIp();
+        // $data['location'] = getCountryFromIp();
         $data['here_for'] = implode(', ', $data['here_for']);
         unset($data['interests']);
         $profile = new Profile($data);

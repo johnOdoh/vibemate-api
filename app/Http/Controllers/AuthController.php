@@ -47,7 +47,7 @@ class AuthController extends Controller
         ]);
         $user->save();
         if ($request->referrer) {
-            $referrer = User::firstWhere('username', $request->referrer);
+            $referrer = User::firstWhere('username', strtolower(trim($request->referrer)));
             if($referrer) $referrer->referrals->attach($user->id);
         }
         return response($user->id, 201);
