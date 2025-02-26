@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProfileResource;
 
 class UserController extends Controller
 {
-    public function user(User $user)
+    public function index()
     {
-        return response($user, 200);
+        return new ProfileResource(request()->user());
     }
 
     public function signout(User $user)

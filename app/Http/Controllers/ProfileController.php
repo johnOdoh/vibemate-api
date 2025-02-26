@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Profile;
-use GeoIp2\Database\Reader;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Http\Resources\ProfileResource;
 
 class ProfileController extends Controller
 {
@@ -14,13 +14,37 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        //
+        $profile = request()->user()->profile;
+        $interests = $profile->user->interests->pluck('name');
+        $interested_in = $profile->connect_with;
+        $gender = $profile->gender;
+        $here_for = explode(', ', $profile->here_for);
+
+        $query = User::query();
+        $query->whereHas('interests', function ($q) use ($interests) {
+            $q->whereIn('name', $interests);
+        });
+        $query->whereHas('profile', function ($q) use ($interested_in, $here_for, $gender) {
+            $q->where(function ($q) use ($here_for) {
+                foreach ($here_for as $item) {
+                    $q->orWhere('here_for', 'like', "%$item%");
+                }
+            });
+            $q->where(function ($q) use ($gender) {
+                $q->where('connect_with', $gender)->orWhere('connect_with', 'everyone');
+            });
+            if($interested_in !== 'everyone') {
+                $q->where('gender', $interested_in);
+            }
+        });
+        $users = $query->get();
+        return ProfileResource::collection($users);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * searching for records.
      */
-    public function create()
+    public function search()
     {
         //
     }

@@ -18,15 +18,15 @@ Route::prefix('auth')->group(function () {
 });
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
-    Route::get('/user', [UserController::class, 'user']);
     Route::post('/auth/signout', [UserController::class, 'signout']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
     Route::post('post/unlike/{post}', [PostController::class, 'unlike']);
 
-    Route::resource('profile', ProfileController::class);
-    Route::resource('post', PostController::class);
     Route::resource('comment', CommentController::class);
+    Route::resource('post', PostController::class);
+    Route::resource('profile', ProfileController::class);
     Route::resource('reply', CommentReplyController::class);
+    Route::resource('user', UserController::class);
 });
