@@ -75,7 +75,7 @@ class ProfileController extends Controller
         $imageUrl = asset("storage/$path");
         $data['image'] = $imageUrl;
         $data['user_id'] = $request->user()->id;
-        // $data['location'] = getCountryFromIp();
+        $data['meta_location'] = getCountryFromIp();
         $data['here_for'] = implode(', ', $data['here_for']);
         unset($data['interests']);
         $profile = new Profile($data);
@@ -114,5 +114,17 @@ class ProfileController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function follow(string $id)
+    {
+        request()->user()->following()->attach($id);
+        return response()->json(['message' => 'You are now following this user.'], 200);
+    }
+
+    public function unfollow(string $id)
+    {
+        request()->user()->following()->detach($id);
+        return response()->json(['message' => 'You have unfollowed this user.'], 200);
     }
 }

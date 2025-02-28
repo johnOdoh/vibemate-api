@@ -13,7 +13,21 @@ class PostController extends Controller
      */
     public function index()
     {
-        return PostResource::collection(Post::all());
+        // return PostResource::collection(Post::all());
+        $current_location = getCountryFromIp();
+        $following = request()->user()->following->pluck('id');
+        $query = Post::query();
+        $query->where(function ($q) use ($following) {
+            $q->whereIn('user_id', $following);
+            $q->whereNot('privacy', 'private');
+        });
+        $query->orWhere(function ($q) use ($current_location) {
+            $q->where('meta_location', $current_location);
+            $q->where('privacy', 'public');
+            $q->where('user_id', '!=', request()->user()->id);
+        });
+        $posts = $query->get();
+        return PostResource::collection($posts);
     }
 
     /**
@@ -55,6 +69,7 @@ class PostController extends Controller
         $data['file_url'] = implode(', ', $path);
         $data['hashtags'] = implode(', ', $data['hashtags']);
         $data['user_id'] = $request->user()->id;
+        $data['meta_location'] = getCountryFromIp();
         $post = new Post($data);
         $post->save();
         return response($post, 201);

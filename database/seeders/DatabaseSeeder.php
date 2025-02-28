@@ -16,11 +16,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Post::factory()->count(20)->create();
+        Post::factory()->count(30)->create();
         // Create users with interests
-        User::factory(20)->has(Profile::factory())->create()->each(function ($user) {
-            $interests = Interest::inRandomOrder()->limit(rand(2, 5))->pluck('id');
-            $user->interests()->attach($interests);
-        });
+        // User::factory(20)->has(Profile::factory())->create()->each(function ($user) {
+        //     $interests = Interest::inRandomOrder()->limit(rand(2, 5))->pluck('id');
+        //     $user->interests()->attach($interests);
+        // });
     }
 }

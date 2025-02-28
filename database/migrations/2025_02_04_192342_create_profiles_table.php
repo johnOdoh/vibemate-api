@@ -20,11 +20,13 @@ return new class extends Migration
             $table->string('gender');
             // $table->float('height', 6, 2);
             $table->date('dob');
-            $table->string('location');
+            $table->string('meta_location');
             $table->string('here_for');
             $table->string('connect_with');
             $table->string('image');
             $table->string('phone');
+            $table->string('city');
+            $table->string('country');
             $table->timestamps();
         });
     }

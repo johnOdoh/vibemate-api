@@ -24,6 +24,11 @@ class PostResource extends JsonResource
             'hashtags' => $this->hashtags,
             'location' => $this->location,
             'file_url' => $this->file_url ? explode(', ', $this->file_url) : [],
+            'meta_location' => $this->meta_location,
+            'posted_by' => [
+                'id' => $this->user->id,
+                'username' => $this->user->username
+            ],
             'created_at' => $this->created_at,
             // 'updated_at' => $this->updated_at,
             'comments' => CommentResource::collection($this->comments)
