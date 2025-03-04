@@ -24,8 +24,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('post/like/{post}', [PostController::class, 'like']);
     Route::post('post/unlike/{post}', [PostController::class, 'unlike']);
 
-    Route::post('profile/follow/{id}', [ProfileController::class, 'follow']);
-    Route::post('profile/unfollow/{id}', [ProfileController::class, 'unfollow']);
+    Route::post('user/follow/{id}', [UserController::class, 'follow']);
+    Route::post('user/unfollow/{id}', [UserController::class, 'unfollow']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('post', PostController::class);
