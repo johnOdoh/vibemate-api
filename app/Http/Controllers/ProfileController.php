@@ -48,8 +48,7 @@ class ProfileController extends Controller
         ]);
         $imageName = $request->user()->username.'.'.$request->file('image')->getClientOriginalExtension();
         $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
-        $imageUrl = asset("storage/$path");
-        $data['image'] = $imageUrl;
+        $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
         $data['meta_location'] = getCountryFromIp();
         $data['here_for'] = implode(', ', $data['here_for']);

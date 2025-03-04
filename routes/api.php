@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CommentReplyController;
+use App\Http\Controllers\CompetitionController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -28,6 +29,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('user/unfollow/{id}', [UserController::class, 'unfollow']);
 
     Route::resource('comment', CommentController::class);
+    Route::resource('competition', CompetitionController::class);
     Route::resource('post', PostController::class);
     Route::resource('profile', ProfileController::class);
     Route::resource('reply', CommentReplyController::class);

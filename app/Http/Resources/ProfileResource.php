@@ -25,7 +25,7 @@ class ProfileResource extends JsonResource
             'phone' => $this->profile->phone,
             'here_for' => $this->profile->here_for,
             'bio' => $this->profile->bio,
-            'image' => $this->profile->image,
+            'image' => asset('storage/'.$this->profile->image),
             'city' => $this->profile->city,
             'country' => $this->profile->country,
             'interests' => $this->interests->pluck('name')
