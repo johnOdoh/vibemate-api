@@ -34,7 +34,8 @@ class CommentReplyController extends Controller
         ]);
         $data['user_id'] = $request->user()->id;
         $reply = new CommentReply($data);
-        $reply->comment->post->no_of_engagements++;
+        if(!screenInput($data['body'])) $reply->status = 'pending';
+        else $reply->comment->post->no_of_engagements++;
         $reply->push();
         return response('', 201);
     }
@@ -42,9 +43,9 @@ class CommentReplyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(CommentReply $reply)
     {
-        //
+        return response($reply, 200);
     }
 
     /**
@@ -52,7 +53,7 @@ class CommentReplyController extends Controller
      */
     public function edit(CommentReply $reply)
     {
-        return response($reply, 200);
+        //
     }
 
     /**
@@ -61,10 +62,15 @@ class CommentReplyController extends Controller
     public function update(Request $request, CommentReply $reply)
     {
         if($request->user()->id !== $reply->user_id) abort(403);
-        $request->validate([
+        $data = $request->validate([
             'body' => 'required|string'
         ]);
-        $reply->update($request->all());
+        if(!screenInput($data['body'])) {
+            $reply->comment->post->no_of_engagements--;
+            $reply->push();
+            $data['status'] = 'pending';
+        }
+        $reply->update($data);
         return response($reply, 200);
     }
 

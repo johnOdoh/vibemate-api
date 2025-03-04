@@ -18,19 +18,19 @@ class UserController extends Controller
 
         $query = User::query();
         $query->whereHas('interests', function ($q) use ($interests) {
-            $q->whereIn('name', $interests);
+            $q->whereIn('name', $interests); //you have at least one interest in common with user
         });
         $query->whereHas('profile', function ($q) use ($interested_in, $here_for, $gender) {
             $q->where(function ($q) use ($here_for) {
                 foreach ($here_for as $item) {
-                    $q->orWhere('here_for', 'like', "%$item%");
+                    $q->orWhere('here_for', 'like', "%$item%"); //you have at least one here_for in common with user
                 }
             });
-            $q->where(function ($q) use ($gender) {
+            $q->where(function ($q) use ($gender) { //user wants to connect with your specified gender or with everyone
                 $q->where('connect_with', $gender)->orWhere('connect_with', 'everyone');
             });
             if($interested_in !== 'everyone') {
-                $q->where('gender', $interested_in);
+                $q->where('gender', $interested_in); //you are interested in user gender or with everyone
             }
         });
         $users = $query->get();

@@ -1,6 +1,7 @@
 <?php
 
 use GeoIp2\Database\Reader;
+use App\Services\PerspectiveService;
 use Illuminate\Support\Facades\Http;
 
 function getUserRealIp()
@@ -29,4 +30,12 @@ function getCountryFromIp()
         $country = 'Unknown';
     }
     return $country;
+}
+
+function screenInput($input)
+{
+    $perspectiveService = new PerspectiveService;
+    $result = $perspectiveService->analyzeText($input);
+    if($result['SEVERE_TOXICITY'] >= 0.6 || $result['IDENTITY_ATTACK'] >= 0.6 || $result['THREAT'] >= 0.6) return false;
+    return true;
 }

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
+use App\Services\PerspectiveService;
 
 class PostController extends Controller
 {
@@ -13,18 +14,19 @@ class PostController extends Controller
      */
     public function index()
     {
-        // return PostResource::collection(Post::all());
         $current_location = getCountryFromIp();
         $following = request()->user()->following->pluck('id');
         $query = Post::query();
         $query->where(function ($q) use ($following) {
-            $q->whereIn('user_id', $following);
-            $q->whereNot('privacy', 'private');
+            $q->where('status', 'approved'); //post is approved
+            $q->whereIn('user_id', $following); //post belongs to a user you are following
+            $q->whereNot('privacy', 'private'); //post is not private
         });
         $query->orWhere(function ($q) use ($current_location) {
-            $q->where('meta_location', $current_location);
-            $q->where('privacy', 'public');
-            $q->where('user_id', '!=', request()->user()->id);
+            $q->where('status', 'approved'); //post is approved
+            $q->where('meta_location', $current_location); //post originated from your current location
+            $q->where('privacy', 'public'); //post is set to public
+            $q->where('user_id', '!=', request()->user()->id); //post does not belong to you
         });
         $posts = $query->get();
         return PostResource::collection($posts);
@@ -35,7 +37,8 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        $perspectiveService = new PerspectiveService;
+        return $perspectiveService->analyzeText('I will kill you');
     }
 
     /**
@@ -66,6 +69,7 @@ class PostController extends Controller
             }
         }
         unset($data['files']);
+        if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';
         $data['file_url'] = implode(', ', $path);
         $data['hashtags'] = implode(', ', $data['hashtags']);
         $data['user_id'] = $request->user()->id;
@@ -127,6 +131,7 @@ class PostController extends Controller
             }
         }
         unset($data['files']);
+        if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';
         $data['file_url'] = implode(', ', $path);
         $data['hashtags'] = implode(', ', $data['hashtags']);
         $post->update($data);

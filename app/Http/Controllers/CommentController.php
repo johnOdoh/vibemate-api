@@ -35,7 +35,8 @@ class CommentController extends Controller
         $data['user_id'] = $request->user()->id;
         $comment = new Comment($data);
         if(!$comment->post->allow_comments) abort(403, 'Comments are not allowed on this post');
-        $comment->post->no_of_engagements++;
+        if(!screenInput($data['body'])) $comment->status = 'pending';
+        else $comment->post->no_of_engagements++;
         $comment->push();
         return response('', 201);
     }
@@ -53,7 +54,7 @@ class CommentController extends Controller
      */
     public function edit(Comment $comment)
     {
-        return response($comment, 200);
+        //
     }
 
     /**
@@ -62,10 +63,15 @@ class CommentController extends Controller
     public function update(Request $request, Comment $comment)
     {
         if(request()->user()->id !== $comment->user_id) abort(403);
-        $request->validate([
+        $data = $request->validate([
             'body' => 'required|string'
         ]);
-        $comment->update($request->all());
+        if(!screenInput($data['body'])) {
+            $comment->post->no_of_engagements--;
+            $comment->push();
+            $data['status'] = 'pending';
+        }
+        $comment->update($data);
         return response($comment, 200);
     }
 
