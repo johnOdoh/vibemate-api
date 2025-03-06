@@ -1,13 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\CommentReplyController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -27,6 +28,9 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/unfollow/{id}', [UserController::class, 'unfollow']);
+
+    Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
+    Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);
