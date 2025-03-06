@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProfileResource;
@@ -56,7 +55,7 @@ class ProfileController extends Controller
         $profile = new Profile($data);
         $profile->save();
         $request->user()->interests()->attach($request->interests);
-        return response()->json($profile, 201);
+        return response()->json(['message' => 'Profile created'], 201);
     }
 
     /**

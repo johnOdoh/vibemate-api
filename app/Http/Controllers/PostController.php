@@ -76,7 +76,7 @@ class PostController extends Controller
         $data['meta_location'] = getCountryFromIp();
         $post = new Post($data);
         $post->save();
-        return response($post, 201);
+        return response()->json(['message' => 'Post created successfully'], 201);
     }
 
     /**
@@ -135,7 +135,7 @@ class PostController extends Controller
         $data['file_url'] = implode(', ', $path);
         $data['hashtags'] = implode(', ', $data['hashtags']);
         $post->update($data);
-        return response($post, 201);
+        return response()->json(['message' => 'Post updated successfully']);;
     }
 
     /**
@@ -146,7 +146,7 @@ class PostController extends Controller
         $post->likes()->create(['user_id' => request()->user()->id]);
         $post->no_of_engagements++;
         $post->save();
-        return response($post, 200);
+        return response()->json(['message' => 'Post liked successfully'], 201);;
     }
 
     /**
@@ -157,7 +157,7 @@ class PostController extends Controller
         $post->likes()->where('user_id', request()->user()->id)->delete();
         if($post->no_of_engagements > 0) $post->no_of_engagements--;
         $post->save();
-        return response($post, 200);
+        return response()->json(['message' => 'Post unliked successfully'], 201);;
     }
 
     public function getTopHashtags()
@@ -177,6 +177,6 @@ class PostController extends Controller
             }
         }
         $post->delete();
-        return response(null, 204);
+        return response()->noContent();
     }
 }

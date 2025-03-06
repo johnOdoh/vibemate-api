@@ -52,6 +52,6 @@ class UserController extends Controller
     public function signout(User $user)
     {
         $user->tokens()->delete();
-        return response('', 200);
+        return response('', 204);
     }
 }

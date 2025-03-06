@@ -55,7 +55,7 @@ class CompetitionController extends Controller
         $competition = new Competition($data);
         $request->user()->save();
         $competition->save();
-        return response()->json($competition, 201);
+        return response()->json(['message' => 'Competition created successfully'], 201);
     }
 
     /**
@@ -79,7 +79,7 @@ class CompetitionController extends Controller
      */
     public function update(Request $request, Competition $competition)
     {
-        if($competition->status !== 'pending') abort(403);
+        if($competition->status !== 'pending') return response()->json(['message' => 'Competition can no longer be updated.'], 403);
         $data = $request->validate([
             'name' => ['required', 'string',
                 Rule::unique('competitions', 'name')->ignore($competition->name),
@@ -102,7 +102,7 @@ class CompetitionController extends Controller
         if($request->hasFile('image'))  $request->file('image')->storeAs('competitions', $competition->image, 'public');
         unset($data['image']);
         $competition->update($data);
-        return response()->json($competition, 200);
+        return response()->json(['message' => 'Competition updated successfully'], 200);
     }
 
     /**
@@ -113,6 +113,6 @@ class CompetitionController extends Controller
         if($competition->status !== 'pending') abort(403);
         unlink(public_path('storage/'.$competition->image));
         $competition->delete();
-        return response()->json(['message' => 'Competition deleted successfully.'], 200);
+        return response()->noContent();
     }
 }

@@ -37,7 +37,7 @@ class CommentReplyController extends Controller
         if(!screenInput($data['body'])) $reply->status = 'pending';
         else $reply->comment->post->no_of_engagements++;
         $reply->push();
-        return response('', 201);
+        return response()->json(['message' => 'Comment created successfully'], 201);
     }
 
     /**
@@ -61,7 +61,8 @@ class CommentReplyController extends Controller
      */
     public function update(Request $request, CommentReply $reply)
     {
-        if($request->user()->id !== $reply->user_id) abort(403);
+        if($request->user()->id !== $reply->user_id)
+            return response()->json(['message' => 'You are not authorized to update this comment'], 403);
         $data = $request->validate([
             'body' => 'required|string'
         ]);
@@ -71,7 +72,7 @@ class CommentReplyController extends Controller
             $data['status'] = 'pending';
         }
         $reply->update($data);
-        return response($reply, 200);
+        return response()->json(['message' => 'Comment updated successfully']);
     }
 
     /**
