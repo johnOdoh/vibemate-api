@@ -71,7 +71,7 @@ class AuthController extends Controller
                 }
                 else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
             }
-            return response()->json(['message' => 'Invalid Email or Password'], 404);//if user does not exist
+            return response()->json(['message' => 'Invalid login attempt'], 401);//if user does not exist
         }else{//if user did not use a social signin
             if($user) {
                 if(Hash::check($request->password, $user->password)) {//if user entered correct password
@@ -81,9 +81,9 @@ class AuthController extends Controller
                     }  //if user has verified account
                     else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
                 }
-                else return response()->json(['message' => 'Invalid Email or Password'], 404);
+                else return response()->json(['message' => 'Invalid login attempt'], 401);
             }
-            return response()->json(['message' => 'Invalid Email or Password'], 404);//if user does not exist or entered wrong password
+            return response()->json(['message' => 'Invalid login attempt'], 401);//if user does not exist or entered wrong password
         }
     }
 
