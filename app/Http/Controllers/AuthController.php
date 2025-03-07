@@ -20,7 +20,7 @@ class AuthController extends Controller
             // 'firstname' => 'required|string',
             // 'lastname' => 'required|string',
             'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string',
+            'password' => 'required|stringS|min:8',
             'referrer' => 'nullable|string',
             'isSocial' => 'required|boolean'
         ], [
@@ -57,7 +57,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'password' => 'required|string',
-            'email' => 'required|string',
+            'email' => 'required|string|email',
             'isSocial' => 'required|boolean'
         ]);
         // if($validator->fails()) abort(422);
@@ -71,7 +71,7 @@ class AuthController extends Controller
                 }
                 else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
             }
-            return response()->json(['message' => 'User not found'], 404);//if user does not exist
+            return response()->json(['message' => 'Invalid Email or Password'], 404);//if user does not exist
         }else{//if user did not use a social signin
             if($user) {
                 if(Hash::check($request->password, $user->password)) {//if user entered correct password
@@ -81,8 +81,9 @@ class AuthController extends Controller
                     }  //if user has verified account
                     else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
                 }
+                else return response()->json(['message' => 'Invalid Email or Password'], 404);
             }
-            return response()->json(['message' => 'User not found'], 404);//if user does not exist or entered wrong password
+            return response()->json(['message' => 'Invalid Email or Password'], 404);//if user does not exist or entered wrong password
         }
     }
 
@@ -101,11 +102,6 @@ class AuthController extends Controller
 
     public function resendEmailToken(Request $request) //on success, user should be directed to page to enter email reset token
     {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
-        // if($validator->fails()) abort(422);
-
         $user = User::firstWhere('email', $request->email);
         if(!$user) return response()->json(['message' => 'User not found'], 404);
         $token = random_int(100000, 999999);
@@ -131,7 +127,7 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'token' => 'required|numeric',
-            'password' => 'required|string'
+            'password' => 'required|string|min:8'
         ]);
         $user = User::firstWhere('email', $request->email);
         if(!$user) return response()->json(['message' => 'User not found'], 404);
@@ -141,6 +137,6 @@ class AuthController extends Controller
             $user->save();
             return response()->json(['message' => 'Password reset successful'], 200);
         }
-        else response()->json(['message' => 'Invalid token'], 403);
+        else return response()->json(['message' => 'Invalid token'], 403);
     }
 }
