@@ -34,7 +34,7 @@ class CommentController extends Controller
         ]);
         $data['user_id'] = $request->user()->id;
         $comment = new Comment($data);
-        if(!$comment->post->allow_comments) abort(403, 'Comments are not allowed on this post');
+        if(!$comment->post->allow_comments) return response()->json(['message' => 'Comments are not allowed on this post'], 403);
         if(!screenInput($data['body'])) $comment->status = 'pending';
         else $comment->post->no_of_engagements++;
         $comment->push();
@@ -81,7 +81,8 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        if(request()->user()->id !== $comment->user_id) abort(403);
+        if(request()->user()->id !== $comment->user_id)
+            return response()->json(['message' => 'You are not authorized to delete this comment'], 403);
         $comment->post->no_of_engagements -= $comment->replies->count() + 1;
         $comment->post->save();
         $comment->delete();

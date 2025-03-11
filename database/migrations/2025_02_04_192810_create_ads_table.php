@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('is_image');
             $table->timestamp('start');
             $table->timestamp('end');
+            $table->string('action');
             $table->unsignedBigInteger('no_of_clicks')->default(0);
             $table->unsignedBigInteger('no_of_views')->default(0);
             $table->timestamps();

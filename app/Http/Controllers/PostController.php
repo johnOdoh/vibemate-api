@@ -35,10 +35,11 @@ class PostController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function test()
     {
+        $text = request()->input('text');
         $perspectiveService = new PerspectiveService;
-        return $perspectiveService->analyzeText('I will kill you');
+        return $perspectiveService->analyzeText($text);
     }
 
     /**

@@ -45,7 +45,7 @@ class CommentReplyController extends Controller
      */
     public function show(CommentReply $reply)
     {
-        return response($reply, 200);
+        //
     }
 
     /**
@@ -80,7 +80,8 @@ class CommentReplyController extends Controller
      */
     public function destroy(CommentReply $reply)
     {
-        if(request()->user()->id !== $reply->user_id) abort(403);
+        if(request()->user()->id !== $reply->user_id)
+            return response()->json(['message' => 'You are not authorized to delete this comment'], 403);
         $reply->comment->post->no_of_engagements--;
         $reply->comment->post->save();
         $reply->delete();

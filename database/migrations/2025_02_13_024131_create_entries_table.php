@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('url')->nullable();
             $table->string('is_image')->default(true);
             $table->text('body')->nullable();
-            $table->string('status');
+            $table->string('status')->default('approved');
             $table->unsignedbigInteger('no_of_engagements')->default(0);
             $table->timestamps();
 

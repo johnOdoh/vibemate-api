@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('no_of_engagements')->default(0);
             $table->string('hashtags')->nullable();
             $table->string('privacy');
-            $table->string('status');
+            $table->string('status')->default('approved');
             $table->string('location')->nullable();
             $table->string('meta_location');
             $table->boolean('allow_comments');

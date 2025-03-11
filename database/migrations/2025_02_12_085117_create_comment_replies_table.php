@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Comment::class)->constrained()->cascadeOnDelete();
-            $table->string('status');
+            $table->string('status')->default('approved');
             $table->text('body');
             $table->timestamps();
         });

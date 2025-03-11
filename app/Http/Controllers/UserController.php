@@ -49,7 +49,7 @@ class UserController extends Controller
         return response()->json(['message' => 'You have unfollowed this user.'], 200);
     }
 
-    public function signout(User $user)
+    public function logout(User $user)
     {
         $user->tokens()->delete();
         return response('', 204);

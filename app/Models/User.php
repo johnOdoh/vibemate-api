@@ -62,6 +62,11 @@ class User extends Authenticatable
         return $this->hasMany(Competition::class);
     }
 
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
     public function followers()
     {
         return $this->belongsToMany(User::class, 'follower_following', 'following_id', 'follower_id');

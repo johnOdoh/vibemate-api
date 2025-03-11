@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Entry;
+use App\Models\Competition;
+use Illuminate\Http\Request;
+use App\Http\Resources\EntryResource;
+
+class EntryController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'competition_id' => 'required|numeric',
+            'file' => 'sometimes|nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv',
+            'body' => 'sometimes|nullable|string',
+        ]);
+        if(empty($data['file']) && empty($data['body'])) {
+            return response()->json(['message' => 'Please provide either a file or a text'], 400);
+        }
+        $competition = Competition::findOrFail($data['competition_id']);
+        if($competition->status == 'open') {
+            return response()->json(['message' => 'Entry submission for this competition is not available'], 403);
+        }
+        if($request->hasFile('file')) {
+            $file = $request->file('file');
+            if(str_starts_with($file->getMimeType(), 'image/')) {
+                $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('entries/images', $fileName, 'public');
+            }
+            else {
+                $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('entries/videos', $fileName, 'public');
+                $data['is_image'] = false;
+            }
+        }
+        unset($data['file']);
+        if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';
+        $data['url'] = $path;
+        $data['user_id'] = $request->user()->id;
+        $post = new Entry($data);
+        $post->save();
+        return response()->json(['message' => 'Entry submitted successfully'], 201);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Entry $entry)
+    {
+        return new EntryResource($entry);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Like the specified entry.
+     */
+    public function like(Entry $entry)
+    {
+        $entry->likes()->create(['user_id' => request()->user()->id]);
+        $entry->no_of_engagements++;
+        $entry->save();
+        return response()->json(['message' => 'Entry liked'], 201);;
+    }
+
+    /**
+     * Like the specified entry.
+     */
+    public function unlike(Entry $entry)
+    {
+        $entry->likes()->where('user_id', request()->user()->id)->delete();
+        if($entry->no_of_engagements > 0) $entry->no_of_engagements--;
+        $entry->save();
+        return response()->json(['message' => 'Entry unliked'], 201);;
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Entry $entry)
+    {
+        if(request()->user()->id !== $entry->user_id)
+            return response()->json(['message' => 'You are not authorized to delete this entry'], 403);
+        if($entry->url){
+            unlink(public_path('storage/'.$entry->url));
+        }
+        $entry->delete();
+        return response()->noContent();
+    }
+}
