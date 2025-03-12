@@ -18,6 +18,7 @@ class ProfileFactory extends Factory
     public function definition(): array
     {
         return [
+            'username' => fake()->userName(),
             'firstname' => $this->faker->firstName,
             'lastname' => $this->faker->lastName,
             'dob' => $this->faker->date('Y-m-d', '2005-01-01'), // Random DOB before 2005

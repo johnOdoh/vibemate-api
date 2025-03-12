@@ -42,11 +42,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function setUsernameAttribute($value)
-    {
-        $this->attributes['username'] = strtolower(trim($value));
-    }
-
     public function profile()
     {
         return $this->hasOne(Profile::class);

@@ -20,6 +20,11 @@ class Profile extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function setUsernameAttribute($value)
+    {
+        $this->attributes['username'] = strtolower(trim($value));
+    }
+
     public function setFirstNameAttribute($value)
     {
         $this->attributes['firstname'] = ucwords(strtolower(trim($value)));

@@ -16,7 +16,7 @@ class AuthController extends Controller
     public function register(Request $request) //on success, user should be directed to page to enter email verification token
     {
         $data = $request->validate([
-            'username' => 'required|string|regex:/^[a-zA-Z0-9_]+$/|min:3|max:20|unique:users,username',
+            // 'username' => 'required|string|regex:/^[a-zA-Z0-9_]+$/|min:3|max:20|unique:users,username',
             // 'firstname' => 'required|string',
             // 'lastname' => 'required|string',
             'email' => 'required|string|email|unique:users,email',

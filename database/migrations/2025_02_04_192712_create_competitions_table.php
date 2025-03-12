@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('prize');
             $table->string('category');
             $table->string('hashtag')->unique();
-            $table->string('status')->default('pending');
+            $table->string('status')->default('approved');
             $table->string('image');
             $table->string('type');
             $table->date('start');

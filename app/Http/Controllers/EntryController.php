@@ -32,27 +32,24 @@ class EntryController extends Controller
     {
         $data = $request->validate([
             'competition_id' => 'required|numeric',
-            'file' => 'sometimes|nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv',
-            'body' => 'sometimes|nullable|string',
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
         ]);
-        if(empty($data['file']) && empty($data['body'])) {
-            return response()->json(['message' => 'Please provide either a file or a text'], 400);
-        }
         $competition = Competition::findOrFail($data['competition_id']);
         if($competition->status == 'open') {
             return response()->json(['message' => 'Entry submission for this competition is not available'], 403);
         }
-        if($request->hasFile('file')) {
-            $file = $request->file('file');
-            if(str_starts_with($file->getMimeType(), 'image/')) {
-                $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
-                $path = $file->storeAs('entries/images', $fileName, 'public');
-            }
-            else {
-                $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
-                $path = $file->storeAs('entries/videos', $fileName, 'public');
-                $data['is_image'] = false;
-            }
+        if($request->user()->entries()->where('competition_id', $competition->id)->exist()) {
+            return response()->json(['message' => 'You have already submitted an entry for this competition'], 403);
+        }
+        $file = $request->file('file');
+        if(str_starts_with($file->getMimeType(), 'image/')) {
+            $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
+            $path = $file->storeAs('entries/images', $fileName, 'public');
+        }
+        else {
+            $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
+            $path = $file->storeAs('entries/videos', $fileName, 'public');
+            $data['is_image'] = false;
         }
         unset($data['file']);
         if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';

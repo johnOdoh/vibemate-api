@@ -45,7 +45,7 @@ class CompetitionController extends Controller
             'hashtag.regex' => 'hashtag must start with a # and contain only lowercase letters and numbers.'
         ]);
         if($request->user()->wallet < ($data['prize'] + (0.1 * $data['prize']))) {
-            return response()->json(['message' => 'Insufficient funds.'], 400);
+            return response()->json(['message' => 'Insufficient funds.'], 403);
         }
         $request->user()->wallet -= ($data['prize'] + (0.1 * $data['prize']));
         $imageName = time().'-'.$request->user()->id.'.'.$request->file('image')->getClientOriginalExtension();

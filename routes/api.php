@@ -33,6 +33,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('post/unlike/{post}', [PostController::class, 'unlike']);
     Route::post('post/test', [PostController::class, 'test']);
 
+    Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
+
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/unfollow/{id}', [UserController::class, 'unfollow']);
     Route::post('user/logout/{user}', [UserController::class, 'logout']);
