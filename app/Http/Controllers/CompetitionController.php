@@ -37,7 +37,31 @@ class CompetitionController extends Controller
             'hashtag' => 'required|string|regex:/^#([a-z0-9]+)/|unique:competitions',
             'type' => 'required|string',
             'category' => 'required|string',
-            'prize' => 'required|numeric',
+            'is_multiple' => 'required|boolean',
+            'prize' => ['required', 'numeric', 'min:1',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->is_multiple) {
+                        if ($request->prize_1 + $request->prize_2 + $request->prize_3 != $value) {
+                            $fail('The sum of the prizes must be equal to the total prize.');
+                        }
+                    }
+                },
+            ],
+            'prize_1' => 'required_if:is_multiple,true|numeric|min:1',
+            'prize_2' => ['required_if:is_multiple,true', 'numeric', 'min:1',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($value > $request->prize_1) {
+                        $fail('2nd prize cannot be greater than 1st prize.');
+                    }
+                },
+            ],
+            'prize_3' => ['required_if:is_multiple,true', 'numeric', 'min:1',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($value > $request->prize_1 || $value > $request->prize_2) {
+                        $fail('3rd prize cannot be greater than 1st or 2nd prize.');
+                    }
+                },
+            ],
             'start' => 'required|date',
             'end' => 'required|date',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120'
@@ -50,6 +74,9 @@ class CompetitionController extends Controller
         $request->user()->wallet -= ($data['prize'] + (0.1 * $data['prize']));
         $imageName = time().'-'.$request->user()->id.'.'.$request->file('image')->getClientOriginalExtension();
         $path = $request->file('image')->storeAs('competitions', $imageName, 'public');
+        if(!screenInput($data['name']) || !screenInput($data['description'])) {
+            $data['status'] = 'pending';
+        }
         $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
         $competition = new Competition($data);

@@ -22,6 +22,10 @@ return new class extends Migration
             $table->string('hashtag')->unique();
             $table->string('status')->default('approved');
             $table->string('image');
+            $table->boolean('is_multiple');
+            $table->decimal('prize_1')->nullable();
+            $table->decimal('prize_2')->nullable();
+            $table->decimal('prize_3')->nullable();
             $table->string('type');
             $table->date('start');
             $table->date('end');

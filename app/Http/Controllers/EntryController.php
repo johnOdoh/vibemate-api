@@ -52,7 +52,6 @@ class EntryController extends Controller
             $data['is_image'] = false;
         }
         unset($data['file']);
-        if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';
         $data['url'] = $path;
         $data['user_id'] = $request->user()->id;
         $post = new Entry($data);

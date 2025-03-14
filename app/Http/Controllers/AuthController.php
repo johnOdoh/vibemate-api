@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\LoginResource;
 use App\Mail\ResetToken;
 use App\Mail\VerifyEmail;
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -20,11 +21,9 @@ class AuthController extends Controller
             // 'firstname' => 'required|string',
             // 'lastname' => 'required|string',
             'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|stringS|min:8',
+            'password' => 'required|string|min:8',
             'referrer' => 'nullable|string',
             'isSocial' => 'required|boolean'
-        ], [
-            'username.regex' => 'Username can only contain letters, numbers and underscores. No spaces are allowed'
         ]);
 
         // $data = $validator->getData();
@@ -37,7 +36,7 @@ class AuthController extends Controller
             $verified = true;
         }
         $user = new User([
-            'username' => $data['username'],
+            // 'username' => $data['username'],
             // 'firstname' => $data['firstname'],
             // 'lastname' => $data['lastname'],
             'email' => $data['email'],
@@ -56,14 +55,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
+            'login' => 'required|string',
             'password' => 'required|string',
-            'email' => 'required|string|email',
             'isSocial' => 'required|boolean'
         ]);
         // if($validator->fails()) abort(422);
-
-        $user = User::where('email', $request->email)->first();
         if ($request->isSocial) {//if user used a social signin
+            $user = User::where('email', $request->email)->first();
             if($user) {//if user exists
                 if($user->is_verified) { //if user has verified account
                     $user->token = $user->createToken("android device")->plainTextToken;
@@ -73,6 +71,15 @@ class AuthController extends Controller
             }
             return response()->json(['message' => 'Invalid login attempt'], 401);//if user does not exist
         }else{//if user did not use a social signin
+            //if user entered email, login with email, else login with username
+            $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+            if($loginField == 'username') {
+                $profile = Profile::where('username', $request->login->first());
+                if(!$profile) return response()->json(['message' => 'Invalid login attempt'], 401);
+                $user = $profile->user;
+            }else {
+                $user = User::where('email', $request->login)->first();
+            }
             if($user) {
                 if(Hash::check($request->password, $user->password)) {//if user entered correct password
                     if($user->is_verified) {

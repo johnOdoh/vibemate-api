@@ -37,7 +37,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/unfollow/{id}', [UserController::class, 'unfollow']);
-    Route::post('user/logout/{user}', [UserController::class, 'logout']);
+    Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);

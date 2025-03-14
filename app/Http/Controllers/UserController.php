@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProfileResource;
 
@@ -49,9 +50,9 @@ class UserController extends Controller
         return response()->json(['message' => 'You have unfollowed this user.'], 200);
     }
 
-    public function logout(User $user)
+    public function logout(Request $request)
     {
-        $user->tokens()->delete();
+        $request->user()->tokens()->delete();
         return response('', 204);
     }
 }
