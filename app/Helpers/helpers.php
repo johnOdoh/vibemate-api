@@ -3,6 +3,7 @@
 use GeoIp2\Database\Reader;
 use App\Services\PerspectiveService;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 function getUserRealIp()
 {
@@ -39,3 +40,25 @@ function screenInput($input)
     if($result['SEVERE_TOXICITY'] >= 0.6 || $result['IDENTITY_ATTACK'] >= 0.6 || $result['THREAT'] >= 0.6) return false;
     return true;
 }
+
+function getSpotifyToken()
+{
+    if (Cache::has('spotify_token')) {
+        return Cache::get('spotify_token');
+    }
+
+    $response = Http::withoutVerifying()->asForm()->post('https://accounts.spotify.com/api/token', [
+        'grant_type'    => 'client_credentials',
+        'client_id'     => env('SPOTIFY_CLIENT_ID'),
+        'client_secret' => env('SPOTIFY_CLIENT_SECRET'),
+    ]);
+
+    $token = $response->json()['access_token'];
+    $expiresIn = $response->json()['expires_in']; // Typically 3600 seconds (1 hour)
+
+    // Store in cache for the duration of token validity
+    Cache::put('spotify_token', $token, now()->addSeconds($expiresIn - 60)); // Subtract 1 minute for safety
+
+    return $token;
+}
+

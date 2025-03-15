@@ -35,10 +35,16 @@ class EntryController extends Controller
             'file' => 'required|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
         ]);
         $competition = Competition::findOrFail($data['competition_id']);
-        if($competition->status == 'open') {
-            return response()->json(['message' => 'Entry submission for this competition is not available'], 403);
+        if($competition->status !== 'approved' || $competition->phase === 'upcoming') {
+            return response()->json(['message' => 'Entry submission for this competition is not available yet'], 403);
         }
-        if($request->user()->entries()->where('competition_id', $competition->id)->exist()) {
+        if($competition->phase === 'ended') {
+            return response()->json(['message' => 'Entry submission for this competition has ended'], 403);
+        }
+        if($competition->user_id == $request->user()->id) {
+            return response()->json(['message' => 'You cannot submit an entry for your own competition'], 403);
+        }
+        if($competition->entries()->where('user_id', $request->user()->id)->exists()) {
             return response()->json(['message' => 'You have already submitted an entry for this competition'], 403);
         }
         $file = $request->file('file');

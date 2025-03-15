@@ -23,20 +23,24 @@ Route::prefix('auth')->group(function () {
 });
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
-    Route::post('/auth/signout', [UserController::class, 'signout']);
+
+    Route::patch('competition/end-competition/{competition}', [CompetitionController::class, 'endCompetition']);
 
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
-    Route::post('entry/unlike/{entry}', [EntryController::class, 'unlike']);
+    Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
+    Route::get('post/search/{query}', [PostController::class, 'searchArtist']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
-    Route::post('post/unlike/{post}', [PostController::class, 'unlike']);
     Route::post('post/test', [PostController::class, 'test']);
+    Route::delete('post/unlike/{post}', [PostController::class, 'unlike']);
 
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
 
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
-    Route::post('user/unfollow/{id}', [UserController::class, 'unfollow']);
+    Route::post('user/like/{id}', [UserController::class, 'like']);
+    Route::delete('user/unfollow/{id}', [UserController::class, 'unfollow']);
+    Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);

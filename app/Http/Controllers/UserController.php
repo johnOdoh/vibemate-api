@@ -38,16 +38,38 @@ class UserController extends Controller
         return ProfileResource::collection($users);
     }
 
-    public function follow(string $id)
+    public function follow(Request $request, string $id)
     {
-        request()->user()->following()->attach($id);
+        $request->user()->following()->attach($id);
         return response()->json(['message' => 'You are now following this user.'], 200);
     }
 
-    public function unfollow(string $id)
+    public function unfollow(Request $request, string $id)
     {
-        request()->user()->following()->detach($id);
+        $request->user()->following()->detach($id);
         return response()->json(['message' => 'You have unfollowed this user.'], 200);
+    }
+
+    public function like(Request $request, string $id)
+    {
+        if(!$request->user()->likes()->where('receiver_id', $id)->exists()) {//if user has not liked this user already
+            if($request->user()->liked_by()->where('sender_id', $id)->exists()) {//if user has been liked by this user already
+                //update the pivot table to show that there is a match
+                $request->user()->liked_by()->updateExistingPivot($id, ['is_matched' => true]);
+                return response()->json(['message' => 'You have a match.', 'is_matched' => true], 200);
+            }else {
+                $request->user()->likes()->attach($id);
+                return response()->json(['message' => 'You have liked this user.', 'is_matched' => false], 200);
+            }
+        }else {
+            return response()->json(['message' => 'You have already liked this user.'], 403);
+        }
+    }
+
+    public function unlike(Request $request, string $id)
+    {
+        $request->user()->likes()->where('receiver_id', $id)->exists() ? $request->user()->likes()->detach($id) : $request->user()->liked_by()->detach($id);
+        return response()->json(['message' => 'You have unliked this user.'], 200);
     }
 
     public function logout(Request $request)

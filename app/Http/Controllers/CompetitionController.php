@@ -106,15 +106,13 @@ class CompetitionController extends Controller
      */
     public function update(Request $request, Competition $competition)
     {
-        if($competition->status !== 'pending') return response()->json(['message' => 'Competition can no longer be updated.'], 403);
+        if($competition->phase !== 'upcoming') return response()->json(['message' => 'Competition can no longer be updated.'], 403);
         $data = $request->validate([
             'name' => ['required', 'string',
-                Rule::unique('competitions', 'name')->ignore($competition->name),
-                Rule::in([$competition->name]),
+                Rule::unique('competitions', 'name')->ignore($competition->name)
             ],
             'hashtag' => ['required', 'string', 'regex:/^#([a-z0-9]+)$/',
-                Rule::unique('competitions', 'hashtag')->ignore($competition->hashtag),
-                Rule::in([$competition->hashtag]),
+                Rule::unique('competitions', 'hashtag')->ignore($competition->hashtag)
             ],
             'description' => 'required|string',
             'type' => 'required|string',
@@ -137,9 +135,42 @@ class CompetitionController extends Controller
      */
     public function destroy(Competition $competition)
     {
-        if($competition->status !== 'pending') abort(403);
+        if($competition->user_id !== request()->user()->id)
+            return response()->json(['message' => 'You are not authorized to delete this competition.'], 403);
+        if($competition->phase !== 'upcoming')
+            return response()->json(['message' => 'You can no longer delete this competition.'], 403);
         unlink(public_path('storage/'.$competition->image));
+        $competition->user->wallet += ($competition->prize + (0.1 * $competition->prize));
+        $competition->user->save();
         $competition->delete();
         return response()->noContent();
+    }
+
+    public function endCompetition(Competition $competition)
+    {
+        if($competition->status !== 'approved') return response()->json(['message' => 'Competition has not been approved.'], 403);
+        if($competition->phase === 'ended') return response()->json(['message' => 'Competition has already ended.'], 403);
+        $competition->phase = 'ended';
+        $competition->save();
+        if($competition->is_multiple) {
+            $competition->entries()->orderBy('no_of_engagements', 'desc')->take(3)->get()->each(function ($entry, $key) use ($competition) {
+                if($key === 0) {
+                    $entry->user->wallet += $competition->prize_1;
+                    $entry->user->save();
+                }
+                if($key === 1) {
+                    $entry->user->wallet += $competition->prize_2;
+                    $entry->user->save();
+                }
+                if($key === 2) {
+                    $entry->user->wallet += $competition->prize_3;
+                    $entry->user->save();
+                }
+            });
+        }else {
+            $competition->entries()->orderBy('no_of_engagements', 'desc')->first()->user->wallet += $competition->prize;
+            $competition->entries()->orderBy('no_of_engagements', 'desc')->first()->user->save();
+        }
+        return response()->json(['message' => 'Competition has ended.'], 200);
     }
 }

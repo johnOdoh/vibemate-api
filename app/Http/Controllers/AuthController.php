@@ -74,7 +74,7 @@ class AuthController extends Controller
             //if user entered email, login with email, else login with username
             $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
             if($loginField == 'username') {
-                $profile = Profile::where('username', $request->login->first());
+                $profile = Profile::where('username', $request->login)->first();
                 if(!$profile) return response()->json(['message' => 'Invalid login attempt'], 401);
                 $user = $profile->user;
             }else {
