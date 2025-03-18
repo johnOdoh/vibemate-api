@@ -27,6 +27,7 @@ class CompetitionResource extends JsonResource
             'prize_2' => $this->prize_2,
             'prize_3' => $this->prize_3,
             'status' => $this->status,
+            'phase' => $this->phase,
             'start' => $this->start,
             'end' => $this->end,
             'image' => asset('storage/'.$this->image),

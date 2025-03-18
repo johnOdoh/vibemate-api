@@ -24,7 +24,8 @@ Route::prefix('auth')->group(function () {
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
 
-    Route::patch('competition/end-competition/{competition}', [CompetitionController::class, 'endCompetition']);
+    Route::patch('competition/start/{competition}', [CompetitionController::class, 'start']);
+    Route::patch('competition/end/{competition}', [CompetitionController::class, 'end']);
 
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);

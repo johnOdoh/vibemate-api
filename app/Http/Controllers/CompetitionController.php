@@ -146,7 +146,16 @@ class CompetitionController extends Controller
         return response()->noContent();
     }
 
-    public function endCompetition(Competition $competition)
+    public function start(Competition $competition)
+    {
+        if($competition->status !== 'approved') return response()->json(['message' => 'Competition has not been approved.'], 403);
+        if($competition->phase === 'in_progress') return response()->json(['message' => 'Competition has already started.'], 403);
+        $competition->phase = 'in_progress';
+        $competition->save();
+        return response()->json(['message' => 'Competition has started.'], 200);
+    }
+
+    public function end(Competition $competition)
     {
         if($competition->status !== 'approved') return response()->json(['message' => 'Competition has not been approved.'], 403);
         if($competition->phase === 'ended') return response()->json(['message' => 'Competition has already ended.'], 403);
