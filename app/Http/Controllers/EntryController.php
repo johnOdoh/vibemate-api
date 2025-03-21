@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entry;
+use Cloudinary\Cloudinary;
 use App\Models\Competition;
 use Illuminate\Http\Request;
 use App\Http\Resources\EntryResource;
@@ -48,13 +49,20 @@ class EntryController extends Controller
             return response()->json(['message' => 'You have already submitted an entry for this competition'], 403);
         }
         $file = $request->file('file');
+        $cloudinary = new Cloudinary();
+        // $cloudinary->uploadApi()->upload;
         if(str_starts_with($file->getMimeType(), 'image/')) {
-            $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('entries/images', $fileName, 'public');
+            $path = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                'folder' => 'entries/images',
+                'public_id' => time(true).'-'.$request->user()->id
+            ])['secure_url'];
         }
         else {
-            $fileName = microtime(true).'-'.$competition->id.'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('entries/videos', $fileName, 'public');
+            $path = $cloudinary->uploadApi()->upload($file->getRealPath(), [
+                'resource_type' => 'video',
+                'folder' => 'entries/videos',
+                'public_id' => time(true).'-'.$request->user()->id
+            ]);
             $data['is_image'] = false;
         }
         unset($data['file']);
@@ -86,7 +94,7 @@ class EntryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        return $request;
     }
 
     /**

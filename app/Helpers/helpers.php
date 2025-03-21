@@ -1,5 +1,6 @@
 <?php
 
+use Cloudinary\Configuration\Configuration;
 use GeoIp2\Database\Reader;
 use App\Services\PerspectiveService;
 use Illuminate\Support\Facades\Http;
@@ -60,5 +61,19 @@ function getSpotifyToken()
     Cache::put('spotify_token', $token, now()->addSeconds($expiresIn - 60)); // Subtract 1 minute for safety
 
     return $token;
+}
+
+function instantiateCloudinary()
+{
+    return new Configuration([
+        'cloud' => [
+            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+            'api_key'    => env('CLOUDINARY_KEY'),
+            'api_secret' => env('CLOUDINARY_SECRET'),
+            'url'        => [
+                'secure' => true
+            ]
+        ],
+    ]);
 }
 
