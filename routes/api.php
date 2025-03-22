@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CompetitionController;
@@ -21,6 +22,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/send-reset-token', [AuthController::class, 'sendPasswordResetToken']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
+Route::get('subscription/success', [SubscriptionController::class, 'success']);
+Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
+Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook']);
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
 
@@ -29,6 +33,12 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
+
+    Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
+    Route::post('subscription/create-subscription/{plan}', [SubscriptionController::class, 'createSubscription']);
+    Route::patch('subscription/cancel-subscription/{subscription_id}', [SubscriptionController::class, 'cancelSubscription']);
+    Route::patch('subscription/reactivate-subscription/{subscription_id}', [SubscriptionController::class, 'reactivateSubscription']);
+    Route::patch('subscription/suspend-subscription/{subscription_id}', [SubscriptionController::class, 'suspendSubscription']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::get('post/search/{query}', [PostController::class, 'searchArtist']);

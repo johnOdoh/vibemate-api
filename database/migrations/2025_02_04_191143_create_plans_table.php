@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
+            $table->string('paypal_product_id')->unique();
+            $table->string('paypal_plan_id')->unique();
             $table->decimal('amount');
             $table->unsignedInteger('interval');
             $table->timestamps();
