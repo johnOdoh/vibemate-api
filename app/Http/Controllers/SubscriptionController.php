@@ -52,7 +52,8 @@ class SubscriptionController extends Controller
         ]);
         $subscription->user->is_subscribed = false;
         $subscription->user->push();
-        return response()->json($response);
+        // return response()->json($response);
+        return response()->json(['message' => 'Subscription canceled']);
     }
 
     public function suspendSubscription($subscription_id) {
@@ -64,7 +65,8 @@ class SubscriptionController extends Controller
         $subscription->update([
             'auto_renew' => false
         ]);
-        return response()->json($response);
+        return response()->json(['message' => 'Subscription suspended']);
+        // return response()->json($response);
     }
 
     public function reactivateSubscription($subscription_id) {
@@ -76,7 +78,8 @@ class SubscriptionController extends Controller
         $subscription->update([
             'auto_renew' => true
         ]);
-        return response()->json($response);
+        // return response()->json($response);
+        return response()->json(['message' => 'Subscription reactivated']);
     }
 
     public function success(Request $request) {
@@ -85,6 +88,7 @@ class SubscriptionController extends Controller
         $subscription->status = 'active';
         $subscription->user->is_subscribed = true;
         $subscription->push();
+        return response()->json(['message' => 'Subscription activated']);
     }
 
     public function cancel(Request $request) {

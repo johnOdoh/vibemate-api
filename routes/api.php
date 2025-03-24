@@ -13,6 +13,7 @@ use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\EntryCommentReplyController;
+use App\Http\Middleware\VerifyPaypalWebhook;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -24,7 +25,7 @@ Route::prefix('auth')->group(function () {
 });
 Route::get('subscription/success', [SubscriptionController::class, 'success']);
 Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
-Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook']);
+Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
 

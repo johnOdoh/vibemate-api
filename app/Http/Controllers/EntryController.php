@@ -54,14 +54,14 @@ class EntryController extends Controller
         if(str_starts_with($file->getMimeType(), 'image/')) {
             $path = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                 'folder' => 'entries/images',
-                'public_id' => time(true).'-'.$request->user()->id
+                'public_id' => time().'-'.$request->user()->id
             ])['secure_url'];
         }
         else {
             $path = $cloudinary->uploadApi()->upload($file->getRealPath(), [
                 'resource_type' => 'video',
                 'folder' => 'entries/videos',
-                'public_id' => time(true).'-'.$request->user()->id
+                'public_id' => time().'-'.$request->user()->id
             ]);
             $data['is_image'] = false;
         }

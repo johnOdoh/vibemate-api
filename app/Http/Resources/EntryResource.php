@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Cloudinary\Cloudinary;
+use Cloudinary\Transformation\FocusOn;
 use Cloudinary\Transformation\Gravity;
 use Illuminate\Http\Request;
 use Cloudinary\Transformation\Resize;
@@ -21,6 +22,7 @@ class EntryResource extends JsonResource
             $cloudinary = new Cloudinary();
             $publicId = str_replace("https://res.cloudinary.com/dpn0v6a2i/image/upload/", "", $this->url);
             $url = $cloudinary->image($publicId)->resize(Resize::fill(200, 200)->gravity(Gravity::auto()))->toUrl();
+            // $url = $cloudinary->image($publicId)->resize(Resize::fill(200, 200)->gravity(Gravity::focusOn(FocusOn::FACE)))->toUrl();
         }
         else $url = $this->url;
         return [
