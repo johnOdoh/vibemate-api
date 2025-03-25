@@ -3,17 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GiftController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\VerifyPaypalWebhook;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
-use App\Http\Middleware\VerifyPaypalWebhook;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -63,6 +64,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::resource('entry', EntryController::class);
     Route::resource('entry-comment', EntryCommentController::class);
     Route::resource('entry-comment-reply', EntryCommentReplyController::class);
+    Route::resource('gift', GiftController::class);
     Route::resource('post', PostController::class);
     Route::resource('profile', ProfileController::class);
     Route::resource('reply', CommentReplyController::class);

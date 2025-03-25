@@ -22,8 +22,6 @@ class VerifyPaypalWebhook
             Log::warning('Invalid PayPal Webhook!');
             return response()->json(['error' => 'Invalid webhook'], 400);
         }
-
-        Log::info('Valid PayPal Webhook Received.');
         return $next($request);
     }
 
@@ -40,14 +38,14 @@ class VerifyPaypalWebhook
         $response = $client->post($verifyUrl, [
             'headers' => [
                 'Content-Type'  => 'application/json',
-                'Authorization' => 'Bearer ' . $provider->getAccessToken(),
+                'Authorization' => 'Bearer ' . $provider->getAccessToken()['access_token'],
             ],
             'json' => [
-                'auth_algo'         => $headers['Paypal-Auth-Algo'][0] ?? '',
-                'cert_url'          => $headers['Paypal-Cert-Url'][0] ?? '',
-                'transmission_id'   => $headers['Paypal-Transmission-Id'][0] ?? '',
-                'transmission_sig'  => $headers['Paypal-Transmission-Sig'][0] ?? '',
-                'transmission_time' => $headers['Paypal-Transmission-Time'][0] ?? '',
+                'transmission_id'   => $headers['paypal-transmission-id'][0] ?? '',
+                'transmission_time' => $headers['paypal-transmission-time'][0] ?? '',
+                'cert_url'          => $headers['paypal-cert-url'][0] ?? '',
+                'auth_algo'         => $headers['paypal-auth-algo'][0] ?? '',
+                'transmission_sig'  => $headers['paypal-transmission-sig'][0] ?? '',
                 'webhook_id'        => env('PAYPAL_SUBSCRIPTION_WEBHOOK_ID'), // Set this in .env
                 'webhook_event'     => json_decode($body, true),
             ]

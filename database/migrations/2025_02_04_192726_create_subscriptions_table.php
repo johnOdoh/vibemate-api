@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(User::class)->unique()->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Plan::class)->constrained()->cascadeOnDelete();
-            $table->string('paypal_subscription_id')->unique()->nullable();
+            $table->string('paypal_subscription_id')->unique();
             $table->string('status')->default('pending');
             $table->boolean('auto_renew')->default(true);
             $table->timestamp('start');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Plan;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
+use App\Enums\SubscriptionStatus;
 use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
@@ -41,51 +42,30 @@ class SubscriptionController extends Controller
     }
 
     public function cancelSubscription($subscription_id) {
-        $provider = new PayPalClient();
-        $provider->getAccessToken();
-        $response = $provider->cancelSubscription($subscription_id, 'Cancelled by user');
-        $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
-        if (!$subscription) return response()->json(['message' => 'Subscription not found'], 404);
-        $subscription->update([
-            'status' => "cancelled",
-            'auto_renew' => false
-        ]);
-        $subscription->user->is_subscribed = false;
-        $subscription->user->push();
-        // return response()->json($response);
-        return response()->json(['message' => 'Subscription canceled']);
+        if (cancelSubscription($subscription_id))
+            return response()->json(['message' => 'Subscription canceled']);
+        else
+            return response()->json(['message' => 'Subscription not found'], 404);
     }
 
     public function suspendSubscription($subscription_id) {
-        $provider = new PayPalClient();
-        $provider->getAccessToken();
-        $response = $provider->suspendSubscription($subscription_id, 'User disabled auto-renewal');
-        $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
-        if (!$subscription) return response()->json(['message' => 'Subscription not found'], 404);
-        $subscription->update([
-            'auto_renew' => false
-        ]);
-        return response()->json(['message' => 'Subscription suspended']);
-        // return response()->json($response);
+        if (suspendSubscription($subscription_id))
+            return response()->json(['message' => 'Subscription suspended']);
+        else
+            return response()->json(['message' => 'Subscription not found'], 404);
     }
 
     public function reactivateSubscription($subscription_id) {
-        $provider = new PayPalClient();
-        $provider->getAccessToken();
-        $response = $provider->activateSubscription($subscription_id, 'User enabled auto-renewal');
-        $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
-        if (!$subscription) return response()->json(['message' => 'Subscription not found'], 404);
-        $subscription->update([
-            'auto_renew' => true
-        ]);
-        // return response()->json($response);
-        return response()->json(['message' => 'Subscription reactivated']);
+        if (reactivateSubscription($subscription_id))
+            return response()->json(['message' => 'Subscription reactivated']);
+        else
+            return response()->json(['message' => 'Subscription not found'], 404);
     }
 
     public function success(Request $request) {
         Log::info('PayPal Successful', $request->all());
         $subscription = Subscription::where('paypal_subscription_id', $request->subscription_id)->first();
-        $subscription->status = 'active';
+        $subscription->status = SubscriptionStatus::Active->value;
         $subscription->user->is_subscribed = true;
         $subscription->push();
         return response()->json(['message' => 'Subscription activated']);
@@ -99,8 +79,32 @@ class SubscriptionController extends Controller
     }
 
     public function paypalSubscriptionWebhook(Request $request) {
-        Log::info('PayPal Webhook', $request->all());
-        response()->json(['message' => 'Webhook received']);
+        $payload = $request->all();
+        $subscription_id = $payload['resource']['id'];
+        switch ($payload['event_type']) {
+            case 'BILLING.SUBSCRIPTION.CANCELLED':
+                cancelSubscription($subscription_id);
+                break;
+
+            case 'BILLING.SUBSCRIPTION.ACTIVATED':
+                IF($payload['resource']['status_change_note'])
+                    reactivateSubscription($subscription_id);
+                break;
+
+            case 'BILLING.SUBSCRIPTION.SUSPENDED':
+                suspendSubscription($subscription_id);
+                break;
+
+            case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED':
+                expireSubscription($subscription_id);
+                break;
+
+            case 'PAYMENT.SALE.COMPLETED':
+                if ($payload['resource']['billing_agreement_id'])
+                    activateSubscription($payload['resource']['billing_agreement_id']);
+                break;
+        }
+        return;
     }
 
 }
