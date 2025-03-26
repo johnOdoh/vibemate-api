@@ -15,6 +15,8 @@ use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -27,6 +29,11 @@ Route::prefix('auth')->group(function () {
 Route::get('subscription/success', [SubscriptionController::class, 'success']);
 Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
 Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
+Route::post('sightengine/video-moderation/callback', function (Request $request) {
+    $data = $request->all();
+    Log::info('Sightengine Video Moderation Callback', $data);
+    return response()->noContent();
+})->name('sightengine.video-moderation.callback');
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
 

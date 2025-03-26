@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Competition::class)->constrained()->cascadeOnDelete();
             $table->string('url');
+            $table->string('media_id')->nullable()->unique();
             $table->string('is_image')->default(true);
             $table->string('status')->default('approved');
             $table->unsignedbigInteger('no_of_engagements')->default(0);

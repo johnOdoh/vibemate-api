@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entry;
-use Cloudinary\Cloudinary;
 use App\Models\Competition;
 use Illuminate\Http\Request;
 use App\Http\Resources\EntryResource;
@@ -49,21 +48,16 @@ class EntryController extends Controller
             return response()->json(['message' => 'You have already submitted an entry for this competition'], 403);
         }
         $file = $request->file('file');
-        $cloudinary = new Cloudinary();
         // $cloudinary->uploadApi()->upload;
         if(str_starts_with($file->getMimeType(), 'image/')) {
-            $path = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                'folder' => 'entries/images',
-                'public_id' => time().'-'.$request->user()->id
-            ])['secure_url'];
+            $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+            $path = $file->storeAs('entries/images', $fileName, 'public');
+            if(!moderateImage($path)) $data['status'] = 'pending';
         }
         else {
-            $path = $cloudinary->uploadApi()->upload($file->getRealPath(), [
-                'resource_type' => 'video',
-                'folder' => 'entries/videos',
-                'public_id' => time().'-'.$request->user()->id
-            ]);
-            $data['is_image'] = false;
+            $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+            $path = $file->storeAs('entries/videos', $fileName, 'public');
+            return moderateVideo($path);
         }
         unset($data['file']);
         $data['url'] = $path;

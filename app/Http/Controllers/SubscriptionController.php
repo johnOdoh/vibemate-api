@@ -104,7 +104,6 @@ class SubscriptionController extends Controller
                     activateSubscription($payload['resource']['billing_agreement_id']);
                 break;
         }
-        return;
+        return response()->noContent();
     }
-
 }
