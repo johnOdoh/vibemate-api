@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\VerifyPaypalWebhook;
 use App\Http\Controllers\CompetitionController;
@@ -15,8 +18,6 @@ use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -28,6 +29,10 @@ Route::prefix('auth')->group(function () {
 });
 Route::get('subscription/success', [SubscriptionController::class, 'success']);
 Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
+
+Route::get('payment/success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+
 Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
 Route::post('sightengine/video-moderation/callback', function (Request $request) {
     $data = $request->all();
@@ -43,11 +48,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
-    Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
-    Route::post('subscription/create-subscription/{plan}', [SubscriptionController::class, 'createSubscription']);
-    Route::patch('subscription/cancel-subscription/{subscription_id}', [SubscriptionController::class, 'cancelSubscription']);
-    Route::patch('subscription/reactivate-subscription/{subscription_id}', [SubscriptionController::class, 'reactivateSubscription']);
-    Route::patch('subscription/suspend-subscription/{subscription_id}', [SubscriptionController::class, 'suspendSubscription']);
+    Route::post('payment/create-order', [PaymentController::class, 'createOrder']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::get('post/search/{query}', [PostController::class, 'searchArtist']);
@@ -65,6 +66,12 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
+
+    Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
+    Route::post('subscription/create-subscription/{plan}', [SubscriptionController::class, 'createSubscription']);
+    Route::patch('subscription/cancel-subscription/{subscription_id}', [SubscriptionController::class, 'cancelSubscription']);
+    Route::patch('subscription/reactivate-subscription/{subscription_id}', [SubscriptionController::class, 'reactivateSubscription']);
+    Route::patch('subscription/suspend-subscription/{subscription_id}', [SubscriptionController::class, 'suspendSubscription']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);

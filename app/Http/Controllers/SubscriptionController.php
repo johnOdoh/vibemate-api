@@ -73,8 +73,7 @@ class SubscriptionController extends Controller
 
     public function cancel(Request $request) {
         Log::info('PayPal Cancelled', $request->all());
-        $subscription = Subscription::where('paypal_subscription_id', $request->subscription_id)->first();
-        $subscription->delete();
+        $subscription = Subscription::where('paypal_subscription_id', $request->subscription_id)->delete();
         return response()->json(['message' => 'Subscription cancelled']);
     }
 
@@ -103,6 +102,9 @@ class SubscriptionController extends Controller
                 if ($payload['resource']['billing_agreement_id'])
                     activateSubscription($payload['resource']['billing_agreement_id']);
                 break;
+
+            case 'PAYMENT.CAPTURE.COMPLETED';
+                $id = $payload['resource']['supplementary_data']['related_ids']['order_id'];
         }
         return response()->noContent();
     }

@@ -31,17 +31,18 @@ class GiftController extends Controller
     {
         $data = $request->validate([
             'receiver_id' => 'required|exists:users,id',
-            'gift_id' => 'required|exists:gifts,id',
+            'item_id' => 'required|exists:items,id',
         ]);
-
         $gift =  new Gift();
-        $gift->gift_id = $data['gift_id'];
+        $gift->item_id = $data['item_id'];
         $gift->sender_id = $request->user()->id;
         $gift->receiver_id = $data['receiver_id'];
         if ($gift->sender->wallet < $gift->item->price) {
             return response()->json(['message' => 'Insufficient funds'], 403);
         }
-        $gift->save();
+        $gift->sender->wallet -= $gift->item->price;
+        $gift->receiver->wallet += $gift->item->price;
+        $gift->push();
         return GiftResource::make($gift);
     }
 

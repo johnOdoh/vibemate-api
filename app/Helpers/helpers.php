@@ -80,13 +80,13 @@ function moderateVideo($path)
         'media', file_get_contents(storage_path('app/public/'.$path)), 'video.jpg'
     )->post('https://api.sightengine.com/1.0/video/check-workflow.json', [
         'workflow' => env('SIGHT_ENGINE_VIDEO_WORKFLOW_ID'),
-        'callback_url' => 'http://white-dogfish-514196.hostingersite.com/api/sightengine/video-moderation/callback',
+        'callback_url' => 'http://white-dogfish-514196.hostingersite.com/public/api/sightengine/video-moderation/callback',
         // 'callback_url' => route('sightengine.video-moderation.callback'),
         'api_user' => env('SIGHT_ENGINE_API_USER'),
         'api_secret' => env('SIGHT_ENGINE_API_KEY'),
     ]);
-    return $response->json();
-    if ($response->json()['status'] === 'success') {
+    // return $response->json()['status'];
+    if ($response->json()['status'] == 'success') {
         return $response->json()['media']['id'];
     }
     else return null;

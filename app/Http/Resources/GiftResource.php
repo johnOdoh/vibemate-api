@@ -16,8 +16,8 @@ class GiftResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'sender' => $this->sender->username,
-            'gift' => $this->gift->image
+            'sender' => $this->sender->profile->username,
+            'item' => $this->item->image
         ];
     }
 }

@@ -57,7 +57,7 @@ class EntryController extends Controller
         else {
             $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs('entries/videos', $fileName, 'public');
-            return moderateVideo($path);
+            $data['media_id'] = moderateVideo($path);
         }
         unset($data['file']);
         $data['url'] = $path;
