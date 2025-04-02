@@ -88,7 +88,9 @@ class ProfileController extends Controller
      */
     public function store(Request $request)
     {
-        if($request->user()->profile()->exists()) return response()->json(['message' => 'Profile already exists'], 403);
+        if($request->user()->profile()->exists()) {
+            return response()->json(['message' => 'Profile already exists']);
+        }
         $data = $request->validate([
             'username' => 'required|string|regex:/^[a-zA-Z0-9_]+$/|min:3|max:20|unique:profiles,username',
             'firstname' => 'required|string|regex:/^[a-zA-ZÀ-ÖØ-öø-ÿ\'-]+$/|max:255',
@@ -120,10 +122,13 @@ class ProfileController extends Controller
         DB::beginTransaction();
         try {
             $profile->save();
-            // $request->user()->interests()->attach($request->interests);
+            $request->user()->interests()->attach($request->interests);
 
             DB::commit(); // If everything succeeds, commit the transaction
-            return new ProfileResource($profile->user);
+            return response()->json([
+                'message' => 'Profile created successfully',
+                'data' => new ProfileResource($profile->user)
+            ]);
         } catch (\Exception $e) {
             DB::rollBack(); // If anything fails, rollback all changes
             return response()->json(['message' => 'An unexpected error occurred. Please try again'], 400); // Optionally, handle the error
