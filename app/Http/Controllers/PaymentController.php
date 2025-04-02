@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
+use Stripe\StripeClient;
 
 class PaymentController extends Controller
 {
-    public function createOrder(Request $request)
+    public function createPaypalOrder(Request $request)
     {
         $provider = new PayPalClient();
         $accessToken = $provider->getAccessToken()['access_token'];
@@ -44,8 +45,8 @@ class PaymentController extends Controller
                             "landing_page" => "LOGIN",
                             "shipping_preference" => "GET_FROM_FILE",
                             "user_action" => "PAY_NOW",
-                            'return_url' => route('payment.success'),
-                            'cancel_url' => route('payment.cancel'),
+                            'return_url' => route('payment.paypal.success'),
+                            'cancel_url' => route('payment.paypal.cancel'),
                         ]
                     ]
                 ],
@@ -67,7 +68,7 @@ class PaymentController extends Controller
         // return response()->json($response->json());
     }
 
-    public function success(Request $request)
+    public function paypalPaymentSuccess(Request $request)
     {
         $orderId = $request->token;
         $provider = new PayPalClient();
@@ -79,17 +80,17 @@ class PaymentController extends Controller
             ])
             ->post("https://api-m.sandbox.paypal.com/v2/checkout/orders/$orderId/capture", null);
 
-        Log::info("Paypal payment by $request->user()->profile->username", $response->json());
+        Log::info("Paypal payment by {$request->user()->profile->username}", $response->json());
         return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
     }
 
-    public function cancel(Request $request)
+    public function paypalPaymentCancel(Request $request)
     {
         Transaction::where('reference', $request->token)->delete();
         return response()->json($request->all());
     }
 
-    public function payouts()
+    public function paypalPayouts()
     {
         $provider = new PayPalClient();
         $accessToken = $provider->getAccessToken()['access_token'];
@@ -118,4 +119,57 @@ class PaymentController extends Controller
             ]);
         return $response->json();
     }
+
+    public function createStripePayment(Request $request)
+    {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+
+         // Create a Stripe Checkout session
+         $response = $stripe->checkout->sessions->create([
+            'client_reference_id' => uniqid(more_entropy: true),
+            // 'payment_method_types' => ['card'],
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'gbp',
+                    'product_data' => [
+                        'name' => 'Verification Badge',
+                        'description' => 'Get a Vibemate verification badge'
+                    ],
+                    'unit_amount' => 200*100, // Amount in cents (20.00 GBP)
+                ],
+                'quantity' => 1,
+            ]],
+            'mode' => 'payment',
+            'success_url' => route('payment.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('payment.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
+        ]);
+
+        Transaction::create([
+            'user_id' => $request->user()->id,
+            'reference' => $response->client_reference_id,
+            'amount' => 100.00,
+            'status' => 'PENDING',
+            'type' => 'debit',
+            'title' => 'Verification Badge',
+            'description' => 'Verification Badge',
+        ]);
+        return response()->json($response);
+    }
+
+    public function stripePaymentSuccess(Request $request)
+    {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $session = $stripe->checkout->sessions->retrieve($request->session_id);
+        approvePayment($session->client_reference_id);
+        return $session;
+    }
+
+    public function stripePaymentCancel(Request $request)
+    {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $session = $stripe->checkout->sessions->retrieve($request->session_id);
+        Transaction::where('reference', $session->client_reference_id)->delete();
+        return $session;
+    }
+
 }

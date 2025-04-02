@@ -99,6 +99,7 @@ class ProfileController extends Controller
             'phone' => 'required|string',
             'here_for' => 'required|array',
             'interests' => 'required|array',
+            'interests.*' => 'integer',
             'image' => 'required|image',
             'city' => 'required|string',
             'country' => 'required|string'
@@ -119,10 +120,10 @@ class ProfileController extends Controller
         DB::beginTransaction();
         try {
             $profile->save();
-            $request->user()->interests()->attach($request->interests);
+            // $request->user()->interests()->attach($request->interests);
 
             DB::commit(); // If everything succeeds, commit the transaction
-            return response()->json(['message' => 'Profile created'], 201);
+            return new ProfileResource($profile->user);
         } catch (\Exception $e) {
             DB::rollBack(); // If anything fails, rollback all changes
             return response()->json(['message' => 'An unexpected error occurred. Please try again'], 400); // Optionally, handle the error

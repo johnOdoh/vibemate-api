@@ -30,9 +30,11 @@ Route::prefix('auth')->group(function () {
 Route::get('subscription/success', [SubscriptionController::class, 'success']);
 Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
 
-Route::get('payment/success', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
-Route::post('payment/payouts', [PaymentController::class, 'payouts']);
+Route::get('payment/paypal/success', [PaymentController::class, 'paypalPaymentSuccess'])->name('payment.paypal.success');
+Route::get('payment/paypal/cancel', [PaymentController::class, 'paypalPaymentCancel'])->name('payment.paypal.cancel');
+Route::get('payment/stripe/success', [PaymentController::class, 'stripePaymentSuccess'])->name('payment.stripe.success');
+Route::get('payment/stripe/cancel', [PaymentController::class, 'stripePaymentCancel'])->name('payment.stripe.cancel');
+Route::post('payment/paypal/payouts', [PaymentController::class, 'paypal.payouts']);
 
 Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
 Route::post('sightengine/video-moderation/callback', function (Request $request) {
@@ -49,7 +51,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
-    Route::post('payment/create-order', [PaymentController::class, 'createOrder']);
+    Route::post('payment/paypal/create-payment', [PaymentController::class, 'createPaypalPayment']);
+    Route::post('payment/stripe/create-payment', [PaymentController::class, 'createStripePayment']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::get('post/search/{query}', [PostController::class, 'searchArtist']);

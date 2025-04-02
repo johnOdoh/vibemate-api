@@ -32,9 +32,8 @@ class AuthController extends Controller
         if (!$data['isSocial']) {
             $token = random_int(100000, 999999);
             Mail::to($data['email'])->send(new VerifyEmail($token));
-        }else {
-            $verified = true;
         }
+        else $verified = true;
         $user = new User([
             // 'username' => $data['username'],
             // 'firstname' => $data['firstname'],
@@ -47,9 +46,13 @@ class AuthController extends Controller
         $user->save();
         if (!empty($request->referrer)) {
             $referrer = Profile::firstWhere('username', strtolower(trim($request->referrer)));
-            if($referrer) $referrer->user->referrals->attach($user->id);
+            if ($referrer) $referrer->user->referrals->attach($user->id);
         }
-        return response()->json(['message' => 'User created successfully'], 201);
+        if (!$data['isSocial']) return response()->json(['message' => 'User created successfully'], 201);
+        else {
+            $token =  $user->createToken("android device")->plainTextToken;
+            return response()->json(['message' => 'User created successfully', 'token' => $token], 201);
+        }
     }
 
     public function login(Request $request)
