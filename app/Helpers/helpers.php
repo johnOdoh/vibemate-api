@@ -70,8 +70,12 @@ function moderateImage($path)
         'api_user' => env('SIGHT_ENGINE_API_USER'),
         'api_secret' => env('SIGHT_ENGINE_API_KEY'),
     ]);
-    if ($response->json()['summary']['action'] === 'accept') return true;
-    else return false;
+    // return $response->json();
+    if ($response->json()['summary']['action'] === 'accept') return ['status' => true];
+    else return [
+        'status' => false,
+        'reason' => $response->json()['summary']['reject_reason'][0]['text']
+    ];
 }
 
 function moderateVideo($path)

@@ -1,7 +1,8 @@
 <?php
 
-use App\Enums\SubscriptionStatus;
+use App\Models\Transaction;
 use App\Models\Subscription;
+use App\Enums\SubscriptionStatus;
 use Illuminate\Support\Facades\Log;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
@@ -94,5 +95,20 @@ function expireSubscription($subscription_id)
     $subscription->user->push();
     // return response()->json($response);
     Log::info(SubscriptionStatus::Expired->label(), ['id' => $subscription_id]);
+    return true;
+}
+
+function approvePayment($transaction_ref)
+{
+    $transaction = Transaction::where('reference', $transaction_ref)->first();
+    if (!$transaction) {
+        Log::error('Transaction not found', ['reference' => $transaction_ref]);
+        return false;
+    }
+    if ($transaction->title === 'Verification Badge') {
+        $transaction->user->has_badge = true;
+        $transaction->status = 'APPROVED';
+        $transaction->push();
+    }
     return true;
 }

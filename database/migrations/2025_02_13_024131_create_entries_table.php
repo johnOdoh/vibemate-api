@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('media_id')->nullable()->unique();
             $table->string('is_image')->default(true);
             $table->string('status')->default('approved');
+            $table->string('remark')->nullable();
             $table->unsignedbigInteger('no_of_engagements')->default(0);
             $table->timestamps();
 

@@ -52,7 +52,12 @@ class EntryController extends Controller
         if(str_starts_with($file->getMimeType(), 'image/')) {
             $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
             $path = $file->storeAs('entries/images', $fileName, 'public');
-            if(!moderateImage($path)) $data['status'] = 'pending';
+            // return moderateImage($path);
+            $moderationResult = moderateImage($path);
+            if(!$moderationResult['status']) {
+                $data['status'] = 'pending';
+                $data['remark'] = $moderationResult['reason'];
+            }
         }
         else {
             $fileName = microtime(true).'.'.$file->getClientOriginalExtension();

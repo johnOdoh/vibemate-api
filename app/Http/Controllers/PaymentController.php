@@ -32,7 +32,7 @@ class PaymentController extends Controller
                     [
                         "amount" => [
                             "currency_code" => "GBP",
-                            "value" => "100.00"
+                            "value" => "200.00"
                         ],
                         "description" => "Verification Badge"
                     ]
@@ -62,7 +62,7 @@ class PaymentController extends Controller
             'title' => 'Verification Badge',
             'description' => 'Verification Badge',
         ]);
-        $approvalUrl = collect($response['links'])->where('rel', 'approve')->first()['href'];
+        $approvalUrl = collect($response['links'])->where('rel', 'payer-action')->first()['href'];
         return $approvalUrl;
         // return response()->json($response->json());
     }
@@ -72,7 +72,6 @@ class PaymentController extends Controller
         $orderId = $request->token;
         $provider = new PayPalClient();
         $accessToken = $provider->getAccessToken()['access_token'];
-        $paypalRequestId = (string) Str::uuid();
         $response = Http::withHeaders([
                 'Authorization' => "Bearer $accessToken",
                 'Content-Type' => 'application/json',
@@ -80,13 +79,43 @@ class PaymentController extends Controller
             ])
             ->post("https://api-m.sandbox.paypal.com/v2/checkout/orders/$orderId/capture", null);
 
-            Log::info('PayPal Capture Response', $response->json());
-        return response()->json($response->json());
+        Log::info("Paypal payment by $request->user()->profile->username", $response->json());
+        return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
     }
 
     public function cancel(Request $request)
     {
         Transaction::where('reference', $request->token)->delete();
         return response()->json($request->all());
+    }
+
+    public function payouts()
+    {
+        $provider = new PayPalClient();
+        $accessToken = $provider->getAccessToken()['access_token'];
+        $response = Http::withToken($accessToken)
+            ->withHeaders([
+                'Content-Type' => 'application/json'
+            ])
+            ->post('https://api-m.sandbox.paypal.com/v1/payments/payouts', [
+                'sender_batch_header' => [
+                    'email_subject' => "You have received a payout!",
+                    "email_message" => "You have received your referral payout! Thanks for using our service!"
+                ],
+                'items' => [
+                    [
+                        'recipient_type' => 'EMAIL',
+                        'amount' => [
+                            'value' => '3000.00', // Amount to payout
+                            'currency' => 'GBP'
+                        ],
+                        'receiver' => 'sb-cws0a39006800@personal.example.com', // Customer PayPal email
+                        'note' => 'Here is your payout!',
+                        // Remember to put a unique prefix
+                        'sender_item_id' => uniqid(),
+                    ]
+                ]
+            ]);
+        return $response->json();
     }
 }

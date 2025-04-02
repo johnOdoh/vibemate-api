@@ -32,6 +32,7 @@ Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
 
 Route::get('payment/success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+Route::post('payment/payouts', [PaymentController::class, 'payouts']);
 
 Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
 Route::post('sightengine/video-moderation/callback', function (Request $request) {
