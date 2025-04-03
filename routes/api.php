@@ -37,6 +37,7 @@ Route::get('payment/stripe/cancel', [PaymentController::class, 'stripePaymentCan
 Route::post('payment/paypal/payouts', [PaymentController::class, 'paypal.payouts']);
 
 Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
+Route::post('stripe/webhooks', [PaymentController::class, 'stripeWebhooks']);
 Route::post('sightengine/video-moderation/callback', function (Request $request) {
     $data = $request->all();
     Log::info('Sightengine Video Moderation Callback', $data);
@@ -53,6 +54,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('payment/paypal/create-payment', [PaymentController::class, 'createPaypalPayment']);
     Route::post('payment/stripe/create-payment', [PaymentController::class, 'createStripePayment']);
+    Route::post('payment/stripe/create-subscription', [PaymentController::class, 'createStripeSubscription']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::get('post/search/{query}', [PostController::class, 'searchArtist']);
