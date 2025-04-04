@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Profile;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\DB;
+use App\Http\Resources\UserResource;
+use App\Http\Resources\LoginResource;
 use App\Http\Resources\ProfileResource;
 use Illuminate\Support\Facades\Validator;
 
@@ -16,7 +20,7 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        return new ProfileResource(request()->user());
+        return new ProfileResource(request()->user()->profile);
     }
 
     /**
@@ -89,7 +93,7 @@ class ProfileController extends Controller
     public function store(Request $request)
     {
         if($request->user()->profile()->exists()) {
-            return response()->json(['message' => 'Profile already exists']);
+            return new ProfileResource($request->user()->profile);
         }
         $data = $request->validate([
             'username' => 'required|string|regex:/^[a-zA-Z0-9_]+$/|min:3|max:20|unique:profiles,username',
@@ -127,11 +131,12 @@ class ProfileController extends Controller
             DB::commit(); // If everything succeeds, commit the transaction
             return response()->json([
                 'message' => 'Profile created successfully',
-                'data' => new ProfileResource($profile->user)
+                'profile' => new ProfileResource($profile)
             ]);
         } catch (\Exception $e) {
             DB::rollBack(); // If anything fails, rollback all changes
-            return response()->json(['message' => 'An unexpected error occurred. Please try again'], 400); // Optionally, handle the error
+            return $e;
+            // return response()->json(['message' => 'An unexpected error occurred. Please try again'], 400); // Optionally, handle the error
         }
     }
 

@@ -175,39 +175,4 @@ class PaymentController extends Controller
         return $session;
     }
 
-    public function createStripeSubscription(Request $request)
-    {
-        $stripe = new StripeClient(env('STRIPE_SECRET'));
-        $user = $request->user();
-
-        // Check if user has a Stripe customer ID, else create one
-        $customer = $stripe->customers->create([
-            'email' => $user->email,
-            'name' => $user->profile->username,
-            'metadata' => ['user_id' => $user->id]
-        ]);
-
-        // Create a Stripe Checkout Session for subscription
-        $response = $stripe->checkout->sessions->create([
-            'payment_method_types' => ['card'],
-            'mode' => 'subscription',
-            'customer' => $customer->id, // Link to the user
-            'line_items' => [[
-                'price' => 'price_1R8l3kRaYsRYZa7ehpearIPJ', // Use the correct Stripe Price ID
-                'quantity' => 1,
-            ]],
-            'success_url' => route('payment.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('payment.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
-        ]);
-
-        return response()->json($response);
-    }
-
-    public function stripeWebhooks(Request $request)
-    {
-        $payload = $request->all();
-        Log::info('Stripe webhook', $payload);
-        return response();
-    }
-
 }

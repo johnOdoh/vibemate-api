@@ -8,7 +8,7 @@ use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 function activateSubscription($subscription_id)
 {
-    $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
+    $subscription = Subscription::where('subscription_id', $subscription_id)->first();
     if (!$subscription) {
         Log::error('Subscription not found', ['id' => $subscription_id]);
         return false;
@@ -28,7 +28,7 @@ function suspendSubscription($subscription_id)
     $provider = new PayPalClient();
     $provider->getAccessToken();
     $provider->cancelSubscription($subscription_id, 'Cancelled by user');
-    $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
+    $subscription = Subscription::where('subscription_id', $subscription_id)->first();
     if (!$subscription) {
         Log::error('Subscription not found', ['id' => $subscription_id]);
         return false;
@@ -46,7 +46,7 @@ function reactivateSubscription($subscription_id)
     $provider = new PayPalClient();
     $provider->getAccessToken();
     $provider->cancelSubscription($subscription_id, 'Cancelled by user');
-    $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
+    $subscription = Subscription::where('subscription_id', $subscription_id)->first();
     if (!$subscription) {
         Log::error('Subscription not found', ['id' => $subscription_id]);
         return false;
@@ -61,10 +61,7 @@ function reactivateSubscription($subscription_id)
 
 function cancelSubscription($subscription_id)
 {
-    $provider = new PayPalClient();
-    $provider->getAccessToken();
-    $provider->cancelSubscription($subscription_id, 'Cancelled by user');
-    $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
+    $subscription = Subscription::where('subscription_id', $subscription_id)->first();
     if (!$subscription) {
         Log::error('Subscription not found', ['id' => $subscription_id]);
         return false;
@@ -82,7 +79,7 @@ function expireSubscription($subscription_id)
     $provider = new PayPalClient();
     $provider->getAccessToken();
     $provider->cancelSubscription($subscription_id, 'Cancelled by user');
-    $subscription = Subscription::where('paypal_subscription_id', $subscription_id)->first();
+    $subscription = Subscription::where('subscription_id', $subscription_id)->first();
     if (!$subscription) {
         Log::error('Subscription not found', ['id' => $subscription_id]);
         return false;

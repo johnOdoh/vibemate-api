@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LoginResource;
+use App\Http\Resources\UserResource;
 use App\Mail\ResetToken;
 use App\Mail\VerifyEmail;
 use App\Models\Profile;
 use App\Models\User;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -51,7 +53,11 @@ class AuthController extends Controller
         if (!$data['isSocial']) return response()->json(['message' => 'User created successfully'], 201);
         else {
             $token =  $user->createToken("android device")->plainTextToken;
-            return response()->json(['message' => 'User created successfully', 'token' => $token], 201);
+            return response()->json([
+                'message' => 'User created successfully',
+                'user' => new UserResource($user),
+                'token' => $token,
+            ], 201);
         }
     }
 
@@ -106,7 +112,11 @@ class AuthController extends Controller
             $user->email_token = null;
             $user->save();
             $token =  $user->createToken("android device")->plainTextToken;
-            return response()->json(['message' => 'Email verification successful', 'token' => $token], 200);
+            return response()->json([
+                'message' => 'Email Verification Successful',
+                'user' => new UserResource($user),
+                'token' => $token,
+            ], 201);
         }
         else return response()->json(['message' => 'Invalid token'], 403); // entered wrong token
     }

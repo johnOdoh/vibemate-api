@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Plan;
+use Stripe\StripeClient;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use App\Enums\SubscriptionStatus;
@@ -21,7 +22,7 @@ class SubscriptionController extends Controller
         return response()->json($response);
     }
 
-    public function createSubscription(Request $request, Plan $plan) {
+    public function createPaypalSubscription(Request $request, Plan $plan) {
         $provider = new PayPalClient();
         $provider->getAccessToken();
         $response = $provider->addPaymentFailureThreshold(1)
@@ -33,7 +34,7 @@ class SubscriptionController extends Controller
         Subscription::create([
             'user_id' => $request->user()->id,
             'plan_id' => $plan->id,
-            'paypal_subscription_id' => $response['id'],
+            'subscription_id' => $response['id'],
             'start' => now(),
             'end' => now()->addDays($plan->interval)
         ]);
@@ -41,73 +42,106 @@ class SubscriptionController extends Controller
         return response()->json($response);
     }
 
-    public function cancelSubscription($subscription_id) {
+    public function cancelPaypalSubscription($subscription_id) {
+        $provider = new PayPalClient();
+        $provider->getAccessToken();
+        $provider->cancelSubscription($subscription_id, 'Cancelled by user');
         if (cancelSubscription($subscription_id))
             return response()->json(['message' => 'Subscription canceled']);
         else
             return response()->json(['message' => 'Subscription not found'], 404);
     }
 
-    public function suspendSubscription($subscription_id) {
+    public function suspendPaypalSubscription($subscription_id) {
         if (suspendSubscription($subscription_id))
             return response()->json(['message' => 'Subscription suspended']);
         else
             return response()->json(['message' => 'Subscription not found'], 404);
     }
 
-    public function reactivateSubscription($subscription_id) {
+    public function reactivatePaypalSubscription($subscription_id) {
         if (reactivateSubscription($subscription_id))
             return response()->json(['message' => 'Subscription reactivated']);
         else
             return response()->json(['message' => 'Subscription not found'], 404);
     }
 
-    public function success(Request $request) {
-        Log::info('PayPal Successful', $request->all());
-        $subscription = Subscription::where('paypal_subscription_id', $request->subscription_id)->first();
+    public function paypalSubscriptionSuccess(Request $request) {
+        $subscription = Subscription::where('subscription_id', $request->subscription_id)->first();
         $subscription->status = SubscriptionStatus::Active->value;
         $subscription->user->is_subscribed = true;
         $subscription->push();
         return response()->json(['message' => 'Subscription activated']);
     }
 
-    public function cancel(Request $request) {
+    public function paypalSubscriptionCancel(Request $request) {
         Log::info('PayPal Cancelled', $request->all());
-        Subscription::where('paypal_subscription_id', $request->subscription_id)->delete();
+        Subscription::where('subscription_id', $request->subscription_id)->delete();
         return response()->json(['message' => 'Subscription cancelled']);
     }
 
-    public function paypalSubscriptionWebhook(Request $request) {
-        $payload = $request->all();
-        $subscription_id = $payload['resource']['id'];
-        switch ($payload['event_type']) {
-            case 'BILLING.SUBSCRIPTION.CANCELLED':
-                cancelSubscription($subscription_id);
-                break;
+    public function createStripeSubscription(Request $request, Plan $plan)
+    {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $user = $request->user();
 
-            case 'BILLING.SUBSCRIPTION.ACTIVATED':
-                IF($payload['resource']['status_change_note'])
-                    reactivateSubscription($subscription_id);
-                break;
+        // Check if user has a Stripe customer ID, else create one
+        $customer = $stripe->customers->create([
+            'email' => $user->email,
+            'name' => $user->profile->username,
+            'metadata' => ['user_id' => $user->id]
+        ]);
 
-            case 'BILLING.SUBSCRIPTION.SUSPENDED':
-                suspendSubscription($subscription_id);
-                break;
+        // Create a Stripe Checkout Session for subscription
+        $response = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'mode' => 'subscription',
+            'customer' => $customer->id, // Link to the user
+            'line_items' => [[
+                'price' => 'price_1R8l3kRaYsRYZa7ehpearIPJ', // Use the correct Stripe Price ID
+                'quantity' => 1,
+            ]],
+            'client_reference_id' => uniqid(more_entropy: true),
+            'success_url' => route('payment.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('payment.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
+        ]);
 
-            case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED':
-                expireSubscription($subscription_id);
-                break;
+        $request->user()->subscription ? $request->user()->subscription->delete() : null;
+        Subscription::create([
+            'user_id' => $request->user()->id,
+            'plan_id' => $plan->id,
+            'subscription_id' => $response['client_reference_id'],
+            'start' => now(),
+            'end' => now()->addDays($plan->interval)
+        ]);
+        return response()->json($response);
+    }
 
-            case 'PAYMENT.SALE.COMPLETED':
-                if ($payload['resource']['billing_agreement_id'])
-                    activateSubscription($payload['resource']['billing_agreement_id']);
-                break;
+    public function stripeSubscriptionSuccess(Request $request) {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $session = $stripe->checkout->sessions->retrieve($request->session_id);
+        $subscription = Subscription::where('subscription_id', $session->client_reference_id)->first();
+        $subscription->status = SubscriptionStatus::Active->value;
+        $subscription->user->is_subscribed = true;
+        $subscription->subscription_id = $session->subscription;
+        $subscription->push();
+        return response()->json(['message' => 'Subscription activated']);
+    }
 
-            case 'PAYMENT.CAPTURE.COMPLETED';
-                $id = $payload['resource']['supplementary_data']['related_ids']['order_id'];
-                approvePayment($id);
-                break;
-        }
-        return response()->noContent();
+    public function stripeSubscriptionCancel(Request $request) {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $session = $stripe->checkout->sessions->retrieve($request->session_id);
+        Subscription::where('subscription_id', $session->client_reference_id)->delete();
+        return response()->json(['message' => 'Subscription cancelled']);
+    }
+
+    public function suspendStripeSubscription($subscription_id) {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $stripe->subscriptions->update(
+            $subscription_id,
+            ['cancel_at_period_end' => true]
+        );
+
+        return response()->json(['message' => 'Auto renewals disabled']);
     }
 }

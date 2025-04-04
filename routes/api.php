@@ -18,6 +18,7 @@ use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
+use App\Http\Controllers\WebhookController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -27,8 +28,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/send-reset-token', [AuthController::class, 'sendPasswordResetToken']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
-Route::get('subscription/success', [SubscriptionController::class, 'success']);
-Route::get('subscription/cancel', [SubscriptionController::class, 'cancel']);
+Route::get('subscription/paypal/success', [SubscriptionController::class, 'paypalSubscriptionSuccess']);
+Route::get('subscription/paypal/cancel', [SubscriptionController::class, 'paypalSubscriptionCancel']);
 
 Route::get('payment/paypal/success', [PaymentController::class, 'paypalPaymentSuccess'])->name('payment.paypal.success');
 Route::get('payment/paypal/cancel', [PaymentController::class, 'paypalPaymentCancel'])->name('payment.paypal.cancel');
@@ -36,8 +37,8 @@ Route::get('payment/stripe/success', [PaymentController::class, 'stripePaymentSu
 Route::get('payment/stripe/cancel', [PaymentController::class, 'stripePaymentCancel'])->name('payment.stripe.cancel');
 Route::post('payment/paypal/payouts', [PaymentController::class, 'paypal.payouts']);
 
-Route::post('paypal/webhook/subscription', [SubscriptionController::class, 'paypalSubscriptionWebhook'])->middleware(VerifyPaypalWebhook::class);
-Route::post('stripe/webhooks', [PaymentController::class, 'stripeWebhooks']);
+Route::post('paypal/webhooks', [WebhookController::class, 'paypalWebhooks'])->middleware(VerifyPaypalWebhook::class);
+Route::post('stripe/webhooks', [WebhookController::class, 'stripeWebhooks']);
 Route::post('sightengine/video-moderation/callback', function (Request $request) {
     $data = $request->all();
     Log::info('Sightengine Video Moderation Callback', $data);
@@ -52,9 +53,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
-    Route::post('payment/paypal/create-payment', [PaymentController::class, 'createPaypalPayment']);
-    Route::post('payment/stripe/create-payment', [PaymentController::class, 'createStripePayment']);
-    Route::post('payment/stripe/create-subscription', [PaymentController::class, 'createStripeSubscription']);
+    Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
+    Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::get('post/search/{query}', [PostController::class, 'searchArtist']);
@@ -74,10 +74,12 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
 
     Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
-    Route::post('subscription/create-subscription/{plan}', [SubscriptionController::class, 'createSubscription']);
-    Route::patch('subscription/cancel-subscription/{subscription_id}', [SubscriptionController::class, 'cancelSubscription']);
-    Route::patch('subscription/reactivate-subscription/{subscription_id}', [SubscriptionController::class, 'reactivateSubscription']);
-    Route::patch('subscription/suspend-subscription/{subscription_id}', [SubscriptionController::class, 'suspendSubscription']);
+    Route::post('subscription/paypal/create/{plan}', [SubscriptionController::class, 'createPaypalSubscription']);
+    Route::patch('subscription/paypal/cancel/{subscription_id}', [SubscriptionController::class, 'cancelPaypalSubscription']);
+    Route::patch('subscription/paypal/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivatePaypalSubscription']);
+    Route::patch('subscription/paypal/suspend/{subscription_id}', [SubscriptionController::class, 'suspendPaypalSubscription']);
+
+    Route::post('subscription/stripe/create', [SubscriptionController::class, 'createStripeSubscription']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);
