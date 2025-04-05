@@ -19,59 +19,40 @@ function activateSubscription($subscription_id)
     $subscription->status = SubscriptionStatus::Active->value;
     $subscription->user->is_subscribed = true;
     $subscription->push();
-    Log::info('Subscription activated', ['id' => $subscription_id]);
     return true;
 }
 
 function suspendSubscription($subscription_id)
 {
-    $provider = new PayPalClient();
-    $provider->getAccessToken();
-    $provider->cancelSubscription($subscription_id, 'Cancelled by user');
     $subscription = Subscription::where('subscription_id', $subscription_id)->first();
-    if (!$subscription) {
-        Log::error('Subscription not found', ['id' => $subscription_id]);
-        return false;
-    }
+    if (!$subscription) return response()->json(['message' => 'Subscription not found'], 404);
     $subscription->update([
         'status' => SubscriptionStatus::Suspended->value,
         'auto_renew' => false
     ]);
-    Log::info('Subscription suspended by user', ['id' => $subscription_id]);
-    return true;
+    return response()->json(['message' => 'Auto renewal disabled']);
 }
 
 function reactivateSubscription($subscription_id)
 {
-    $provider = new PayPalClient();
-    $provider->getAccessToken();
-    $provider->cancelSubscription($subscription_id, 'Cancelled by user');
     $subscription = Subscription::where('subscription_id', $subscription_id)->first();
-    if (!$subscription) {
-        Log::error('Subscription not found', ['id' => $subscription_id]);
-        return false;
-    }
+    if (!$subscription) return response()->json(['message' => 'Subscription not found'], 404);
     $subscription->update([
         'status' => SubscriptionStatus::Active->value,
         'auto_renew' => true
     ]);
-    Log::info('Subscription reactivated by user', ['id' => $subscription_id]);
-    return true;
+    return response()->json(['message' => 'Auto renewal enabled']);
 }
 
 function cancelSubscription($subscription_id)
 {
     $subscription = Subscription::where('subscription_id', $subscription_id)->first();
-    if (!$subscription) {
-        Log::error('Subscription not found', ['id' => $subscription_id]);
-        return false;
-    }
+    if (!$subscription) return response()->json(['message' => 'Subscription not found'], 404);
     $subscription->update([
         'status' => SubscriptionStatus::Cancelled->value,
         'auto_renew' => false
     ]);
-    Log::info('Subscription cancelled by user', ['id' => $subscription_id]);
-    return true;
+    return response()->json(['message' => 'Auto renewal disabled']);
 }
 
 function expireSubscription($subscription_id)
@@ -80,32 +61,24 @@ function expireSubscription($subscription_id)
     $provider->getAccessToken();
     $provider->cancelSubscription($subscription_id, 'Cancelled by user');
     $subscription = Subscription::where('subscription_id', $subscription_id)->first();
-    if (!$subscription) {
-        Log::error('Subscription not found', ['id' => $subscription_id]);
-        return false;
-    }
+    if (!$subscription) return false;
     $subscription->update([
         'status' => SubscriptionStatus::Expired->value,
         'auto_renew' => false
     ]);
     $subscription->user->is_subscribed = false;
     $subscription->user->push();
-    // return response()->json($response);
-    Log::info(SubscriptionStatus::Expired->label(), ['id' => $subscription_id]);
     return true;
 }
 
 function approvePayment($transaction_ref)
 {
     $transaction = Transaction::where('reference', $transaction_ref)->first();
-    if (!$transaction) {
-        Log::error('Transaction not found', ['reference' => $transaction_ref]);
-        return false;
-    }
+    if (!$transaction) return response()->json(['message' => 'Transaction not found'], 404);
     if ($transaction->title === 'Verification Badge') {
         $transaction->user->has_badge = true;
         $transaction->status = 'APPROVED';
         $transaction->push();
     }
-    return true;
+    return response()->json(['message' => 'Payment approved']);
 }

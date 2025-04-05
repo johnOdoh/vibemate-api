@@ -7,12 +7,13 @@ use Stripe\StripeClient;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use App\Enums\SubscriptionStatus;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class SubscriptionController extends Controller
 {
-    public function createPlan() {
+    public function createPlan()
+    {
         $provider = new PayPalClient();
         $provider->getAccessToken();
         $response = $provider->addProduct('Demo Product', 'Demo Product', 'SERVICE', 'SOFTWARE')
@@ -22,19 +23,21 @@ class SubscriptionController extends Controller
         return response()->json($response);
     }
 
-    public function createPaypalSubscription(Request $request, Plan $plan) {
+    public function createPaypalSubscription(Request $request, Plan $plan)
+    {
         $provider = new PayPalClient();
         $provider->getAccessToken();
         $response = $provider->addPaymentFailureThreshold(1)
                     ->addProductById($plan->paypal_product_id)
                     ->addBillingPlanById($plan->paypal_plan_id)
-                    ->setReturnAndCancelUrl(config('app.url').'/subscription/success', config('app.url').'/subscription/cancel')
+                    ->setReturnAndCancelUrl(route('subscription.paypal.success'), route('subscription.paypal.cancel'))
                     ->setupSubscription($request->user()->profile->username, $request->user()->email, now()->addSeconds(60));
         $request->user()->subscription ? $request->user()->subscription->delete() : null;
         Subscription::create([
             'user_id' => $request->user()->id,
             'plan_id' => $plan->id,
             'subscription_id' => $response['id'],
+            'mode' => 'paypal',
             'start' => now(),
             'end' => now()->addDays($plan->interval)
         ]);
@@ -42,31 +45,33 @@ class SubscriptionController extends Controller
         return response()->json($response);
     }
 
-    public function cancelPaypalSubscription($subscription_id) {
+    public function cancelPaypalSubscription($subscription_id)
+    {
         $provider = new PayPalClient();
         $provider->getAccessToken();
         $provider->cancelSubscription($subscription_id, 'Cancelled by user');
-        if (cancelSubscription($subscription_id))
-            return response()->json(['message' => 'Subscription canceled']);
-        else
-            return response()->json(['message' => 'Subscription not found'], 404);
+        return cancelSubscription($subscription_id);
     }
 
-    public function suspendPaypalSubscription($subscription_id) {
-        if (suspendSubscription($subscription_id))
-            return response()->json(['message' => 'Subscription suspended']);
-        else
-            return response()->json(['message' => 'Subscription not found'], 404);
+    public function suspendPaypalSubscription($subscription_id)
+    {
+        $provider = new PayPalClient();
+        $provider->getAccessToken();
+        $provider->suspendSubscription($subscription_id, 'Suspended by user');
+        return suspendSubscription($subscription_id);
+
     }
 
-    public function reactivatePaypalSubscription($subscription_id) {
-        if (reactivateSubscription($subscription_id))
-            return response()->json(['message' => 'Subscription reactivated']);
-        else
-            return response()->json(['message' => 'Subscription not found'], 404);
+    public function reactivatePaypalSubscription($subscription_id)
+    {
+        $provider = new PayPalClient();
+        $provider->getAccessToken();
+        $provider->activateSubscription($subscription_id, 'Reactivated by user');
+        return reactivateSubscription($subscription_id);
     }
 
-    public function paypalSubscriptionSuccess(Request $request) {
+    public function paypalSubscriptionSuccess(Request $request)
+    {
         $subscription = Subscription::where('subscription_id', $request->subscription_id)->first();
         $subscription->status = SubscriptionStatus::Active->value;
         $subscription->user->is_subscribed = true;
@@ -74,8 +79,8 @@ class SubscriptionController extends Controller
         return response()->json(['message' => 'Subscription activated']);
     }
 
-    public function paypalSubscriptionCancel(Request $request) {
-        Log::info('PayPal Cancelled', $request->all());
+    public function paypalSubscriptionCancel(Request $request)
+    {
         Subscription::where('subscription_id', $request->subscription_id)->delete();
         return response()->json(['message' => 'Subscription cancelled']);
     }
@@ -98,12 +103,12 @@ class SubscriptionController extends Controller
             'mode' => 'subscription',
             'customer' => $customer->id, // Link to the user
             'line_items' => [[
-                'price' => 'price_1R8l3kRaYsRYZa7ehpearIPJ', // Use the correct Stripe Price ID
+                'price' => $plan->stripe_price_id, // Use the correct Stripe Price ID
                 'quantity' => 1,
             ]],
             'client_reference_id' => uniqid(more_entropy: true),
-            'success_url' => route('payment.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('payment.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => route('subscription.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('subscription.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
         ]);
 
         $request->user()->subscription ? $request->user()->subscription->delete() : null;
@@ -111,13 +116,15 @@ class SubscriptionController extends Controller
             'user_id' => $request->user()->id,
             'plan_id' => $plan->id,
             'subscription_id' => $response['client_reference_id'],
+            'mode' => 'stripe',
             'start' => now(),
             'end' => now()->addDays($plan->interval)
         ]);
         return response()->json($response);
     }
 
-    public function stripeSubscriptionSuccess(Request $request) {
+    public function stripeSubscriptionSuccess(Request $request)
+    {
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);
         $subscription = Subscription::where('subscription_id', $session->client_reference_id)->first();
@@ -128,20 +135,78 @@ class SubscriptionController extends Controller
         return response()->json(['message' => 'Subscription activated']);
     }
 
-    public function stripeSubscriptionCancel(Request $request) {
+    public function stripeSubscriptionCancel(Request $request)
+    {
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);
         Subscription::where('subscription_id', $session->client_reference_id)->delete();
         return response()->json(['message' => 'Subscription cancelled']);
     }
 
-    public function suspendStripeSubscription($subscription_id) {
+    public function suspendStripeSubscription($subscription_id)
+    {
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $stripe->subscriptions->update(
             $subscription_id,
             ['cancel_at_period_end' => true]
         );
+        return suspendSubscription($subscription_id);
+    }
 
-        return response()->json(['message' => 'Auto renewals disabled']);
+    public function reactivateStripeSubscription($subscription_id)
+    {
+        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $stripe->subscriptions->update(
+            $subscription_id,
+            ['cancel_at_period_end' => false]
+        );
+        return reactivateSubscription($subscription_id);
+    }
+
+    public function createPaystackSubscription(Request $request, Plan $plan)
+    {
+        Http::withToken(env('PAYSTACK_SECRET_KEY'))
+            ->withHeader('Content-Type', 'application/json')
+            ->post('https://api.paystack.co/customer', [
+                'email' => $request->user()->email,
+                'first_name' => $request->user()->profile->firstname,
+                'last_name' => $request->user()->profile->lastname,
+                'phone' => $request->user()->profile->phone,
+            ]);
+        // $request->user()->subscription ? $request->user()->subscription->delete() : null;
+        $response = Http::withToken(env('PAYSTACK_SECRET_KEY'))
+            ->withHeader('Content-Type', 'application/json')
+            ->post('https://api.paystack.co/transaction/initialize', [
+                'email' => $request->user()->email,
+                'amount' => $plan->price,
+                'plan' => $plan->paystack_plan_id,
+                'callback_url' => route('subscription.paystack.success')
+            ]);
+        if ($response->failed()) return response()->json(['message' => 'Failed to create subscription'], 500);
+        $transaction = $response->json();
+        Subscription::create([
+            'user_id' => $request->user()->id,
+            'plan_id' => $plan->id,
+            'subscription_id' => $transaction['data']['reference'],
+            'mode' => 'paystack',
+            'start' => now(),
+            'end' => now()->addDays($plan->interval)
+        ]);
+        return response()->json($transaction);
+    }
+
+    public function paystackSubscriptionSuccess(Request $request)
+    {
+        Subscription::where('subscription_id', $request->reference)->update([
+            'status' => SubscriptionStatus::Active->value,
+            'user->is_subscribed' => true
+        ]);
+        return response()->json(['message' => 'Subscription activated']);
+    }
+
+    public function paystackSubscriptionCancel(Request $request)
+    {
+        Subscription::where('subscription_id', $request->reference)->delete();
+        return response()->json(['message' => 'Transaction Cancelled']);
     }
 }

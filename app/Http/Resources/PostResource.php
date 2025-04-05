@@ -27,7 +27,7 @@ class PostResource extends JsonResource
             'meta_location' => $this->meta_location,
             'posted_by' => [
                 'id' => $this->user->id,
-                'username' => $this->user->username
+                'username' => $this->user->profile->username
             ],
             'created_at' => $this->created_at,
             // 'updated_at' => $this->updated_at,

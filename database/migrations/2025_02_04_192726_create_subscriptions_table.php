@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -18,8 +19,9 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->unique()->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Plan::class)->constrained()->cascadeOnDelete();
             $table->string('subscription_id')->unique();
-            $table->string('status')->default('pending');
+            $table->string('status')->default(SubscriptionStatus::Pending->value);
             $table->boolean('auto_renew')->default(true);
+            $table->string('mode');
             $table->timestamp('start');
             $table->timestamp('end');
             $table->timestamps();

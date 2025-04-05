@@ -31,11 +31,21 @@ Route::prefix('auth')->group(function () {
 Route::get('subscription/paypal/success', [SubscriptionController::class, 'paypalSubscriptionSuccess']);
 Route::get('subscription/paypal/cancel', [SubscriptionController::class, 'paypalSubscriptionCancel']);
 
+Route::get('subscription/paystack/success', [SubscriptionController::class, 'paystackSubscriptionSuccess'])->name('subscription.paystack.success');
+Route::get('subscription/paystack/cancel', [SubscriptionController::class, 'paystackSubscriptionCancel'])->name('subscription.paystack.cancel');
+
+Route::get('subscription/stripe/success', [SubscriptionController::class, 'stripeSubscriptionSuccess'])->name('subscription.stripe.success');
+Route::get('subscription/stripe/cancel', [SubscriptionController::class, 'stripeSubscriptionCancel'])->name('subscription.stripe.cancel');
+
 Route::get('payment/paypal/success', [PaymentController::class, 'paypalPaymentSuccess'])->name('payment.paypal.success');
 Route::get('payment/paypal/cancel', [PaymentController::class, 'paypalPaymentCancel'])->name('payment.paypal.cancel');
+Route::post('payment/paypal/payouts', [PaymentController::class, 'paypal.payouts']);
+
+Route::get('payment/paystack/success', [PaymentController::class, 'paystackPaymentSuccess'])->name('payment.paystack.success');
+Route::get('payment/paystack/cancel', [PaymentController::class, 'paystackPaymentCancel'])->name('payment.paystack.cancel');
+
 Route::get('payment/stripe/success', [PaymentController::class, 'stripePaymentSuccess'])->name('payment.stripe.success');
 Route::get('payment/stripe/cancel', [PaymentController::class, 'stripePaymentCancel'])->name('payment.stripe.cancel');
-Route::post('payment/paypal/payouts', [PaymentController::class, 'paypal.payouts']);
 
 Route::post('paypal/webhooks', [WebhookController::class, 'paypalWebhooks'])->middleware(VerifyPaypalWebhook::class);
 Route::post('stripe/webhooks', [WebhookController::class, 'stripeWebhooks']);
@@ -54,6 +64,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
     Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
+    Route::post('payment/paystack/create', [PaymentController::class, 'createPaystackPayment']);
     Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
@@ -79,7 +90,14 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::patch('subscription/paypal/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivatePaypalSubscription']);
     Route::patch('subscription/paypal/suspend/{subscription_id}', [SubscriptionController::class, 'suspendPaypalSubscription']);
 
-    Route::post('subscription/stripe/create', [SubscriptionController::class, 'createStripeSubscription']);
+    Route::post('subscription/paystack/create/{plan}', [SubscriptionController::class, 'createPaystackSubscription']);
+    Route::patch('subscription/paystack/cancel/{subscription_id}', [SubscriptionController::class, 'cancelPaystackSubscription']);
+    Route::patch('subscription/paystack/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivatePaystackSubscription']);
+    Route::patch('subscription/paystack/suspend/{subscription_id}', [SubscriptionController::class, 'suspendPaystackSubscription']);
+
+    Route::post('subscription/stripe/create/{plan}', [SubscriptionController::class, 'createStripeSubscription']);
+    Route::post('subscription/stripe/suspend/{subscription_id}', [SubscriptionController::class, 'suspendStripeSubscription']);
+    Route::post('subscription/stripe/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivateStripeSubscription']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);

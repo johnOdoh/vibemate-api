@@ -73,21 +73,20 @@ class PaymentController extends Controller
         $orderId = $request->token;
         $provider = new PayPalClient();
         $accessToken = $provider->getAccessToken()['access_token'];
-        $response = Http::withHeaders([
+        Http::withHeaders([
                 'Authorization' => "Bearer $accessToken",
-                'Content-Type' => 'application/json',
-                // 'PayPal-Request-Id' => $paypalRequestId,
+                'Content-Type' => 'application/json'
             ])
             ->post("https://api-m.sandbox.paypal.com/v2/checkout/orders/$orderId/capture", null);
 
-        Log::info("Paypal payment by {$request->user()->profile->username}", $response->json());
-        return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
+        return approvePayment($orderId);
+        // return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
     }
 
     public function paypalPaymentCancel(Request $request)
     {
         Transaction::where('reference', $request->token)->delete();
-        return response()->json($request->all());
+        return response()->json(['message' => 'Transaction cancelled']);
     }
 
     public function paypalPayouts()
@@ -143,9 +142,6 @@ class PaymentController extends Controller
             'success_url' => route('payment.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('payment.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
         ]);
-        // $stripe->subscriptions->search([
-        //     'query' => 'status:\'active\' AND metadata[\'order_id\']:\'6735\'',
-        //   ]);
 
         Transaction::create([
             'user_id' => $request->user()->id,
@@ -163,16 +159,48 @@ class PaymentController extends Controller
     {
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);
-        // approvePayment($session->client_reference_id);
-        return $session;
+        return approvePayment($session->client_reference_id);
     }
 
     public function stripePaymentCancel(Request $request)
     {
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);
-        // Transaction::where('reference', $session->client_reference_id)->delete();
-        return $session;
+        Transaction::where('reference', $session->client_reference_id)->delete();
+        return response()->json(['message' => 'Transaction cancelled']);
+    }
+
+    public function createPaystackPayment(Request $request)
+    {
+        $response = Http::withToken(env('PAYSTACK_SECRET_KEY'))
+            ->withHeader('Content-Type', 'application/json')
+            ->post('https://api.paystack.co/transaction/initialize', [
+                'email' => $request->user()->email,
+                'amount' => 100*100,
+                'callback_url' => route('payment.paystack.success')
+            ]);
+
+        Transaction::create([
+            'user_id' => $request->user()->id,
+            'reference' => $response->json('data.reference'),
+            'amount' => 100.00,
+            'status' => 'PENDING',
+            'type' => 'debit',
+            'title' => 'Verification Badge',
+            'description' => 'Verification Badge',
+        ]);
+        return response()->json($response->json());
+    }
+
+    public function paystackPaymentSuccess(Request $request)
+    {
+        return approvePayment($request->reference);
+        return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
+    }
+
+    public function paystackPaymentCancel(Request $request)
+    {
+        return $request;
     }
 
 }

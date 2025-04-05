@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum SubscriptionStatus: string
 {
+    case Pending = 'Pending';
     case Active = 'Active';
     case Suspended = 'Suspended';
     case Cancelled = 'Cancelled';
@@ -12,6 +13,7 @@ enum SubscriptionStatus: string
     public function label(): string
     {
         return match ($this) {
+            Self::Pending => 'Subscription Pending',
             Self::Active => 'Subscription Activated',
             Self::Suspended => 'Subscription Suspended',
             Self::Cancelled => 'Subscription Cancelled',
