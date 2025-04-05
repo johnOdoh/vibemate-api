@@ -35,10 +35,11 @@ class ProfileResource extends JsonResource
             'country' => $this->country,
             'interests' => $this->user->interests->pluck('name'),
             $this->mergeWhen($this->showExtra, [
-                'posts' => $this->user->posts->count(),
-                'followers' => $this->user->followers->count(),
-                'following' => $this->user->following->count(),
-                'likes' => $this->user->liked_by->count(),
+                'posts_count' => $this->user->posts->count(),
+                'followers_count' => $this->user->followers->count(),
+                'following_count' => $this->user->following->count(),
+                'likes_count' => $this->user->liked_by->count(),
+                'posts' => PostResource::collection($this->user->posts),
             ]),
         ];
     }
