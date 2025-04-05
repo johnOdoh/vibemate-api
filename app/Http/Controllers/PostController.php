@@ -15,21 +15,22 @@ class PostController extends Controller
      */
     public function index()
     {
-        $current_location = getCountryFromIp();
-        $following = request()->user()->following->pluck('id');
-        $query = Post::query();
-        $query->where(function ($q) use ($following) {
-            $q->where('status', 'approved'); //post is approved
-            $q->whereIn('user_id', $following); //post belongs to a user you are following
-            $q->whereNot('privacy', 'private'); //post is not private
-        });
-        $query->orWhere(function ($q) use ($current_location) {
-            $q->where('status', 'approved'); //post is approved
-            $q->where('meta_location', $current_location); //post originated from your current location
-            $q->where('privacy', 'public'); //post is set to public
-            $q->where('user_id', '!=', request()->user()->id); //post does not belong to you
-        });
-        $posts = $query->get();
+        // $current_location = getCountryFromIp();
+        // $following = request()->user()->following->pluck('id');
+        // $query = Post::query();
+        // $query->where(function ($q) use ($following) {
+        //     $q->where('status', 'approved'); //post is approved
+        //     $q->whereIn('user_id', $following); //post belongs to a user you are following
+        //     $q->whereNot('privacy', 'private'); //post is not private
+        // });
+        // $query->orWhere(function ($q) use ($current_location) {
+        //     $q->where('status', 'approved'); //post is approved
+        //     $q->where('meta_location', $current_location); //post originated from your current location
+        //     $q->where('privacy', 'public'); //post is set to public
+        //     $q->where('user_id', '!=', request()->user()->id); //post does not belong to you
+        // });
+        // $posts = $query->get();
+        $posts = Post::all();
         return PostResource::collection($posts);
     }
 

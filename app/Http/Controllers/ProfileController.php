@@ -2,14 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Profile;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\UserResource;
-use App\Http\Resources\LoginResource;
 use App\Http\Resources\ProfileResource;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,7 +15,7 @@ class ProfileController extends Controller
      */
     public function index()
     {
-        return new ProfileResource(request()->user()->profile);
+        return new ProfileResource(request()->user()->profile, true);
     }
 
     /**

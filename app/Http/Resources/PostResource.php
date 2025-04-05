@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
+
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PostResource extends JsonResource
@@ -12,7 +12,7 @@ class PostResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'id' => $this->id,
@@ -27,10 +27,17 @@ class PostResource extends JsonResource
             'meta_location' => $this->meta_location,
             'posted_by' => [
                 'id' => $this->user->id,
-                'username' => $this->user->profile->username
+                'username' => $this->user->profile ? $this->user->profile->username : null,
             ],
             'created_at' => $this->created_at,
             // 'updated_at' => $this->updated_at,
+            'likes' => [
+                'users' => $this->likes->map(fn($like) => [
+                    'id' => $like->user->id,
+                    'username' => $like->user->profile ? $like->user->profile->username : null,
+                ]),
+                'count' => $this->likes()->count()
+            ],
             'comments' => CommentResource::collection($this->comments)
         ];
     }

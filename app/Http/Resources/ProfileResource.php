@@ -2,17 +2,23 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProfileResource extends JsonResource
 {
+    protected bool $showExtra;
+
+    public function __construct($resource, $showExtra = false)
+    {
+        parent::__construct($resource);
+        $this->showExtra = $showExtra;
+    }
     /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'username' => $this->username,
@@ -27,7 +33,13 @@ class ProfileResource extends JsonResource
             'image' => asset('storage/'.$this->image),
             'city' => $this->city,
             'country' => $this->country,
-            'interests' => $this->user->interests->pluck('name')
+            'interests' => $this->user->interests->pluck('name'),
+            $this->mergeWhen($this->showExtra, [
+                'posts' => $this->user->posts->count(),
+                'followers' => $this->user->followers->count(),
+                'following' => $this->user->following->count(),
+                'likes' => $this->user->liked_by->count(),
+            ]),
         ];
     }
 }

@@ -39,7 +39,7 @@ Route::get('subscription/stripe/cancel', [SubscriptionController::class, 'stripe
 
 Route::get('payment/paypal/success', [PaymentController::class, 'paypalPaymentSuccess'])->name('payment.paypal.success');
 Route::get('payment/paypal/cancel', [PaymentController::class, 'paypalPaymentCancel'])->name('payment.paypal.cancel');
-Route::post('payment/paypal/payouts', [PaymentController::class, 'paypal.payouts']);
+Route::post('payment/paypal/payouts', [PaymentController::class, 'paypalPayouts']);
 
 Route::get('payment/paystack/success', [PaymentController::class, 'paystackPaymentSuccess'])->name('payment.paystack.success');
 Route::get('payment/paystack/cancel', [PaymentController::class, 'paystackPaymentCancel'])->name('payment.paystack.cancel');

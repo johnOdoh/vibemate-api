@@ -5,7 +5,6 @@ namespace App\Http\Resources;
 use Cloudinary\Cloudinary;
 use Cloudinary\Transformation\FocusOn;
 use Cloudinary\Transformation\Gravity;
-use Illuminate\Http\Request;
 use Cloudinary\Transformation\Resize;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,7 +15,7 @@ class EntryResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         if($this->is_image) {
             $cloudinary = new Cloudinary();
