@@ -6,6 +6,7 @@ use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ProfileResource;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
@@ -101,7 +102,7 @@ class ProfileController extends Controller
             'here_for' => 'required|array',
             'interests' => 'required|array',
             'interests.*' => 'integer',
-            'image' => 'required|image',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'city' => 'required|string',
             'country' => 'required|string'
         ], [
@@ -157,6 +158,36 @@ class ProfileController extends Controller
     public function update(Request $request, string $id)
     {
         //
+    }
+
+    public function changePassword(Request $request) {
+        $request->validate([
+            'old_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = $request->user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['message' => 'Old password is incorrect'], 403);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
+
+    public function changeImage(Request $request) {
+        $request->validate([
+            'image' => 'required|image|max:5120|mimes:jpeg,png,jpg,gif,svg',
+        ]);
+        $user = $request->user();
+        $imageName = $user->profile->image;
+        if ($request->file('image')->storeAs('profile_images', $imageName, 'public'))
+            return response()->json(['message' => 'Profile image updated successfully']);
+        else
+            return response()->json(['message' => 'Failed to update profile image'], 500);
     }
 
     /**

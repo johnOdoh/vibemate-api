@@ -28,6 +28,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/send-reset-token', [AuthController::class, 'sendPasswordResetToken']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
+
 Route::get('subscription/paypal/success', [SubscriptionController::class, 'paypalSubscriptionSuccess']);
 Route::get('subscription/paypal/cancel', [SubscriptionController::class, 'paypalSubscriptionCancel']);
 
@@ -83,6 +84,9 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
+
+    Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
+    Route::put('profile/change-image', [ProfileController::class, 'changeImage']);
 
     Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
     Route::post('subscription/paypal/create/{plan}', [SubscriptionController::class, 'createPaypalSubscription']);
