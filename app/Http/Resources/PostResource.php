@@ -32,13 +32,9 @@ class PostResource extends JsonResource
                 'image' => $this->user->profile ? asset('storage/'.$this->user->profile->image) : null,
             ],
             // 'updated_at' => $this->updated_at,
-            'likes' => [
-                'users' => $this->likes->map(fn($like) => [
-                    'id' => $like->user->id,
-                    'username' => $like->user->profile ? $like->user->profile->username : null,
-                ]),
-                'count' => $this->likes()->count()
-            ],
+            'likes' => $this->likes->map(fn($like) => [
+                $like->user->id
+            ]),
             'is_following' => request()->user()->following->contains($this->user->id),
             'comments' => CommentResource::collection($this->comments)
         ];
