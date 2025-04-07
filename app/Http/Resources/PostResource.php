@@ -25,11 +25,12 @@ class PostResource extends JsonResource
             'location' => $this->location,
             'file_url' => $this->file_url ? array_map(fn($file) => asset('storage/' . $file), explode(', ', $this->file_url))  : [],
             'meta_location' => $this->meta_location,
+            'created_at' => $this->created_at,
             'posted_by' => [
                 'id' => $this->user->id,
                 'username' => $this->user->profile ? $this->user->profile->username : null,
+                'image' => $this->user->profile ? asset('storage/'.$this->user->profile->image) : null,
             ],
-            'created_at' => $this->created_at,
             // 'updated_at' => $this->updated_at,
             'likes' => [
                 'users' => $this->likes->map(fn($like) => [
@@ -38,6 +39,7 @@ class PostResource extends JsonResource
                 ]),
                 'count' => $this->likes()->count()
             ],
+            'is_following' => request()->user()->following->contains($this->user->id),
             'comments' => CommentResource::collection($this->comments)
         ];
     }
