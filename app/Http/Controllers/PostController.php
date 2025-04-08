@@ -53,17 +53,27 @@ class PostController extends Controller
             'privacy' => 'required|string',
             'allow_comments' => 'required|boolean',
             'allow_like_counts' => 'required|boolean',
-            'body' => 'nullable|string',
+            'body' => 'nullable|required_without:files|string',
             'hashtags' => 'nullable|array',
             'location' => 'nullable|string',
-            'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
+            'files' => 'nullable|required_without:body|array',
+            'files.*' => 'file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
+        ], [
+            'body.required_without' => 'Either text, image or video is required.',
+            'files.required_without' => 'Either text, Image or video is required.',
         ]);
         $path = [];
         if($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 if(str_starts_with($file->getMimeType(), 'image/')) {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $path[] = $file->storeAs('posts/images', $fileName, 'public');
+                    $file_loc = $file->storeAs('posts/images', $fileName, 'public');
+                    $path[] = $file_loc;
+                    $moderationResult = moderateImage($file_loc);
+                    if(!$moderationResult['status']) {
+                        $data['status'] = 'pending';
+                        $data['remark'] = $moderationResult['reason'];
+                    }
                 }
                 else {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
@@ -125,7 +135,13 @@ class PostController extends Controller
             foreach ($request->file('files') as $file) {
                 if(str_starts_with($file->getMimeType(), 'image/')) {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $path[] = $file->storeAs('posts/images', $fileName, 'public');
+                    $file_loc = $file->storeAs('posts/images', $fileName, 'public');
+                    $path[] = $file_loc;
+                    $moderationResult = moderateImage($file_loc);
+                    if(!$moderationResult['status']) {
+                        $data['status'] = 'pending';
+                        $data['remark'] = $moderationResult['reason'];
+                    }
                 }
                 else {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();

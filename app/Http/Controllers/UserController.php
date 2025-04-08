@@ -75,6 +75,6 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        return response('', 204);
+        return response()->noContent();
     }
 }

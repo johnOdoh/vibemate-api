@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -112,5 +113,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::resource('post', PostController::class);
     Route::resource('profile', ProfileController::class);
     Route::resource('reply', CommentReplyController::class);
+    Route::resource('status', StatusController::class);
     Route::resource('user', UserController::class);
 });
