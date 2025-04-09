@@ -7,6 +7,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PostResource extends JsonResource
 {
+    protected bool $single;
+
+    public function __construct($resource, $single = false)
+    {
+        parent::__construct($resource);
+        $this->single = $single;
+    }
     /**
      * Transform the resource into an array.
      *
@@ -24,7 +31,6 @@ class PostResource extends JsonResource
             'hashtags' => $this->hashtags,
             'location' => $this->location,
             'file_url' => $this->file_url ? array_map(fn($file) => asset('storage/' . $file), explode(', ', $this->file_url))  : [],
-            'meta_location' => $this->meta_location,
             'created_at' => $this->created_at,
             'posted_by' => [
                 'id' => $this->user->id,
@@ -34,7 +40,10 @@ class PostResource extends JsonResource
             // 'updated_at' => $this->updated_at,
             'likes' => $this->likes->pluck('user_id'),
             'is_following' => request()->user()->following->contains($this->user->id),
-            'comments' => CommentResource::collection($this->comments)
+            'comments_count' => $this->comments->count(),
+            $this->mergeWhen($this->single, [
+                'comments' => CommentResource::collection($this->comments),
+            ])
         ];
     }
 }
