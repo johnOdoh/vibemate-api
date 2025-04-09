@@ -20,9 +20,9 @@ class CommentResource extends JsonResource
             // 'updated_at' => $this->updated_at,
             'user' => [
                 'id' => $this->user->id,
-                'username' => $this->user->username
-            ],
-            'replies' => ReplyResource::collection($this->replies)
+                'username' => $this->user->username,
+                'image' => asset('storage/'.$this->user->profile->image),
+            ]
         ];
     }
 }

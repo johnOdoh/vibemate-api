@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ReplyResource;
+use App\Models\Comment;
 use App\Models\CommentReply;
 use Illuminate\Http\Request;
 
@@ -43,9 +45,10 @@ class CommentReplyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CommentReply $reply)
+    public function show(string $id)
     {
-        //
+        $comment = Comment::findOrFail($id);
+        return ReplyResource::collection($comment->replies);
     }
 
     /**
