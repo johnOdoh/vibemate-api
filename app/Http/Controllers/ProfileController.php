@@ -110,7 +110,7 @@ class ProfileController extends Controller
             'firstname.regex' => 'First name must contain only letters, hyphens, and apostrophes. No spaces allowed.',
             'lastname.regex' => 'Last name must contain only letters, hyphens, and apostrophes. No spaces allowed.'
         ]);
-        $imageName = $request->user()->username.'.'.$request->file('image')->getClientOriginalExtension();
+        $imageName = $request->username.'.'.$request->file('image')->getClientOriginalExtension();
         $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
         $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
