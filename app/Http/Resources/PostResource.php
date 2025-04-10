@@ -41,9 +41,9 @@ class PostResource extends JsonResource
             'likes' => $this->likes->pluck('user_id'),
             'is_following' => request()->user()->following->contains($this->user->id),
             'comments_count' => $this->comments->count(),
-            $this->mergeWhen($this->single, [
-                'comments' => CommentResource::collection($this->comments),
-            ])
+            // $this->mergeWhen($this->single, [
+            //     'comments' => CommentResource::collection($this->comments),
+            // ])
         ];
     }
 }
