@@ -141,7 +141,7 @@ class ProfileController extends Controller
      */
     public function show(Profile $profile)
     {
-        return $profile->user;
+        return new ProfileResource($profile, true);
     }
 
     /**
