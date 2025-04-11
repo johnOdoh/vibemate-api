@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -139,9 +140,13 @@ class ProfileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Profile $profile)
+    public function show(string $id)
     {
-        return new ProfileResource($profile, true);
+        $profile = Profile::where('user_id', $id)->first();
+        return response()->json([
+            'user' => new UserResource($profile->user),
+            'profile' => new ProfileResource($profile, true)
+        ]);
     }
 
     /**
