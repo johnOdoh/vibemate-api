@@ -61,6 +61,31 @@ function getSpotifyToken()
     return $token;
 }
 
+function getReloadlyToken()
+{
+    if (Cache::has('reloadly_token')) {
+        return Cache::get('reloadly_token');
+    }
+
+    $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Content-Type', 'application/json',
+        ])
+        ->post('https://auth.reloadly.com/oauth/token', [
+            'client_id'     => env('RELOADLY_CLIENT_ID'),
+            'client_secret' => env('RELOADLY_CLIENT_SECRET'),
+            'grant_type'    => 'client_credentials',
+            "audience"      => "https://giftcards-sandbox.reloadly.com"
+        ]);
+
+    $token = $response->json()['access_token'];
+    $expiresIn = $response->json()['expires_in']; // Typically 3600 seconds (1 hour)
+
+    // Store in cache for the duration of token validity
+    Cache::put('reloadly_token', $token, now()->addSeconds($expiresIn - 60)); // Subtract 1 minute for safety
+    return $token;
+}
+
 function moderateImage($path)
 {
     $response = Http::attach(

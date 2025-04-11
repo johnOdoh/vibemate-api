@@ -195,7 +195,7 @@ class PaymentController extends Controller
     public function paystackPaymentSuccess(Request $request)
     {
         return approvePayment($request->reference);
-        return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
+        // return response()->json(['message' => 'Your payment is being processed. Your payment status will be updated as possible']);
     }
 
     public function paystackPaymentCancel(Request $request)
@@ -203,4 +203,15 @@ class PaymentController extends Controller
         return $request;
     }
 
+    public function getGiftCards()
+    {
+        $url = 'https://giftcards-sandbox.reloadly.com/countries';
+        $response = Http::withToken(getReloadlyToken())
+            ->withHeaders([
+                'Accept' => 'application/com.reloadly.giftcards-v1+json',
+                'Content-Type' => 'application/json',
+            ])
+            ->get($url);
+        return $response->json();
+    }
 }

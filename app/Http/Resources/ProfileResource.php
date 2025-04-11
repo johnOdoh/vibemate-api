@@ -21,6 +21,7 @@ class ProfileResource extends JsonResource
     public function toArray($request): array
     {
         return [
+            'id' => $this->id,
             'username' => $this->username,
             'firstname' => $this->firstname,
             'lastname' => $this->lastname,
@@ -36,7 +37,9 @@ class ProfileResource extends JsonResource
             'interests' => $this->user->interests->pluck('name'),
             $this->mergeWhen($this->showExtra, [
                 'posts_count' => $this->user->posts->count(),
-                'followers_count' => $this->user->followers->count(),
+                'followers' => $this->user->followers->map(fn($follower) => [
+                    'id' => $follower->id,
+                ]),
                 'following_count' => $this->user->following->count(),
                 'likes_count' => $this->user->liked_by->count(),
                 'posts' => PostResource::collection($this->user->posts),

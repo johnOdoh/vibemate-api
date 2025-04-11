@@ -68,6 +68,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
     Route::post('payment/paystack/create', [PaymentController::class, 'createPaystackPayment']);
     Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
+    Route::post('payment/reloadly/get-giftcards', [PaymentController::class, 'getGiftCards']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::get('post/search/{query}', [PostController::class, 'searchArtist']);

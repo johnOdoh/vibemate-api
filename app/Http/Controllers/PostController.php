@@ -82,7 +82,7 @@ class PostController extends Controller
             }
         }
         unset($data['files']);
-        if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';
+        if(!empty($data['body']) && !screenInput($data['body'])) $data['status'] = 'pending';
         $data['file_url'] = implode(', ', $path);
         $data['hashtags'] = implode(', ', $data['hashtags']);
         $data['user_id'] = $request->user()->id;
