@@ -115,7 +115,7 @@ class ProfileController extends Controller
         $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
         $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
-        $data['meta_location'] = getCountryFromIp();
+        // $data['meta_location'] = getCountryFromIp();
         $data['here_for'] = implode(', ', $data['here_for']);
         unset($data['interests']);
         $profile = new Profile($data);
@@ -162,7 +162,32 @@ class ProfileController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $data = $request->validate([
+            'bio' => 'nullable|string',
+            'connect_with' => 'required|string',
+            'phone' => 'required|string',
+            'here_for' => 'required|array',
+            'interests' => 'required|array',
+            'interests.*' => 'integer',
+            'city' => 'required|string',
+            'country' => 'required|string',
+            'show_age' => 'required|boolean',
+            'allow_messages' => 'required|boolean',
+            'show_location' => 'required|boolean',
+            'profile_visibility' => 'required|string',
+        ]);
+        $data['here_for'] = implode(', ', $data['here_for']);
+        $request->user()->profile()->update([
+            'bio' => $data['bio'],
+            'connect_with' => $data['connect_with'],
+            'here_for' => $data['here_for'],
+            'phone' => $data['phone'],
+            'city' => $data['city'],
+            'country' => $data['country'],
+            'visibility' => $data['profile_visibility']
+        ]);
+        $request->user()->interests()->sync($data['interests']);
+        return response()->json(['message' => 'Profile updated successfully']);
     }
 
     public function changePassword(Request $request) {

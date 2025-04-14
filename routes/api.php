@@ -21,6 +21,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
 use App\Http\Controllers\MusicController;
 use App\Http\Controllers\WebhookController;
+use App\Models\Interest;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -59,12 +60,18 @@ Route::post('sightengine/video-moderation/callback', function (Request $request)
 })->name('sightengine.video-moderation.callback');
 
 ROute::group(['middleware' => 'auth:sanctum'], function () {
+    Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
+    Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
 
     Route::patch('competition/start/{competition}', [CompetitionController::class, 'start']);
     Route::patch('competition/end/{competition}', [CompetitionController::class, 'end']);
 
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
+
+    Route::get('interest', function () {
+        return Interest::orderBy('name')->get(['id', 'name', 'description', 'icon']);
+    });
 
     Route::get('music/tracklist', [MusicController::class, 'tracklist']);
     Route::get('music/search', [MusicController::class, 'search']);
@@ -80,16 +87,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('post/unlike/{post}', [PostController::class, 'unlike']);
 
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
-
-    Route::post('user/follow/{id}', [UserController::class, 'follow']);
-    Route::post('user/like/{id}', [UserController::class, 'like']);
-    Route::delete('user/unfollow/{id}', [UserController::class, 'unfollow']);
-    Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
-    Route::delete('user/logout', [UserController::class, 'logout']);
-
-    Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
-    Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
-
     Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
     Route::put('profile/change-image', [ProfileController::class, 'changeImage']);
 
@@ -107,6 +104,12 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('subscription/stripe/create/{plan}', [SubscriptionController::class, 'createStripeSubscription']);
     Route::post('subscription/stripe/suspend/{subscription_id}', [SubscriptionController::class, 'suspendStripeSubscription']);
     Route::post('subscription/stripe/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivateStripeSubscription']);
+
+    Route::post('user/follow/{id}', [UserController::class, 'follow']);
+    Route::post('user/like/{id}', [UserController::class, 'like']);
+    Route::delete('user/unfollow/{id}', [UserController::class, 'unfollow']);
+    Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
+    Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);
