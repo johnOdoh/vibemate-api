@@ -198,21 +198,4 @@ class PostController extends Controller
         $post->delete();
         return response()->noContent();
     }
-
-    public function searchArtist($query)
-    {
-        $token = getSpotifyToken();
-
-        $response = Http::withoutVerifying()->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
-        ])->get('https://api.spotify.com/v1/search', [
-            'q' => $query,
-            'type' => 'track',
-            'limit' => 2,
-            'include_external' => 'audio',
-            'fields' => 'tracks.items(name,artists(name),uri'
-        ]);
-
-        return $response->json();
-    }
 }

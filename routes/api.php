@@ -19,6 +19,7 @@ use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
+use App\Http\Controllers\MusicController;
 use App\Http\Controllers\WebhookController;
 
 Route::prefix('auth')->group(function () {
@@ -65,13 +66,15 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
+    Route::get('music/tracklist', [MusicController::class, 'tracklist']);
+    Route::get('music/search', [MusicController::class, 'search']);
+
     Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
     Route::post('payment/paystack/create', [PaymentController::class, 'createPaystackPayment']);
     Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
     Route::post('payment/reloadly/get-giftcards', [PaymentController::class, 'getGiftCards']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
-    Route::get('post/search/{query}', [PostController::class, 'searchArtist']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
     Route::post('post/test', [PostController::class, 'test']);
     Route::delete('post/unlike/{post}', [PostController::class, 'unlike']);
