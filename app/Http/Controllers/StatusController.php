@@ -68,10 +68,10 @@ class StatusController extends Controller
                 }
             ],
         ]);
-        return $request->content;
+        // return $request->content;
         foreach($request->content as $key => $value) {
-            if ($request->hasFile("content.$key.['file']")) {
-                $file = $request->file("content.$key.['file']");
+            if ($request->hasFile("content.$key.file")) {
+                $file = $request->file("content.$key.file");
                 if(str_starts_with($file->getMimeType(), 'image/')) {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
                     $content = $file->storeAs('statuses/images', $fileName, 'public');
@@ -90,6 +90,7 @@ class StatusController extends Controller
                 'text' => $text ?? null,
                 'type' => $type
             ]);
+            $content = $text = $type = null;
         }
         return response()->json(['message' => 'Story added successfully'], 201);
     }
