@@ -13,12 +13,13 @@ class MusicController extends Controller
         $token = getSpotifyToken();
         $response = Http::withToken($token)
             ->get("https://api.spotify.com/v1/search", [ //get the playlist with the latest songs from user country
-            'q' => "latest $country songs",
+            'q' => "trending $country songs",
             'type' => 'playlist',
-            'limit' => 1,
+            'limit' => 2,
             'fields' => 'playlists.items(id)'
         ]);
-        $playlist_id = $response->json()['playlists']['items'][0]['id']; //get the playlist id
+        $playlists = $response->json()['playlists']['items'];
+        $playlist_id = $playlists[0]['id'] ?? $playlists[1]['id']; //get the playlist id
         $response = Http::withToken($token)
             ->get("https://api.spotify.com/v1/playlists/$playlist_id", [ //get the tracks in the playlist
             'limit' => 2,

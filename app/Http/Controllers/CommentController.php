@@ -45,11 +45,12 @@ class CommentController extends Controller
 
     /**
      * Display the specified resource.
+     * $id is the post id
      */
     public function show(string $id)
     {
         $post = Post::findOrFail($id);
-        return CommentResource::collection($post->comments);
+        return CommentResource::collection($post->comments()->where('status', 'approved')->orderByDesc('id')->get());
     }
 
     /**

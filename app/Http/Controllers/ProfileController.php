@@ -103,7 +103,14 @@ class ProfileController extends Controller
             'here_for' => 'required|array',
             'interests' => 'required|array',
             'interests.*' => 'integer',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:5120',
+                function ($attribute, $value, $fail) use ($request) {
+                    $moderation_result = moderateImage($request->file($attribute)->getRealPath(), true);
+                    if(!$moderation_result['status']) {
+                        $fail("Your profile image failed our content moderation policy due to {$moderation_result['reason']}");
+                    }
+                }
+            ],
             'city' => 'required|string',
             'country' => 'required|string'
         ], [
@@ -111,6 +118,7 @@ class ProfileController extends Controller
             'firstname.regex' => 'First name must contain only letters, hyphens, and apostrophes. No spaces allowed.',
             'lastname.regex' => 'Last name must contain only letters, hyphens, and apostrophes. No spaces allowed.'
         ]);
+
         $imageName = $request->username.'.'.$request->file('image')->getClientOriginalExtension();
         $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
         $data['image'] = $path;
@@ -164,9 +172,7 @@ class ProfileController extends Controller
     {
         $data = $request->validate([
             'bio' => 'nullable|string',
-            'connect_with' => 'required|string',
             'phone' => 'required|string',
-            'here_for' => 'required|array',
             'interests' => 'required|array',
             'interests.*' => 'integer',
             'city' => 'required|string',
@@ -176,11 +182,8 @@ class ProfileController extends Controller
             'show_location' => 'required|boolean',
             'profile_visibility' => 'required|string',
         ]);
-        $data['here_for'] = implode(', ', $data['here_for']);
         $request->user()->profile()->update([
             'bio' => $data['bio'],
-            'connect_with' => $data['connect_with'],
-            'here_for' => $data['here_for'],
             'phone' => $data['phone'],
             'city' => $data['city'],
             'country' => $data['country'],
@@ -210,7 +213,14 @@ class ProfileController extends Controller
 
     public function changeImage(Request $request) {
         $request->validate([
-            'image' => 'required|image|max:5120|mimes:jpeg,png,jpg,gif,svg',
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:5120',
+                function ($attribute, $value, $fail) use ($request) {
+                    $moderation_result = moderateImage($request->file($attribute)->getRealPath(), true);
+                    if(!$moderation_result['status']) {
+                        $fail("Your profile image failed our content moderation policy due to {$moderation_result['reason']}");
+                    }
+                }
+            ],
         ]);
         $user = $request->user();
         $imageName = $user->profile->image;

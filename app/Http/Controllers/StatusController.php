@@ -49,25 +49,29 @@ class StatusController extends Controller
     {
         $request->validate([
             'content' => 'required|array',
-            'content.*' => [
+            'content.file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
                 function ($attribute, $value, $fail) use ($request) {
-                    if ($request->hasFile($attribute)) {
-                        $file = $request->file($attribute);
-                        if ($file->getSize() > 5120 * 1024) {
-                            $fail("The file in $attribute must not exceed 5MB.");
-                        }
-                    } else {
-                        if (!is_string($value) || strlen($value) > 191) {
-                            $fail("The value in $attribute must be a string not longer than 191 characters.");
+                    $file = $request->file($attribute);
+                    if(str_starts_with($file->getMimeType(), 'image/')) {
+                        $moderation_result = moderateImage($file->getRealPath(), true);
+                        if(!$moderation_result['status']) {
+                            $fail("The value in $attribute failed our content moderation test due to {$moderation_result['reason']}.");
                         }
                     }
                 }
             ],
+            'content.text' => ['nullable', 'string', 'max:191',
+                function ($attribute, $value, $fail) use ($request) {
+                    if (!screenInput($value)) {
+                        $fail("The value in $attribute failed our content moderation test.");
+                    }
+                }
+            ],
         ]);
-        // return $request->content;
+        return $request->content;
         foreach($request->content as $key => $value) {
-            if ($request->hasFile("content.$key")) {
-                $file = $request->file("content.$key");
+            if ($request->hasFile("content.$key.['file']")) {
+                $file = $request->file("content.$key.['file']");
                 if(str_starts_with($file->getMimeType(), 'image/')) {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
                     $content = $file->storeAs('statuses/images', $fileName, 'public');
@@ -78,17 +82,16 @@ class StatusController extends Controller
                     $content = $file->storeAs('statuses/videos', $fileName, 'public');
                     $type = 'video';
                 }
-            }else {
-                $content = $value;
-                $type = 'text';
-            };
+            } else $type = 'text';
+            $text = $value['text'] ?? null;
             Status::create([
                 'user_id' => request()->user()->id,
-                'content' => $content,
+                'file' => $content ?? null,
+                'text' => $text ?? null,
                 'type' => $type
             ]);
         }
-        return response()->json(['message' => 'Status created successfully'], 201);
+        return response()->json(['message' => 'Story added successfully'], 201);
     }
 
     /**

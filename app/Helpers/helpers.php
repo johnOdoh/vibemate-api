@@ -86,10 +86,10 @@ function getReloadlyToken()
     return $token;
 }
 
-function moderateImage($path)
+function moderateImage($path, $temp_path = false)
 {
     $response = Http::attach(
-        'media', file_get_contents(storage_path('app/public/'.$path)), 'image.jpg'
+        'media', file_get_contents($temp_path ? $path : storage_path('app/public/'.$path)), 'image.jpg'
     )->post('https://api.sightengine.com/1.0/check-workflow.json', [
         'workflow' => env('SIGHT_ENGINE_IMAGE_WORKFLOW_ID'),
         'api_user' => env('SIGHT_ENGINE_API_USER'),
