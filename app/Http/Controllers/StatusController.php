@@ -25,8 +25,10 @@ class StatusController extends Controller
             [
                 'my_status' => request()->user()->statuses->map(fn ($status) => [
                     "id" => $status->id,
-                    "content" => $status->type !== 'text' ? asset('storage/'.$status->content) : $status->content,
+                    "content" => $status->content ? asset('storage/'.$status->content) : null,
+                    'caption' => $status->caption,
                     "type" => $status->type,
+                    'color' => $status->color,
                     "created_at" => $status->created_at
                 ]),
                 'users' => StatusResource::collection($users)
@@ -48,8 +50,9 @@ class StatusController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'content' => 'required|array',
-            'content.file' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
+            'status' => 'required|array',
+            'status.color' => 'nullable|string|max:191',
+            'status.content' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
                 function ($attribute, $value, $fail) use ($request) {
                     $file = $request->file($attribute);
                     if(str_starts_with($file->getMimeType(), 'image/')) {
@@ -60,8 +63,8 @@ class StatusController extends Controller
                     }
                 }
             ],
-            'content.text' => ['nullable', 'string', 'max:191',
-                function ($attribute, $value, $fail) use ($request) {
+            'status.caption' => ['nullable', 'string', 'max:191',
+                function ($attribute, $value, $fail) {
                     if (!screenInput($value)) {
                         $fail("The value in $attribute failed our content moderation test.");
                     }
@@ -69,9 +72,9 @@ class StatusController extends Controller
             ],
         ]);
         // return $request->content;
-        foreach($request->content as $key => $value) {
-            if ($request->hasFile("content.$key.file")) {
-                $file = $request->file("content.$key.file");
+        foreach($request->status as $key => $value) {
+            if ($request->hasFile("status.$key.content")) {
+                $file = $request->file("status.$key.content");
                 if(str_starts_with($file->getMimeType(), 'image/')) {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
                     $content = $file->storeAs('statuses/images', $fileName, 'public');
@@ -83,14 +86,14 @@ class StatusController extends Controller
                     $type = 'video';
                 }
             } else $type = 'text';
-            $text = $value['text'] ?? null;
             Status::create([
                 'user_id' => request()->user()->id,
-                'file' => $content ?? null,
-                'text' => $text ?? null,
-                'type' => $type
+                'content' => $content ?? null,
+                'caption' => $value['caption'] ?? null,
+                'type' => $type,
+                'color' => $value['color'] ?? null,
             ]);
-            $content = $text = $type = null;
+            $content = $type = null;
         }
         return response()->json(['message' => 'Story added successfully'], 201);
     }
