@@ -21,19 +21,17 @@ class StatusController extends Controller
         ->withMax('statuses', 'created_at') // Add virtual column: latest status timestamp
         ->orderByDesc('statuses_max_created_at') // Sort users by latest status
         ->get();
-        return response()->json(
-            [
-                'my_status' => request()->user()->statuses->map(fn ($status) => [
-                    "id" => $status->id,
-                    "content" => $status->content ? asset('storage/'.$status->content) : null,
-                    'caption' => $status->caption,
-                    "type" => $status->type,
-                    'color' => $status->color,
-                    "created_at" => $status->created_at
-                ]),
-                'users' => StatusResource::collection($users)
-            ]
-        );
+        return response()->json([
+            'my_status' => request()->user()->statuses->map(fn ($status) => [
+                "id" => $status->id,
+                "content" => $status->content ? asset('storage/'.$status->content) : null,
+                'caption' => $status->caption,
+                "type" => $status->type,
+                'color' => $status->color,
+                "created_at" => $status->created_at
+            ]),
+            'users' => StatusResource::collection($users)
+        ]);
     }
 
     /**
@@ -51,19 +49,19 @@ class StatusController extends Controller
     {
         $request->validate([
             'status' => 'required|array',
-            'status.color' => 'nullable|string|max:191',
-            'status.content' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
+            'status.*.color' => 'nullable|string|max:191',
+            'status.*.content' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
                 function ($attribute, $value, $fail) use ($request) {
                     $file = $request->file($attribute);
                     if(str_starts_with($file->getMimeType(), 'image/')) {
                         $moderation_result = moderateImage($file->getRealPath(), true);
-                        if(!$moderation_result['status']) {
+                        if($moderation_result['status'] === false) {
                             $fail("The value in $attribute failed our content moderation test due to {$moderation_result['reason']}.");
                         }
                     }
                 }
             ],
-            'status.caption' => ['nullable', 'string', 'max:191',
+            'status.*.caption' => ['nullable', 'string', 'max:191',
                 function ($attribute, $value, $fail) {
                     if (!screenInput($value)) {
                         $fail("The value in $attribute failed our content moderation test.");
@@ -71,7 +69,7 @@ class StatusController extends Controller
                 }
             ],
         ]);
-        // return $request->content;
+
         foreach($request->status as $key => $value) {
             if ($request->hasFile("status.$key.content")) {
                 $file = $request->file("status.$key.content");
@@ -125,8 +123,18 @@ class StatusController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Status $status)
     {
-        //
+        if ($status->user_id !== request()->user()->id) {
+            return response()->json(['message' => 'You are not authorized to delete this story'], 403);
+        }
+        if ($status->type !== 'text') {
+            $path = public_path('storage/'.$status->content);
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
+        $status->delete();
+        return response()->json(['message' => 'Story deleted successfully'], 200);
     }
 }

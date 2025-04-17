@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\StatusController;
+use App\Models\Interest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -10,18 +10,19 @@ use App\Http\Controllers\GiftController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
+use App\Http\Controllers\MusicController;
+use App\Http\Controllers\StatusController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\VerifyPaypalWebhook;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
-use App\Http\Controllers\MusicController;
-use App\Http\Controllers\WebhookController;
-use App\Models\Interest;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -75,6 +76,13 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('music/tracklist', [MusicController::class, 'tracklist']);
     Route::get('music/search', [MusicController::class, 'search']);
+
+    Route::get('notification', [NotificationController::class, 'index']);
+    Route::post('notification', [NotificationController::class, 'store']);
+    Route::get('notification/{notification}', [NotificationController::class, 'show']);
+    Route::put('notification/mark-as-read/{notification}', [NotificationController::class, 'markAsRead']);
+    Route::put('notification/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('notification/{notification}', [NotificationController::class, 'delete']);
 
     Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
     Route::post('payment/paystack/create', [PaymentController::class, 'createPaystackPayment']);
