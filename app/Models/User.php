@@ -49,6 +49,11 @@ class User extends Authenticatable
         return $this->hasOne(Profile::class);
     }
 
+    public function reward()
+    {
+        return $this->hasOne(Reward::class);
+    }
+
     public function subscription()
     {
         return $this->hasOne(Subscription::class);

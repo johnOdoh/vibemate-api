@@ -17,6 +17,7 @@ class StatusResource extends JsonResource
             "id" => $this->id,
             "firstname" => $this->profile->firstname,
             "lastname" => $this->profile->lastname,
+            'image' => asset('storage/'.$this->profile->image),
             "statuses" => $this->statuses->map(fn ($status) => [
                 "id" => $status->id,
                 "content" => $status->content ? asset('storage/'.$status->content) : null,

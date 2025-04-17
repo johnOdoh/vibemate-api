@@ -21,17 +21,8 @@ class StatusController extends Controller
         ->withMax('statuses', 'created_at') // Add virtual column: latest status timestamp
         ->orderByDesc('statuses_max_created_at') // Sort users by latest status
         ->get();
-        return response()->json([
-            'my_status' => request()->user()->statuses->map(fn ($status) => [
-                "id" => $status->id,
-                "content" => $status->content ? asset('storage/'.$status->content) : null,
-                'caption' => $status->caption,
-                "type" => $status->type,
-                'color' => $status->color,
-                "created_at" => $status->created_at
-            ]),
-            'users' => StatusResource::collection($users)
-        ]);
+        $users = $users->sortBy(fn ($u) => $u['id'] === request()->user()->id ? 0 : 1)->values();
+        return StatusResource::collection($users);
     }
 
     /**
