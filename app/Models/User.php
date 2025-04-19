@@ -84,6 +84,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function livestreams()
+    {
+        return $this->hasMany(Livestream::class);
+    }
+
     public function followers()
     {
         return $this->belongsToMany(User::class, 'follower_following', 'following_id', 'follower_id');

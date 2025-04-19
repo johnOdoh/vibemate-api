@@ -17,6 +17,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\VerifyPaypalWebhook;
+use App\Http\Controllers\LivestreamController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\CommentReplyController;
 use App\Http\Controllers\EntryCommentController;
@@ -74,6 +75,19 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
         return Interest::orderBy('name')->get(['id', 'name', 'description', 'icon']);
     });
 
+    Route::get('livestream/{livestream}', [LivestreamController::class, 'show']);
+    Route::post('livestream', [LivestreamController::class, 'store']);
+    Route::post('livestream/gift/{livestream}', [LivestreamController::class, 'sendGift']);
+    Route::post('livestream/comment/{livestream}', [LivestreamController::class, 'comment']);
+    Route::get('livestream/comments/{livestream}', [LivestreamController::class, 'getComments']);
+    Route::post('livestream/viewer-joins/{livestream}', [LivestreamController::class, 'viewerJoins']);
+    Route::put('livestream/viewer-leaves/{livestream}', [LivestreamController::class, 'viewerLeaves']);
+    Route::put('livestream/remove-viewer/{livestream}', [LivestreamController::class, 'removeViewer']);
+    Route::put('livestream/change-moderator/{livestream}', [LivestreamController::class, 'changeModerator']);
+    Route::post('livestream/send-request/{livestream}', [LivestreamController::class, 'sendRequest']);
+    Route::put('livestream/accept-request/{livestream}', [LivestreamController::class, 'acceptRequest']);
+    Route::put('livestream/end/{livestream}', [LivestreamController::class, 'endLivestream']);
+
     Route::get('music/tracklist', [MusicController::class, 'tracklist']);
     Route::get('music/search', [MusicController::class, 'search']);
 
@@ -124,7 +138,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::resource('entry', EntryController::class);
     Route::resource('entry-comment', EntryCommentController::class);
     Route::resource('entry-comment-reply', EntryCommentReplyController::class);
-    Route::resource('gift', GiftController::class);
     Route::resource('post', PostController::class);
     Route::resource('profile', ProfileController::class);
     Route::resource('reply', CommentReplyController::class);

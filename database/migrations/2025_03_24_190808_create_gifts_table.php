@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('gifts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('item_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('image');
+            $table->double('price');
             $table->timestamps();
         });
     }

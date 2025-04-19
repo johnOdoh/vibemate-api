@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('items', function (Blueprint $table) {
+        Schema::create('livestream_comments', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('image');
-            $table->double('price');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('livestream_id')->constrained()->onDelete('cascade');
+            $table->text('body');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('items');
+        Schema::dropIfExists('livestream_comments');
     }
 };

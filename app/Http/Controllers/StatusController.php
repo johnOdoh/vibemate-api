@@ -38,52 +38,73 @@ class StatusController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'status' => 'required|array',
-            'status.*.color' => 'nullable|string|max:191',
-            'status.*.content' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
-                function ($attribute, $value, $fail) use ($request) {
-                    $file = $request->file($attribute);
-                    if(str_starts_with($file->getMimeType(), 'image/')) {
-                        $moderation_result = moderateImage($file->getRealPath(), true);
-                        if($moderation_result['status'] === false) {
-                            $fail("The value in $attribute failed our content moderation test due to {$moderation_result['reason']}.");
-                        }
-                    }
-                }
-            ],
-            'status.*.caption' => ['nullable', 'string', 'max:191',
-                function ($attribute, $value, $fail) {
-                    if (!screenInput($value)) {
-                        $fail("The value in $attribute failed our content moderation test.");
-                    }
-                }
-            ],
+        // $request->validate([
+        //     'status' => 'required|array',
+        //     'status.*.color' => 'nullable|string|max:191',
+        //     'status.*.content' => ['nullable', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
+        //         function ($attribute, $value, $fail) use ($request) {
+        //             $file = $request->file($attribute);
+        //             if(str_starts_with($file->getMimeType(), 'image/')) {
+        //                 $moderation_result = moderateImage($file->getRealPath(), true);
+        //                 if($moderation_result['status'] === false) {
+        //                     $fail("The value in $attribute failed our content moderation test due to {$moderation_result['reason']}.");
+        //                 }
+        //             }
+        //         }
+        //     ],
+        //     'status.*.caption' => ['nullable', 'string', 'max:191',
+        //         function ($attribute, $value, $fail) {
+        //             if (!screenInput($value)) {
+        //                 $fail("The value in $attribute failed our content moderation test.");
+        //             }
+        //         }
+        //     ],
+        // ]);
+        if ($request->hasFile("content")) {
+            $file = $request->file("content");
+            if(str_starts_with($file->getMimeType(), 'image/')) {
+                $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+                $content = $file->storeAs('statuses/images', $fileName, 'public');
+                $type = 'image';
+            }
+            else {
+                $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+                $content = $file->storeAs('statuses/videos', $fileName, 'public');
+                $type = 'video';
+            }
+        } else $type = 'text';
+        Status::create([
+            'user_id' => request()->user()->id,
+            'content' => $content ?? null,
+            'caption' => $request->caption ?? null,
+            'type' => $type,
+            'color' => $request->color ?? null,
         ]);
+        // $content = $type = null;
+        // foreach($request->status as $key => $value) {
+        //     if ($request->hasFile("status.$key.content")) {
+        //         $file = $request->file("status.$key.content");
+        //         if(str_starts_with($file->getMimeType(), 'image/')) {
+        //             $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+        //             $content = $file->storeAs('statuses/images', $fileName, 'public');
+        //             $type = 'image';
+        //         }
+        //         else {
+        //             $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
+        //             $content = $file->storeAs('statuses/videos', $fileName, 'public');
+        //             $type = 'video';
+        //         }
+        //     } else $type = 'text';
+        //     Status::create([
+        //         'user_id' => request()->user()->id,
+        //         'content' => $content ?? null,
+        //         'caption' => $value['caption'] ?? null,
+        //         'type' => $type,
+        //         'color' => $value['color'] ?? null,
+        //     ]);
+        //     $content = $type = null;
+        // }
 
-        foreach($request->status as $key => $value) {
-            if ($request->hasFile("status.$key.content")) {
-                $file = $request->file("status.$key.content");
-                if(str_starts_with($file->getMimeType(), 'image/')) {
-                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $content = $file->storeAs('statuses/images', $fileName, 'public');
-                    $type = 'image';
-                }
-                else {
-                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $content = $file->storeAs('statuses/videos', $fileName, 'public');
-                    $type = 'video';
-                }
-            } else $type = 'text';
-            Status::create([
-                'user_id' => request()->user()->id,
-                'content' => $content ?? null,
-                'caption' => $value['caption'] ?? null,
-                'type' => $type,
-                'color' => $value['color'] ?? null,
-            ]);
-            $content = $type = null;
-        }
         return response()->json(['message' => 'Story added successfully'], 201);
     }
 

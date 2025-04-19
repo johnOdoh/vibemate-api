@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('rewards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->foreignId('badge_id')->nullable()->constrained()->onDelete('cascade');
             $table->unsignedTinyInteger('level')->default(0);
             $table->decimal('diamonds', 10, 2)->default(0);

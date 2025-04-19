@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Item extends Model
+class LivestreamComment extends Model
 {
     protected $guarded = [];
 
-    public function gifts()
+    public function user()
     {
-        return $this->hasMany(Gift::class);
+        return $this->belongsTo(User::class);
     }
 }
