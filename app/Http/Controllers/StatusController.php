@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\StatusResource;
-use App\Models\User;
+use App\Http\Resources\StatusViewersResource;
 use App\Models\Status;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class StatusController extends Controller
      */
     public function index()
     {
-        $users = User::with(['statuses' => function ($query) {
+        $users = request()->user()->following()->with(['statuses' => function ($query) {
             $query->orderBy('created_at', 'desc');
         }])
         ->whereHas('statuses') // Only users who have posted a status
@@ -60,6 +60,30 @@ class StatusController extends Controller
         //         }
         //     ],
         // ]);
+        $request->validate([
+            'color' => 'nullable|string|max:191',
+            'content' => ['nullable', 'required_without:caption', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
+                function ($attribute, $value, $fail) use ($request) {
+                    $file = $request->file($attribute);
+                    if(str_starts_with($file->getMimeType(), 'image/')) {
+                        $moderation_result = moderateImage($file->getRealPath(), true);
+                        if($moderation_result['status'] === false) {
+                            $fail("The value in $attribute failed our content moderation test due to {$moderation_result['reason']}.");
+                        }
+                    }
+                }
+            ],
+            'caption' => ['nullable', 'required_without:content', 'string', 'max:191',
+                function ($attribute, $value, $fail) {
+                    if (!screenInput($value)) {
+                        $fail("The value in $attribute failed our content moderation test.");
+                    }
+                }
+            ],
+        ], [
+            'caption.required_without' => 'Either text, image or video is required.',
+            'content.required_without' => 'Either text, image or video is required.',
+        ]);
         if ($request->hasFile("content")) {
             $file = $request->file("content");
             if(str_starts_with($file->getMimeType(), 'image/')) {
@@ -111,9 +135,19 @@ class StatusController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Status $status)
     {
-        //
+        if ($status->user_id !== request()->user()->id) {
+            $status->viewed_by()->sync(5, false);
+        }
+        return response()->noContent();
+    }
+
+    public function getViewers(Status $status)
+    {
+        $viewers = $status->viewed_by;
+        return StatusViewersResource::collection($viewers);
+
     }
 
     /**

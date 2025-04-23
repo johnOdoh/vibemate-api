@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\GiftController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
@@ -111,6 +110,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
     Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
     Route::put('profile/change-image', [ProfileController::class, 'changeImage']);
+
+    Route::get('status/get-viewers/{status}', [StatusController::class, 'getViewers']);
 
     Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
     Route::post('subscription/paypal/create/{plan}', [SubscriptionController::class, 'createPaypalSubscription']);

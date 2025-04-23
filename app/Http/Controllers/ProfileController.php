@@ -176,18 +176,13 @@ class ProfileController extends Controller
             'interests' => 'required|array',
             'interests.*' => 'integer',
             'city' => 'required|string',
-            'country' => 'required|string',
-            'show_age' => 'required|boolean',
-            'allow_messages' => 'required|boolean',
-            'show_location' => 'required|boolean',
-            'profile_visibility' => 'required|string',
+            'country' => 'required|string'
         ]);
         $request->user()->profile()->update([
             'bio' => $data['bio'],
             'phone' => $data['phone'],
             'city' => $data['city'],
-            'country' => $data['country'],
-            'visibility' => $data['profile_visibility']
+            'country' => $data['country']
         ]);
         $request->user()->interests()->sync($data['interests']);
         return response()->json(['message' => 'Profile updated successfully']);

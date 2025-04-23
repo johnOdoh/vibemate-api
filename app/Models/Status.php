@@ -12,4 +12,9 @@ class Status extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function viewed_by()
+    {
+        return $this->belongsToMany(User::class, 'status_viewers')->withTimestamps();
+    }
 }
