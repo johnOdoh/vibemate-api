@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entry;
 use App\Models\Competition;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Resources\EntryResource;
 
@@ -99,11 +100,19 @@ class EntryController extends Controller
     /**
      * Like the specified entry.
      */
-    public function like(Entry $entry)
+    public function like(Request $request, Entry $entry)
     {
         $entry->likes()->create(['user_id' => request()->user()->id]);
         $entry->no_of_engagements++;
         $entry->save();
+        if($entry->user_id !== request()->user()->id) {
+            Notification::create([
+                'user_id' => $entry->user_id,
+                'action' => 'entry like',
+                'action_id' => $entry->id,
+                'message' => "{$request->user()->profile->username} liked your entry",
+            ]);
+        }
         return response()->json(['message' => 'Entry liked'], 201);;
     }
 
@@ -112,8 +121,8 @@ class EntryController extends Controller
      */
     public function unlike(Entry $entry)
     {
-        $entry->likes()->where('user_id', request()->user()->id)->delete();
-        if($entry->no_of_engagements > 0) $entry->no_of_engagements--;
+        $status = $entry->likes()->where('user_id', request()->user()->id)->delete();
+        if($status && $entry->no_of_engagements > 0) $entry->no_of_engagements--;
         $entry->save();
         return response()->json(['message' => 'Entry unliked'], 201);;
     }

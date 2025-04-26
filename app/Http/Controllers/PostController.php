@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Resources\PostResource;
 use App\Services\PerspectiveService;
@@ -160,11 +161,19 @@ class PostController extends Controller
     /**
      * Like the specified post.
      */
-    public function like(Post $post)
+    public function like(Request $request, Post $post)
     {
         $post->likes()->create(['user_id' => request()->user()->id]);
         $post->no_of_engagements++;
         $post->save();
+        if($post->user_id !== request()->user()->id) {
+            Notification::create([
+                'user_id' => $post->user_id,
+                'action' => 'post like',
+                'action_id' => $post->id,
+                'message' => "{$request->user()->profile->username} liked your post",
+            ]);
+        }
         return response()->json(['message' => 'Post liked successfully'], 201);;
     }
 
@@ -173,8 +182,8 @@ class PostController extends Controller
      */
     public function unlike(Post $post)
     {
-        $post->likes()->where('user_id', request()->user()->id)->delete();
-        if($post->no_of_engagements > 0) $post->no_of_engagements--;
+        $status = $post->likes()->where('user_id', request()->user()->id)->delete();
+        if($status && $post->no_of_engagements > 0) $post->no_of_engagements--;
         $post->save();
         return response()->json(['message' => 'Post unliked successfully'], 201);;
     }

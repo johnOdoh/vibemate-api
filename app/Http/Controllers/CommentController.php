@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CommentResource;
-use App\Models\Comment;
 use App\Models\Post;
+use App\Models\Comment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
@@ -38,7 +39,17 @@ class CommentController extends Controller
         $comment = new Comment($data);
         if(!$comment->post->allow_comments) return response()->json(['message' => 'Comments are not allowed on this post'], 403);
         if(!screenInput($data['body'])) $comment->status = 'pending';
-        else $comment->post->no_of_engagements++;
+        else {
+            $comment->post->no_of_engagements++;
+            if($comment->post->user_id !== $comment->user_id) {
+                Notification::create([
+                    'user_id' => $comment->post->user_id,
+                    'action' => 'post comment',
+                    'action_id' => $comment->post->id,
+                    'message' => "{$request->user()->profile->username} commented on your post",
+                ]);
+            }
+        }
         $comment->push();
         return response()->json(['message' => 'Comment created successfully'], 201);
     }

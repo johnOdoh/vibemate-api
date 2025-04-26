@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ReplyResource;
 use App\Models\Comment;
 use App\Models\CommentReply;
+use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Http\Resources\ReplyResource;
 
 class CommentReplyController extends Controller
 {
@@ -37,7 +38,25 @@ class CommentReplyController extends Controller
         $data['user_id'] = $request->user()->id;
         $reply = new CommentReply($data);
         if(!screenInput($data['body'])) $reply->status = 'pending';
-        else $reply->comment->post->no_of_engagements++;
+        else {
+            $reply->comment->post->no_of_engagements++;
+            if($reply->comment->user_id !== $reply->user_id) {
+                Notification::create([
+                    'user_id' => $reply->comment->user_id,
+                    'action' => 'comment reply',
+                    'action_id' => $reply->comment->post->id,
+                    'message' => "{$request->user()->profile->username} replied to your comment",
+                ]);
+            }
+            if($reply->comment->post->user_id !== $reply->user_id) {
+                Notification::create([
+                    'user_id' => $reply->comment->post->user_id,
+                    'action' => 'post comment',
+                    'action_id' => $reply->comment->post->id,
+                    'message' => "{$request->user()->profile->username} commented on your post",
+                ]);
+            }
+        }
         $reply->push();
         return response()->json(['message' => 'Comment created successfully'], 201);
     }

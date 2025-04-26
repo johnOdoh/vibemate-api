@@ -138,7 +138,7 @@ class StatusController extends Controller
     public function show(Status $status)
     {
         if ($status->user_id !== request()->user()->id) {
-            $status->viewed_by()->sync(5, false);
+            $status->viewed_by()->sync(request()->user()->id, false);
         }
         return response()->noContent();
     }

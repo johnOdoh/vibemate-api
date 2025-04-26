@@ -14,6 +14,9 @@ class LivestreamController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string'
         ]);
+        if ($request->user()->followers()->count() < 500) {
+            return response()->json(['message' => 'You need at least 500 followers to start a livestream'], 403);
+        }
         livestream::create([
             'user_id' => $request->user()->id,
             'moderator_id' => $request->user()->id,
@@ -45,7 +48,8 @@ class LivestreamController extends Controller
         $request->user()->wallet -= $gift->price;
         $request->user()->reward->coins_spent += $gift->price;
         $request->user()->push();
-        $livestream->coins_earned += ($gift->price * 70)/100;//remove 30% for the platform
+        // $livestream->coins_earned += ($gift->price * 70)/100;//remove 30% for the platform
+        $livestream->coins_earned += $gift->price;//remove 30% for the platform
         $livestream->save();
         $livestream->gifters()->create([
             'gifter_id' => $request->user()->id,
@@ -184,7 +188,10 @@ class LivestreamController extends Controller
         $livestream->children()->update(['is_active' => false]);
         $livestream->no_of_views = $livestream->viewers()->count();
         $livestream->is_active = false;
-        $livestream->save();
+        $livestream->user->reward->no_of_livestreams++;
+        $livestream->user->reward->diamonds = ($livestream->coins_earned * 70)/100;
+        $livestream->user->reward->coins_earned = ($livestream->coins_earned * 70)/100;
+        $livestream->push();
         return response()->json(['message' => 'Livestream ended successfully'], 200);
     }
 }

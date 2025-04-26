@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Entry;
 use App\Models\EntryComment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class EntryCommentController extends Controller
@@ -36,7 +37,17 @@ class EntryCommentController extends Controller
         $data['user_id'] = $request->user()->id;
         $comment = new EntryComment($data);
         if(!screenInput($data['body'])) $comment->status = 'pending';
-        else $comment->entry->no_of_engagements++;
+        else {
+            $comment->entry->no_of_engagements++;
+            if($comment->entry->user_id !== $comment->user_id) {
+                Notification::create([
+                    'user_id' => $comment->entry->user_id,
+                    'action' => 'entry comment',
+                    'action_id' => $comment->entry->id,
+                    'message' => "{$request->user()->profile->username} commented on your entry",
+                ]);
+            }
+        }
         $comment->push();
         return response()->json(['message' => 'Comment created successfully'], 201);
     }
