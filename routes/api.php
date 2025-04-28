@@ -23,6 +23,7 @@ use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
+use App\Http\Controllers\TicketController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -128,6 +129,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('subscription/stripe/suspend/{subscription_id}', [SubscriptionController::class, 'suspendStripeSubscription']);
     Route::post('subscription/stripe/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivateStripeSubscription']);
 
+    Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/like/{id}', [UserController::class, 'like']);
     Route::delete('user/unfollow/{id}', [UserController::class, 'unfollow']);
@@ -143,5 +145,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::resource('profile', ProfileController::class);
     Route::resource('reply', CommentReplyController::class);
     Route::resource('status', StatusController::class);
+    Route::resource('ticket', TicketController::class);
     Route::resource('user', UserController::class);
 });

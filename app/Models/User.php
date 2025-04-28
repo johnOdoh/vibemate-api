@@ -84,6 +84,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
     public function livestreams()
     {
         return $this->hasMany(Livestream::class);
