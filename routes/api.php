@@ -106,7 +106,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
     Route::post('post/test', [PostController::class, 'test']);
-    Route::delete('post/unlike/{post}', [PostController::class, 'unlike']);
+    Route::put('post/unlike/{post}', [PostController::class, 'unlike']);
 
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
     Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
@@ -132,7 +132,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/like/{id}', [UserController::class, 'like']);
-    Route::delete('user/unfollow/{id}', [UserController::class, 'unfollow']);
+    Route::put('user/unfollow/{id}', [UserController::class, 'unfollow']);
     Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 

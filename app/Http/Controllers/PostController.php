@@ -163,7 +163,11 @@ class PostController extends Controller
      */
     public function like(Request $request, Post $post)
     {
-        $post->likes()->create(['user_id' => request()->user()->id]);
+        $like = $post->likes()->firstOrCreate(['user_id' => request()->user()->id]);
+        if (!$like->is_active) {
+            $like->is_active = true;
+            $like->save();
+        }
         $post->no_of_engagements++;
         $post->save();
         if($post->user_id !== request()->user()->id) {
@@ -174,7 +178,7 @@ class PostController extends Controller
                 'message' => "{$request->user()->profile->username} liked your post",
             ]);
         }
-        return response()->json(['message' => 'Post liked successfully'], 201);;
+        return response()->json(['message' => 'Post liked successfully'], 201);
     }
 
     /**
@@ -182,8 +186,8 @@ class PostController extends Controller
      */
     public function unlike(Post $post)
     {
-        $status = $post->likes()->where('user_id', request()->user()->id)->delete();
-        if($status && $post->no_of_engagements > 0) $post->no_of_engagements--;
+        $status = $post->likes()->where('user_id', request()->user()->id)->update(['is_active' => false]);
+        if($status > 0 && $post->no_of_engagements > 0) $post->no_of_engagements--;
         $post->save();
         return response()->json(['message' => 'Post unliked successfully'], 201);;
     }

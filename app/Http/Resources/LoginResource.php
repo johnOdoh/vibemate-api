@@ -16,7 +16,8 @@ class LoginResource extends JsonResource
         return [
             'user' => new UserResource($this),
             'profile' => $this->profile()->exists() ? new ProfileResource($this->profile) : null,
-            'token' => $this->token
+            'token' => $this->token,
+            'stream_token' => $this->stream_token,
         ];
     }
 }

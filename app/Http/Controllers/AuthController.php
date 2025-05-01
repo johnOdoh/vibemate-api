@@ -14,6 +14,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\LoginResource;
+use App\Services\GetStreamService;
 
 class AuthController extends Controller
 {
@@ -66,11 +67,14 @@ class AuthController extends Controller
         }
         if (!$data['isSocial']) return response()->json(['message' => 'User created successfully'], 201);
         else {
+            $streamService = new GetStreamService();
+            $stream_token = $streamService->getUserToken($user->id);
             $token =  $user->createToken("android device")->plainTextToken;
             return response()->json([
                 'message' => 'User created successfully',
                 'user' => new UserResource($user),
                 'token' => $token,
+                'stream_token' => $stream_token
             ], 201);
         }
     }
@@ -107,6 +111,8 @@ class AuthController extends Controller
                 if(Hash::check($request->password, $user->password)) {//if user entered correct password
                     if($user->is_verified) {
                         $user->token = $user->createToken("android device")->plainTextToken;
+                        $streamService = new GetStreamService();
+                        $user->stream_token = $streamService->getUserToken($user->id);
                         return new LoginResource($user);
                     }  //if user has verified account
                     else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
@@ -126,10 +132,13 @@ class AuthController extends Controller
             $user->email_token = null;
             $user->save();
             $token =  $user->createToken("android device")->plainTextToken;
+            $streamService = new GetStreamService();
+            $stream_token = $streamService->getUserToken($user->id);
             return response()->json([
                 'message' => 'Email Verification Successful',
                 'user' => new UserResource($user),
                 'token' => $token,
+                'stream_token' => $stream_token
             ], 201);
         }
         else return response()->json(['message' => 'Invalid token'], 403); // entered wrong token

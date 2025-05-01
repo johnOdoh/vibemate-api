@@ -40,13 +40,16 @@ class UserController extends Controller
 
     public function follow(Request $request, string $id)
     {
-        $request->user()->following()->attach($id);
+        if(!$request->user()->following()->where('following_id', $id)->exists()) {//if user has followed this user before
+            $request->user()->following()->attach($id);
+        }
+        else $request->user()->following()->updateExistingPivot($id, ['is_active' => true]);
         return response()->json(['message' => 'You are now following this user.'], 200);
     }
 
     public function unfollow(Request $request, string $id)
     {
-        $request->user()->following()->detach($id);
+        $request->user()->following()->updateExistingPivot($id, ['is_active' => false]);
         return response()->json(['message' => 'You have unfollowed this user.'], 200);
     }
 

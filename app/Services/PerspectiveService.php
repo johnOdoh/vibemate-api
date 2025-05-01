@@ -11,7 +11,7 @@ class PerspectiveService
 
     public function __construct()
     {
-        $this->client = new Client(['verify' => false]);
+        $this->client = new Client();
         $this->apiKey = env('PERSPECTIVE_API_KEY'); // Store your API key in .env
     }
 

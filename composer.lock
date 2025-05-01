@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4a49a215473e85db0ad1b73aebb300ff",
+    "content-hash": "2d4bf54312f5fb9a0d4e697379d340c6",
     "packages": [
         {
             "name": "brick/math",
@@ -908,6 +908,64 @@
                 "source": "https://github.com/maxmind/GeoIP2-php/tree/v2.13.0"
             },
             "time": "2022-08-05T20:32:58+00:00"
+        },
+        {
+            "name": "get-stream/stream-chat",
+            "version": "3.10.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/GetStream/stream-chat-php.git",
+                "reference": "d396bc328f51f6ec8c75bb590718095f8bb93845"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/GetStream/stream-chat-php/zipball/d396bc328f51f6ec8c75bb590718095f8bb93845",
+                "reference": "d396bc328f51f6ec8c75bb590718095f8bb93845",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.5.8 || ^7.0.1",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.0.0",
+                "phan/phan": "^5.3.2",
+                "phpunit/phpunit": "^9.5.20"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "GetStream\\StreamChat": "lib/"
+                },
+                "psr-4": {
+                    "GetStream\\Unit\\": "tests/unit/",
+                    "GetStream\\Integration\\": "tests/integration/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Tommaso Barbugli",
+                    "email": "support@getstream.io"
+                }
+            ],
+            "description": "A PHP client for Stream Chat (https://getstream.io/chat/)",
+            "homepage": "https://getstream.io/chat/",
+            "keywords": [
+                "api",
+                "chat",
+                "chat-sdk",
+                "stream"
+            ],
+            "support": {
+                "docs": "https://getstream.io/chat/docs/php/?language=php",
+                "issues": "https://github.com/GetStream/stream-chat-php/issues",
+                "source": "https://github.com/GetStream/stream-chat-php/tree/3.10.0"
+            },
+            "time": "2025-04-07T07:06:39+00:00"
         },
         {
             "name": "graham-campbell/result-type",
