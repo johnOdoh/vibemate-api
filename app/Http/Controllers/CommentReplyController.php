@@ -40,6 +40,7 @@ class CommentReplyController extends Controller
         if(!screenInput($data['body'])) $reply->status = 'pending';
         else {
             $reply->comment->post->no_of_engagements++;
+            $reply->comment->post->most_engagements_points++;
             if($reply->comment->user_id !== $reply->user_id) {
                 Notification::create([
                     'user_id' => $reply->comment->user_id,
@@ -90,6 +91,7 @@ class CommentReplyController extends Controller
         ]);
         if(!screenInput($data['body'])) {
             $reply->comment->post->no_of_engagements--;
+            $reply->comment->post->most_engagements_points--;
             $reply->push();
             $data['status'] = 'pending';
         }
@@ -105,6 +107,7 @@ class CommentReplyController extends Controller
         if(request()->user()->id !== $reply->user_id)
             return response()->json(['message' => 'You are not authorized to delete this comment'], 403);
         $reply->comment->post->no_of_engagements--;
+        $reply->comment->post->most_engagements_points--;
         $reply->comment->post->save();
         $reply->delete();
         return response('', 204);

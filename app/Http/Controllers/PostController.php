@@ -167,6 +167,7 @@ class PostController extends Controller
         if (!$like->is_active) {
             $like->is_active = true;
             $like->save();
+            $post->most_engagements_points++;
         }
         $post->no_of_engagements++;
         $post->save();

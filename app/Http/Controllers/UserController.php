@@ -42,6 +42,10 @@ class UserController extends Controller
     {
         if(!$request->user()->following()->where('following_id', $id)->exists()) {//if user has followed this user before
             $request->user()->following()->attach($id);
+            $user = User::find($id);
+            $user->most_followed_points++;
+            $user->most_popular_points++;
+            $user->save();
         }
         else $request->user()->following()->updateExistingPivot($id, ['is_active' => true]);
         return response()->json(['message' => 'You are now following this user.'], 200);
@@ -56,12 +60,20 @@ class UserController extends Controller
     public function like(Request $request, string $id)
     {
         if(!$request->user()->likes()->where('receiver_id', $id)->exists()) {//if user has not liked this user already
+            $user = User::findOrFail($id);
             if($request->user()->liked_by()->where('sender_id', $id)->exists()) {//if user has been liked by this user already
                 //update the pivot table to show that there is a match
                 $request->user()->liked_by()->updateExistingPivot($id, ['is_matched' => true]);
+                $request->user()->most_matches_points++;
+                $request->user()->save();
+                $user->most_matches_points++;
+                $user->most_popular_points++;
+                $user->save();
                 return response()->json(['message' => 'You have a match.', 'is_matched' => true], 200);
             }else {
                 $request->user()->likes()->attach($id);
+                $user->most_popular_points++;
+                $user->save();
                 return response()->json(['message' => 'You have liked this user.', 'is_matched' => false], 200);
             }
         }else {

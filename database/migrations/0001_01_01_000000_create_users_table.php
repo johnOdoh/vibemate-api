@@ -26,6 +26,9 @@ return new class extends Migration
             $table->decimal('referral_amount_earned', 10, 2)->default(0);
             $table->decimal('referral_amount_withdrawn', 10, 2)->default(0);
             $table->unsignedInteger('referral_count')->default(0);
+            $table->unsignedInteger('most_popular_points')->default(0);
+            $table->unsignedInteger('most_followed_points')->default(0);
+            $table->unsignedInteger('most_matches_points')->default(0);
             $table->timestamps();
         });
 

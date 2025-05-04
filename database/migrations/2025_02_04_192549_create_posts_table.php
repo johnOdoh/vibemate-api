@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('file_url')->nullable();
             $table->text('body')->nullable();
             $table->unsignedBigInteger('no_of_engagements')->default(0);
+            $table->unsignedBigInteger('most_engagements_points')->default(0);
             $table->string('hashtags')->nullable();
             $table->string('privacy');
             $table->string('status')->default('approved');

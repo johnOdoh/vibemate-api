@@ -40,6 +40,7 @@ class CommentController extends Controller
         if(!$comment->post->allow_comments) return response()->json(['message' => 'Comments are not allowed on this post'], 403);
         if(!screenInput($data['body'])) $comment->status = 'pending';
         else {
+            $comment->post->most_engagements_points++;
             $comment->post->no_of_engagements++;
             if($comment->post->user_id !== $comment->user_id) {
                 Notification::create([
@@ -83,6 +84,7 @@ class CommentController extends Controller
             'body' => 'required|string'
         ]);
         if(!screenInput($data['body'])) {
+            $comment->post->most_engagements_points++;
             $comment->post->no_of_engagements--;
             $comment->push();
             $data['status'] = 'pending';
@@ -98,7 +100,9 @@ class CommentController extends Controller
     {
         if(request()->user()->id !== $comment->user_id)
             return response()->json(['message' => 'You are not authorized to delete this comment'], 403);
-        $comment->post->no_of_engagements -= $comment->replies->count() + 1;
+        $replyCount = $comment->replies->count();
+        $comment->post->no_of_engagements -= $replyCount;
+        $comment->post->most_engagements_points -= $replyCount + 1;
         $comment->post->save();
         $comment->delete();
         return response('', 204);
