@@ -127,9 +127,17 @@ class ProfileController extends Controller
         $data['here_for'] = implode(', ', $data['here_for']);
         unset($data['interests']);
         $profile = new Profile($data);
+        $user = $request->user()->referredBy()->first();
 
         DB::beginTransaction();
         try {
+            if($user) {
+                if(($user->referral_count + 1) % 7 == 0) {
+                    $user->referral_amount_earned += 14.00;
+                }
+                $user->referral_count += 1;
+                $user->save();
+            }
             $profile->save();
             $request->user()->interests()->attach($request->interests);
 

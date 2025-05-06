@@ -4,6 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
+use function Laravel\Prompts\form;
+
 class ProfileResource extends JsonResource
 {
     protected bool $showExtra;
@@ -36,12 +38,12 @@ class ProfileResource extends JsonResource
             'country' => $this->country,
             'interests' => $this->user->interests->pluck('name'),
             $this->mergeWhen($this->showExtra, [
-                'posts_count' => $this->user->posts->count(),
+                'posts_count' => formatNumber($this->user->posts->count()),
                 'followers' => $this->user->followers()->where('is_active', true)->get()->map(fn($follower) => [
                     'id' => $follower->id,
                 ]),
-                'following_count' => $this->user->following()->where('is_active', true)->count(),
-                'likes_count' => $this->user->liked_by->count(),
+                'following_count' => formatNumber($this->user->following()->where('is_active', true)->count()),
+                'likes_count' => formatNumber($this->user->liked_by->count()),
                 'posts' => PostResource::collection($this->user->posts),
             ]),
         ];

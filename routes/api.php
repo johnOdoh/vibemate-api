@@ -23,6 +23,7 @@ use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\TicketController;
 
 Route::prefix('auth')->group(function () {
@@ -75,6 +76,11 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
         return Interest::orderBy('name')->get(['id', 'name', 'description', 'icon']);
     });
 
+    Route::get('leaderboard/most-followed', [LeaderboardController::class, 'getMostFollowed']);
+    Route::get('leaderboard/most-matches', [LeaderboardController::class, 'getMostMatches']);
+    Route::get('leaderboard/most-popular', [LeaderboardController::class, 'getMostPopular']);
+    Route::get('leaderboard/most-engaged', [LeaderboardController::class, 'getMostEngaged']);
+
     Route::get('livestream/{livestream}', [LivestreamController::class, 'show']);
     Route::post('livestream', [LivestreamController::class, 'store']);
     Route::post('livestream/gift/{livestream}', [LivestreamController::class, 'sendGift']);
@@ -105,7 +111,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
-    Route::post('post/test', [PostController::class, 'test']);
     Route::put('post/unlike/{post}', [PostController::class, 'unlike']);
 
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);

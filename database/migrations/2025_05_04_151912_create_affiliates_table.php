@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('referrer_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('referee_id')->constrained('users')->cascadeOnDelete();
+            $table->enum('status', ['pending', 'verified', 'paid'])->default('pending');
             $table->timestamps();
 
             $table->unique(['referee_id', 'referrer_id']);

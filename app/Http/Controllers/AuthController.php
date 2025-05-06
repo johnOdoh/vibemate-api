@@ -53,12 +53,7 @@ class AuthController extends Controller
             $user->reward()->create();
             if (!empty($request->referrer)) {
                 $referrer = Profile::firstWhere('username', strtolower(trim($request->referrer)));
-                if ($referrer) {
-                    $referrer->user->referrals()->attach($user->id);
-                    $referrer->user->referral_count += 1;
-                    $referrer->user->referral_amount_earned += 2.00;
-                    $referrer->user->save();
-                }
+                if ($referrer) $referrer->user->referrals()->attach($user->id);
             }
             DB::commit();
         } catch (\Throwable $th) {

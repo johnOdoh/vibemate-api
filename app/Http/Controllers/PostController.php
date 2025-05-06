@@ -6,8 +6,6 @@ use App\Models\Post;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Resources\PostResource;
-use App\Services\PerspectiveService;
-use Illuminate\Support\Facades\Http;
 
 class PostController extends Controller
 {
@@ -38,11 +36,9 @@ class PostController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function test()
+    public function create()
     {
-        $text = request()->input('text');
-        $perspectiveService = new PerspectiveService;
-        return $perspectiveService->analyzeText($text);
+        //
     }
 
     /**
@@ -163,12 +159,12 @@ class PostController extends Controller
      */
     public function like(Request $request, Post $post)
     {
-        $like = $post->likes()->firstOrCreate(['user_id' => request()->user()->id]);
+        $like = $post->likes()->firstOrCreate(['user_id' => request()->user()->id, 'is_active' => true]);
         if (!$like->is_active) {
             $like->is_active = true;
             $like->save();
-            $post->most_engagements_points++;
         }
+        else $post->most_engagements_points++;
         $post->no_of_engagements++;
         $post->save();
         if($post->user_id !== request()->user()->id) {

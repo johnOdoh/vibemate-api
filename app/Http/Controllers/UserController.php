@@ -90,17 +90,16 @@ class UserController extends Controller
     public function getAffiliatePage(Request $request)
     {
         $user = $request->user();
-        // return $user->referrals()->limit(0)->get();
         return response()->json([
             'referral_count' => $user->referral_count,
             'amount_earned' => $user->referral_amount_earned,
             'amount_withdrawn' => $user->referral_amount_withdrawn,
             'amount_available' => number_format($user->referral_amount_earned - $user->referral_amount_withdrawn, 2),
-            'referrals' => $user->referrals()->limit(2)->get()->map(fn($referral) => [
-                'email' => $referral->email,
-                // 'firstname' => $referral->profile->firstname,
-                // 'lastname' => $referral->profile->lastname,
-                // 'image' => $referral->profile->image ? asset('storage/' . $referral->profile->image) : asset('images/default.png'),
+            'counter' => $user->referral_count % 7,
+            'referrals' => $user->referrals()->whereHas('profile')->orderByDesc('id')->limit(5)->get()->map(fn($referral) => [
+                'firstname' => $referral->profile->firstname,
+                'lastname' => $referral->profile->lastname,
+                'image' => asset('storage/' . $referral->profile->image),
                 'created_at' => $referral->created_at->diffForHumans()
             ]),
         ]);

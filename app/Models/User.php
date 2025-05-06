@@ -121,7 +121,7 @@ class User extends Authenticatable
 
     public function referrals()
     {
-        return $this->belongsToMany(User::class, 'affiliates', 'referrer_id', 'referee_id');
+        return $this->belongsToMany(User::class, 'affiliates', 'referrer_id', 'referee_id')->withTimestamps()->withPivot('status');
     }
 
     public function referredBy()

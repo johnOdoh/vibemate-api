@@ -26,7 +26,7 @@ class PostResource extends JsonResource
             'privacy' => $this->privacy,
             'allow_comments' => $this->allow_comments,
             'allow_like_counts' => $this->allow_like_counts,
-            'no_of_engagements' => $this->no_of_engagements,
+            'no_of_engagements' => formatNumber($this->no_of_engagements),
             'body' => $this->body,
             'hashtags' => $this->hashtags,
             'location' => $this->location,
@@ -40,7 +40,7 @@ class PostResource extends JsonResource
             // 'updated_at' => $this->updated_at,
             'likes' => $this->likes->pluck('user_id'),
             'is_following' => request()->user()->following->contains($this->user->id),
-            'comments_count' => $this->comments->count(),
+            'comments_count' => formatNumber($this->comments->count())
             // $this->mergeWhen($this->single, [
             //     'comments' => CommentResource::collection($this->comments),
             // ])
