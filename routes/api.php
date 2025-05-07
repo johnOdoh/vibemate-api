@@ -107,7 +107,9 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
     Route::post('payment/paystack/create', [PaymentController::class, 'createPaystackPayment']);
     Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
-    Route::post('payment/reloadly/get-giftcards', [PaymentController::class, 'getGiftCards']);
+    Route::post('payment/giftcard/countries', [PaymentController::class, 'getGiftCardCountries']);
+    Route::post('payment/giftcard/products/{countryCode}', [PaymentController::class, 'getGiftCardsByCountry']);
+    Route::post('payment/giftcard/order/{productId}', [PaymentController::class, 'orderGiftcard']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);

@@ -202,7 +202,7 @@ class PaymentController extends Controller
         return $request;
     }
 
-    public function getGiftCards()
+    public function getGiftCardCountries()
     {
         $url = 'https://giftcards-sandbox.reloadly.com/countries';
         $response = Http::withToken(getReloadlyToken())
@@ -211,6 +211,55 @@ class PaymentController extends Controller
                 'Content-Type' => 'application/json',
             ])
             ->get($url);
-        return $response->json();
+
+        return array_map( fn ($country) => [
+            'name' => $country['name'],
+            'code' => $country['isoName']
+        ], $response->json());
+    }
+
+    public function getGiftcardsByCountry($countryCode)
+    {
+        $url = "https://giftcards-sandbox.reloadly.com/countries/$countryCode/products";
+        $response = Http::withToken(getReloadlyToken())
+            ->withHeaders([
+                'Accept' => 'application/com.reloadly.giftcards-v1+json',
+                'Content-Type' => 'application/json',
+            ])
+            ->get($url);
+
+            return collect($response->json())
+                ->filter(fn ($product) => $product['status'] === 'ACTIVE')
+                ->map(fn ($product) => [
+                    'id' => $product['productId'],
+                    'name' => $product['productName'],
+                    'type' => $product['denominationType'],
+                    'fixedDenominations' => $product['fixedRecipientDenominations'],
+                    'minDenomination' => $product['minRecipientDenomination'],
+                    'maxDenomination' => $product['maxRecipientDenomination'],
+                ])
+                ->all();
+    }
+
+    public function orderGiftcard(Request $request, $productId)
+    {
+        $url = 'https://giftcards-sandbox.reloadly.com/orders';
+        $response = Http::withToken(getReloadlyToken())
+            ->withHeaders([
+                'Accept' => 'application/com.reloadly.giftcards-v1+json',
+                'Content-Type' => 'application/json'
+            ])
+            ->post($url, [
+                'productId' => $productId,
+                'senderName'=> 'Vibemate',
+                'recipientEmail'=> $request->user()->email,
+                'quantity' => 1,
+                'unitPrice' => $request->amount,
+                'productAdditionalRequirements' => [
+                    'username' => $request->user()->profile->username,
+                ]
+            ]);
+
+        return response()->json($response->json());
     }
 }
