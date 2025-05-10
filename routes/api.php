@@ -19,6 +19,7 @@ use App\Http\Middleware\VerifyPaypalWebhook;
 use App\Http\Controllers\LivestreamController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\CommentReplyController;
+use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
@@ -69,6 +70,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::patch('competition/start/{competition}', [CompetitionController::class, 'start']);
     Route::patch('competition/end/{competition}', [CompetitionController::class, 'end']);
 
+    Route::get('discovery', [DiscoveryController::class, 'show']);
+
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
@@ -109,7 +112,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
     Route::post('payment/giftcard/countries', [PaymentController::class, 'getGiftCardCountries']);
     Route::post('payment/giftcard/products/{countryCode}', [PaymentController::class, 'getGiftCardsByCountry']);
-    Route::post('payment/giftcard/order/{productId}', [PaymentController::class, 'orderGiftcard']);
+    Route::post('payment/giftcard/order/{productId}', [PaymentController::class, 'orderGiftCard']);
 
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);

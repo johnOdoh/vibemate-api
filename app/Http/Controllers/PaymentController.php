@@ -241,7 +241,7 @@ class PaymentController extends Controller
                 ->all();
     }
 
-    public function orderGiftcard(Request $request, $productId)
+    public function orderGiftCard(Request $request, $productId)
     {
         $url = 'https://giftcards-sandbox.reloadly.com/orders';
         $response = Http::withToken(getReloadlyToken())

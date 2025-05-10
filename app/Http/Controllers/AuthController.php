@@ -39,9 +39,6 @@ class AuthController extends Controller
         }
         else $verified = true;
         $user = new User([
-            // 'username' => $data['username'],
-            // 'firstname' => $data['firstname'],
-            // 'lastname' => $data['lastname'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'is_verified' => $verified,
@@ -50,7 +47,6 @@ class AuthController extends Controller
         DB::beginTransaction();
         try {
             $user->save();
-            $user->reward()->create();
             if (!empty($request->referrer)) {
                 $referrer = Profile::firstWhere('username', strtolower(trim($request->referrer)));
                 if ($referrer) $referrer->user->referrals()->attach($user->id);

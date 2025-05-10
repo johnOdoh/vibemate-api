@@ -139,6 +139,8 @@ class ProfileController extends Controller
                 $user->save();
             }
             $profile->save();
+            $profile->user->reward()->create();
+            $profile->user->discovery()->create();
             $request->user()->interests()->attach($request->interests);
 
             DB::commit(); // If everything succeeds, commit the transaction

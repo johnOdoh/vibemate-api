@@ -51,7 +51,7 @@ class LeaderboardController extends Controller
 
     public function getMostEngaged()
     {
-        return Post::orderBy('most_engagements_points', 'desc')
+        return Post::whereRelation('user', 'id', '!=', 0)->orderBy('most_engagements_points', 'desc')
             ->take(50)
             ->get()
             ->map(fn ($post) => [

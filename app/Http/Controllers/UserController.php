@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Http\Resources\ProfileResource;
 
 class UserController extends Controller
 {
     public function index()
     {
+        return response()->json([
+            'users' => UserResource::collection(User::orderByDesc('id')->get())
+        ]);
         $profile = request()->user()->profile;
         $interests = $profile->user->interests->pluck('name');
         $interested_in = $profile->connect_with;
