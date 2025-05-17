@@ -71,6 +71,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::patch('competition/end/{competition}', [CompetitionController::class, 'end']);
 
     Route::get('discovery', [DiscoveryController::class, 'show']);
+    Route::put('discovery', [DiscoveryController::class, 'update']);
 
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
