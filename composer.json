@@ -7,7 +7,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "cloudinary-labs/cloudinary-laravel": "^3.0",
         "geoip2/geoip2": "~2.0",
         "get-stream/stream-chat": "^3.10",
         "guzzlehttp/guzzle": "^7.9",
