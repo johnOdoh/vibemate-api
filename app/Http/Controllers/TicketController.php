@@ -5,14 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Ticket;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Http\Resources\TicketResource;
 
 class TicketController extends Controller
 {
     public function index()
     {
-        // Fetch all tickets
-        $tickets = Ticket::all();
-        return response()->json($tickets);
+        $tickets = request()->user()->tickets()->orderBy('created_at', 'desc')->get();
+        // $tickets = Ticket::orderBy('created_at', 'desc')->get();
+        return response()->json([
+            'tickets' => TicketResource::collection($tickets),
+            'open_count' => $tickets->where('status', 'open')->count(),
+            'pending_count' => $tickets->where('status', 'in_progress')->count(),
+            'closed_count' => $tickets->where('status', 'closed')->count()
+        ]);
     }
 
     public function show($id)
@@ -41,8 +47,8 @@ class TicketController extends Controller
         }
         $data['user_id'] = $request->user()->id;
         $data['ticket_number'] = strtoupper(Str::random(2)).rand(10000000, 99999999); // Generate a random ticket number
-        $ticket = Ticket::create($data);
-        return response()->json($ticket, 201);
+        Ticket::create($data);
+        return response()->json(['message' => 'Ticket created successfully'], 201);
     }
 
     public function update(Request $request, $id)
