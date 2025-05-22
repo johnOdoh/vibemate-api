@@ -80,6 +80,18 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
         return Interest::orderBy('name')->get(['id', 'name', 'description', 'icon']);
     });
 
+    Route::get('interest/list', function () {
+        return Interest::orderBy('name')
+            ->get()
+            ->map(fn ($interest) => [
+                'id' => $interest->id,
+                'name' => $interest->name,
+                'description' => $interest->description,
+                'icon' => $interest->icon,
+                'no_of_users' => formatNumber($interest->users()->count())
+            ]);
+    });
+
     Route::get('leaderboard/most-followed', [LeaderboardController::class, 'getMostFollowed']);
     Route::get('leaderboard/most-matches', [LeaderboardController::class, 'getMostMatches']);
     Route::get('leaderboard/most-popular', [LeaderboardController::class, 'getMostPopular']);
@@ -141,9 +153,12 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('subscription/stripe/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivateStripeSubscription']);
 
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
+    Route::get('user/favorites', [UserController::class, 'getFavorites']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/like/{id}', [UserController::class, 'like']);
     Route::put('user/unfollow/{id}', [UserController::class, 'unfollow']);
+    Route::put('user/save/{id}', [UserController::class, 'favoriteUser']);
+    Route::put('user/unsave/{id}', [UserController::class, 'unfavoriteUser']);
     Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 

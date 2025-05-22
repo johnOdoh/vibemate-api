@@ -91,6 +91,40 @@ class UserController extends Controller
         return response()->json(['message' => 'You have unliked this user.'], 200);
     }
 
+    public function favoriteUser(Request $request, string $id)
+    {
+        $favorites = empty($request->user()->profile->favorites) ? [] : explode(',', $request->user()->profile->favorites);
+        if(!in_array($id, $favorites)) {
+            $request->user()->profile->update(['favorites' => implode(',', array_merge($favorites, [$id]))]);
+        }
+        return response()->json(['message' => 'User Saved.'], 200);
+    }
+
+    public function unfavoriteUser(Request $request, string $id)
+    {
+        $favorites = empty($request->user()->profile->favorites) ? [] : explode(',', $request->user()->profile->favorites);
+        if(in_array($id, $favorites)) {
+            $request->user()->profile->update(['favorites' => implode(',', array_diff($favorites, [$id]))]);
+        }
+        return response()->json(['message' => 'User Unsaved.'], 200);
+    }
+
+    public function getFavorites(Request $request)
+    {
+        $favorites = empty($request->user()->profile->favorites) ? [] : explode(',', $request->user()->profile->favorites);
+        return User::whereIn('id', $favorites)
+            ->get()
+            ->map(fn($user) => [
+                'id' => $user->id,
+                'firstname' => $user->profile->firstname,
+                'lastname' => $user->profile->lastname,
+                'image' => asset('storage/' . $user->profile->image),
+                'age' => $user->profile->dob->age,
+                'city' => $user->profile->city,
+                'country' => $user->profile->country,
+            ]);
+    }
+
     public function getAffiliatePage(Request $request)
     {
         $user = $request->user();
