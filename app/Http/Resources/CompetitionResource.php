@@ -31,7 +31,7 @@ class CompetitionResource extends JsonResource
             'end' => $this->end,
             'image' => asset('storage/'.$this->image),
             'user' => [
-                'username' => $this->user->username
+                'username' => $this->user->profile->username
             ]
         ];
     }

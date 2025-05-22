@@ -19,7 +19,7 @@ class EntryResource extends JsonResource
             'file_url' => asset('storage/'.$this->url),
             'posted_by' => [
                 'id' => $this->user->id,
-                'username' => $this->user->username
+                'username' => $this->user->profile->username
             ],
             'is_image' => $this->is_image,
             'created_at' => $this->created_at,
