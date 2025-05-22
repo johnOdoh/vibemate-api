@@ -23,8 +23,8 @@ class EntryResource extends JsonResource
             ],
             'is_image' => $this->is_image,
             'created_at' => $this->created_at,
-            'competition' => new CompetitionResource($this->competition),
-            'comments' => CommentResource::collection($this->comments)
+            // 'competition' => new CompetitionResource($this->competition),
+            // 'comments' => CommentResource::collection($this->comments)
         ];
     }
 }
