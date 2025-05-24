@@ -6,13 +6,19 @@ use Illuminate\Http\Request;
 
 class DiscoveryController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
+        if (!$request->user()->discovery->exists()) {
+            $request->user()->discovery()->create();
+        }
         return request()->user()->discovery;
     }
 
     public function update(Request $request)
     {
+        if (!$request->user()->discovery->exists()) {
+            $request->user()->discovery()->create();
+        }
         $field = $request->query('field');
         $user = $request->user();
         switch ($field) {
