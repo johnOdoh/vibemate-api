@@ -35,6 +35,9 @@ class DiscoveryController extends Controller
                 $user->discovery->update(['min_photo' => $request->data]);
                 break;
             case 'open_to':
+                $user->discovery->update(['relationship_type' => $request->data]);
+                break;
+            case 'open_to':
                 $user->discovery->update(['open_to' => $request->data]);
                 break;
             case 'languages':
