@@ -33,6 +33,37 @@ function getCountryFromIp()
     return $country;
 }
 
+function getLocation($city, $country)
+{
+    $response = Http::get("https://api.geoapify.com/v1/geocode/search?city={$city}&country={$country}&limit=1&format=json&apiKey=".env('GEOAPI_KEY'));
+    // return $response->json();
+    if (!$response->successful() || empty($response->json()['results'])) {
+        return ['lon' => 0, 'lat' => 0]; // Default location if not found
+    }
+    return collect($response->json()['results'][0])->only(['lon', 'lat'])->all();
+}
+
+function getDistanceInMiles($user1, $user2, $unit = 'miles')
+{
+    $earthRadius = $unit === 'miles' ? 3958.8 : 6371.0; // Radius in miles or kilometers
+
+    $lat1 = deg2rad($user1['lat']);
+    $lon1 = deg2rad($user1['lon']);
+    $lat2 = deg2rad($user2['lat']);
+    $lon2 = deg2rad($user2['lon']);
+
+    $latDelta = $lat2 - $lat1;
+    $lonDelta = $lon2 - $lon1;
+
+    $a = sin($latDelta / 2) ** 2 +
+         cos($lat1) * cos($lat2) *
+         sin($lonDelta / 2) ** 2;
+
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+    return floor($earthRadius * $c);
+}
+
 function screenInput($input)
 {
     $perspectiveService = new PerspectiveService;

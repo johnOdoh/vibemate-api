@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DatingResource;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\ProfileResource;
 
@@ -12,9 +13,13 @@ class UserController extends Controller
 {
     public function index()
     {
-        return response()->json([
-            'users' => UserResource::collection(User::orderByDesc('id')->get())
-        ]);
+        // return getLocation('Bernhardhaven', 'British Indian Ocean Territory (Chagos Archipelago');
+        $my_location = getLocation(request()->user()->profile->city, request()->user()->profile->country);
+        $users = User::where('id', '!=', request()->user()->id)->whereHas('profile')->limit(10)->get();
+        return DatingResource::collection(
+            $users->map(fn($user) => new DatingResource($user, $my_location))
+        );
+
         $profile = request()->user()->profile;
         $interests = $profile->user->interests->pluck('name');
         $interested_in = $profile->connect_with;
@@ -40,6 +45,11 @@ class UserController extends Controller
         });
         $users = $query->get();
         return ProfileResource::collection($users);
+    }
+
+    public function show(Request $request)
+    {;
+        return new UserResource($request->user());
     }
 
     public function follow(Request $request, string $id)
@@ -89,6 +99,32 @@ class UserController extends Controller
     {
         $request->user()->likes()->where('receiver_id', $id)->exists() ? $request->user()->likes()->detach($id) : $request->user()->liked_by()->detach($id);
         return response()->json(['message' => 'You have unliked this user.'], 200);
+    }
+
+    public function getLiked(Request $request)
+    {
+        return $request->user()->likes()->orderByDesc('id')->get()->map(fn ($user) => [
+                'id' => $user->id,
+                'firstname' => $user->profile->firstname,
+                'lastname' => $user->profile->lastname,
+                'image' => asset('storage/' . $user->profile->image),
+                'age' => $user->profile->dob->age,
+                'city' => $user->profile->city,
+                'country' => $user->profile->country,
+            ]);
+    }
+
+    public function getLikedBy(Request $request)
+    {
+        return $request->user()->liked_by()->orderByDesc('id')->get()->map(fn ($user) => [
+                'id' => $user->id,
+                'firstname' => $user->profile->firstname,
+                'lastname' => $user->profile->lastname,
+                'image' => asset('storage/' . $user->profile->image),
+                'age' => $user->profile->dob->age,
+                'city' => $user->profile->city,
+                'country' => $user->profile->country,
+            ]);
     }
 
     public function favoriteUser(Request $request, string $id)

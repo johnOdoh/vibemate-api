@@ -152,10 +152,14 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('subscription/stripe/suspend/{subscription_id}', [SubscriptionController::class, 'suspendStripeSubscription']);
     Route::post('subscription/stripe/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivateStripeSubscription']);
 
+    Route::get('user', [UserController::class, 'index']);
+    Route::get('user/my-details', [UserController::class, 'show']);
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
     Route::get('user/favorites', [UserController::class, 'getFavorites']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/like/{id}', [UserController::class, 'like']);
+    Route::get('user/liked', [UserController::class, 'getLiked']);
+    Route::get('user/liked-by', [UserController::class, 'getLikedBy']);
     Route::put('user/unfollow/{id}', [UserController::class, 'unfollow']);
     Route::put('user/save/{id}', [UserController::class, 'favoriteUser']);
     Route::put('user/unsave/{id}', [UserController::class, 'unfavoriteUser']);
@@ -172,5 +176,5 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::resource('reply', CommentReplyController::class);
     Route::resource('status', StatusController::class);
     Route::resource('ticket', TicketController::class);
-    Route::resource('user', UserController::class);
+    // Route::resource('user', UserController::class);
 });
