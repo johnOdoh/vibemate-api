@@ -2,18 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use Stripe\StripeClient;
 use App\Models\Transaction;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
-use Stripe\StripeClient;
 
 class PaymentController extends Controller
 {
-    public function createPaypalOrder(Request $request)
+    public function getPlans()
     {
+        $plans = DB::table('plans')->get();
+        return $plans->map(fn ($plan) => [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'amount' => $plan->amount,
+                'interval' => $plan->interval,
+            ]);
+    }
+
+    public function createPaypalPayment(Request $request)
+    {
+        $description = $request->description;
+        $amount = $request->amount;
         $provider = new PayPalClient();
         $accessToken = $provider->getAccessToken()['access_token'];
 
@@ -32,9 +46,9 @@ class PaymentController extends Controller
                     [
                         "amount" => [
                             "currency_code" => "GBP",
-                            "value" => "200.00"
+                            "value" => $amount,
                         ],
-                        "description" => "Verification Badge"
+                        "description" => $description,
                     ]
                 ],
                 "payment_source" => [
@@ -51,19 +65,19 @@ class PaymentController extends Controller
                 ],
             ]);
 
-        if (!$response->successful()) return response()->json(['error' => 'Failed to create order'], 500);
+        if (!$response->successful()) return response()->json(['error' => 'Failed to create payment'], 500);
 
         Transaction::create([
             'user_id' => $request->user()->id,
             'reference' => $response->json('id'),
-            'amount' => 100.00,
+            'amount' => $amount,
             'status' => 'PENDING',
             'type' => 'debit',
-            'title' => 'Verification Badge',
-            'description' => 'Verification Badge',
+            'title' => $description,
+            'description' => "Payment for $description"
         ]);
         $approvalUrl = collect($response['links'])->where('rel', 'payer-action')->first()['href'];
-        return $approvalUrl;
+        return response()->json(['url' => $approvalUrl]);
         // return response()->json($response->json());
     }
 
@@ -120,20 +134,22 @@ class PaymentController extends Controller
 
     public function createStripePayment(Request $request)
     {
+        $description = $request->description;
+        $amount = $request->amount;
         $stripe = new StripeClient(env('STRIPE_SECRET'));
 
-         // Create a Stripe Checkout session
-         $response = $stripe->checkout->sessions->create([
+        // Create a Stripe Checkout session
+        $response = $stripe->checkout->sessions->create([
             'client_reference_id' => uniqid(more_entropy: true),
             // 'payment_method_types' => ['card'],
             'line_items' => [[
                 'price_data' => [
                     'currency' => 'gbp',
                     'product_data' => [
-                        'name' => 'Verification Badge',
-                        'description' => 'Get a Vibemate verification badge'
+                        'name' => $description,
+                        'description' => "Payment for $description",
                     ],
-                    'unit_amount' => 200*100, // Amount in cents (20.00 GBP)
+                    'unit_amount' => $amount*100, // Amount in cents (20.00 GBP)
                 ],
                 'quantity' => 1,
             ]],
@@ -141,17 +157,20 @@ class PaymentController extends Controller
             'success_url' => route('payment.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('payment.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
         ]);
+        if (!$response) {
+            return response()->json(['error' => 'Failed to create payment'], 500);
+        }
 
         Transaction::create([
             'user_id' => $request->user()->id,
             'reference' => $response->client_reference_id,
-            'amount' => 100.00,
+            'amount' => $amount,
             'status' => 'PENDING',
             'type' => 'debit',
-            'title' => 'Verification Badge',
-            'description' => 'Verification Badge',
+            'title' => $description,
+            'description' => "Payment for $description",
         ]);
-        return response()->json($response);
+        return response()->json(['url' => $response['url']]);
     }
 
     public function stripePaymentSuccess(Request $request)
@@ -171,24 +190,30 @@ class PaymentController extends Controller
 
     public function createPaystackPayment(Request $request)
     {
+        $description = $request->description;
+        $amount = $request->amount;
         $response = Http::withToken(env('PAYSTACK_SECRET_KEY'))
             ->withHeader('Content-Type', 'application/json')
             ->post('https://api.paystack.co/transaction/initialize', [
                 'email' => $request->user()->email,
-                'amount' => 100*100,
+                'amount' => $amount*100,
                 'callback_url' => route('payment.paystack.success')
             ]);
+
+        if (!$response->successful()) {
+            return response()->json(['error' => 'Failed to create payment'], 500);
+        }
 
         Transaction::create([
             'user_id' => $request->user()->id,
             'reference' => $response->json('data.reference'),
-            'amount' => 100.00,
+            'amount' => $amount,
             'status' => 'PENDING',
             'type' => 'debit',
-            'title' => 'Verification Badge',
-            'description' => 'Verification Badge',
+            'title' => $description,
+            'description' => "Payment for $description"
         ]);
-        return response()->json($response->json());
+        return response()->json(['url' => $response->json()['data']['authorization_url']]);
     }
 
     public function paystackPaymentSuccess(Request $request)

@@ -12,17 +12,6 @@ use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class SubscriptionController extends Controller
 {
-    public function createPlan()
-    {
-        $provider = new PayPalClient();
-        $provider->getAccessToken();
-        $response = $provider->addProduct('Demo Product', 'Demo Product', 'SERVICE', 'SOFTWARE')
-                    ->addDailyPlan('Demo Plan', 'Demo Plan', 30)
-                    ->setReturnAndCancelUrl(config('app.url').'/paypal-success', config('app.url').'/paypal-cancel')
-                    ->setupSubscription('John Doe', 'john@example.com', now()->addSeconds(60));
-        return response()->json($response);
-    }
-
     public function createPaypalSubscription(Request $request, Plan $plan)
     {
         $provider = new PayPalClient();
@@ -32,6 +21,10 @@ class SubscriptionController extends Controller
                     ->addBillingPlanById($plan->paypal_plan_id)
                     ->setReturnAndCancelUrl(route('subscription.paypal.success'), route('subscription.paypal.cancel'))
                     ->setupSubscription($request->user()->profile->username, $request->user()->email, now()->addSeconds(60));
+
+        if ($response['status'] !== 'CREATED') {
+            return response()->json(['message' => 'Failed to create subscription'], 500);
+        }
         $request->user()->subscription ? $request->user()->subscription->delete() : null;
         Subscription::create([
             'user_id' => $request->user()->id,
@@ -42,7 +35,7 @@ class SubscriptionController extends Controller
             'end' => now()->addDays($plan->interval)
         ]);
         // return redirect()->away($response['links'][0]['href']);
-        return response()->json($response);
+        return response()->json(['url' => $response['links'][0]['href']]);
     }
 
     public function cancelPaypalSubscription($subscription_id)
@@ -110,6 +103,9 @@ class SubscriptionController extends Controller
             'success_url' => route('subscription.stripe.success').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => route('subscription.stripe.cancel').'?session_id={CHECKOUT_SESSION_ID}',
         ]);
+        if ($response->status !== 'open') {
+            return response()->json(['message' => 'Failed to create subscription'], 500);
+        }
 
         $request->user()->subscription ? $request->user()->subscription->delete() : null;
         Subscription::create([
@@ -120,7 +116,7 @@ class SubscriptionController extends Controller
             'start' => now(),
             'end' => now()->addDays($plan->interval)
         ]);
-        return response()->json($response);
+        return response()->json([ 'url' => $response['url'] ]);
     }
 
     public function stripeSubscriptionSuccess(Request $request)
@@ -173,7 +169,7 @@ class SubscriptionController extends Controller
                 'last_name' => $request->user()->profile->lastname,
                 'phone' => $request->user()->profile->phone,
             ]);
-        // $request->user()->subscription ? $request->user()->subscription->delete() : null;
+
         $response = Http::withToken(env('PAYSTACK_SECRET_KEY'))
             ->withHeader('Content-Type', 'application/json')
             ->post('https://api.paystack.co/transaction/initialize', [
@@ -182,7 +178,10 @@ class SubscriptionController extends Controller
                 'plan' => $plan->paystack_plan_id,
                 'callback_url' => route('subscription.paystack.success')
             ]);
+
         if ($response->failed()) return response()->json(['message' => 'Failed to create subscription'], 500);
+
+        $request->user()->subscription ? $request->user()->subscription->delete() : null;
         $transaction = $response->json();
         Subscription::create([
             'user_id' => $request->user()->id,
@@ -192,7 +191,7 @@ class SubscriptionController extends Controller
             'start' => now(),
             'end' => now()->addDays($plan->interval)
         ]);
-        return response()->json($transaction);
+        return response()->json(['url' => $transaction['data']['authorization_url']]);
     }
 
     public function paystackSubscriptionSuccess(Request $request)

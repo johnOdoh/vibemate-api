@@ -36,8 +36,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
-Route::get('subscription/paypal/success', [SubscriptionController::class, 'paypalSubscriptionSuccess']);
-Route::get('subscription/paypal/cancel', [SubscriptionController::class, 'paypalSubscriptionCancel']);
+Route::get('subscription/paypal/success', [SubscriptionController::class, 'paypalSubscriptionSuccess'])->name('subscription.paypal.success');
+Route::get('subscription/paypal/cancel', [SubscriptionController::class, 'paypalSubscriptionCancel'])->name('subscription.paypal.cancel');
 
 Route::get('subscription/paystack/success', [SubscriptionController::class, 'paystackSubscriptionSuccess'])->name('subscription.paystack.success');
 Route::get('subscription/paystack/cancel', [SubscriptionController::class, 'paystackSubscriptionCancel'])->name('subscription.paystack.cancel');
@@ -120,6 +120,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('notification/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
     Route::delete('notification/{notification}', [NotificationController::class, 'delete']);
 
+    Route::get('payment/plans', [PaymentController::class, 'getPlans']);
     Route::post('payment/paypal/create', [PaymentController::class, 'createPaypalPayment']);
     Route::post('payment/paystack/create', [PaymentController::class, 'createPaystackPayment']);
     Route::post('payment/stripe/create', [PaymentController::class, 'createStripePayment']);
@@ -137,7 +138,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('status/get-viewers/{status}', [StatusController::class, 'getViewers']);
 
-    Route::post('subscription/create-plan', [SubscriptionController::class, 'createPlan']);
     Route::post('subscription/paypal/create/{plan}', [SubscriptionController::class, 'createPaypalSubscription']);
     Route::patch('subscription/paypal/cancel/{subscription_id}', [SubscriptionController::class, 'cancelPaypalSubscription']);
     Route::patch('subscription/paypal/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivatePaypalSubscription']);
