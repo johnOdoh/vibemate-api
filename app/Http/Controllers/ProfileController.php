@@ -161,6 +161,9 @@ class ProfileController extends Controller
     public function show(string $id)
     {
         $profile = Profile::where('user_id', $id)->first();
+        if (!$profile->user->discovery()->exists()) {
+            $profile->user->discovery()->create();
+        }
         return response()->json([
             'user' => new UserResource($profile->user),
             'profile' => new ProfileResource($profile, true)

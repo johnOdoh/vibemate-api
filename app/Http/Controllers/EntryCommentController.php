@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Entry;
 use App\Models\EntryComment;
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Http\Resources\CommentResource;
 
 class EntryCommentController extends Controller
 {
@@ -57,7 +57,7 @@ class EntryCommentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return CommentResource::collection(EntryComment::where('entry_id', $id)->where('status', 'approved')->orderByDesc('created_at')->get());
     }
 
     /**
@@ -79,7 +79,7 @@ class EntryCommentController extends Controller
             'body' => 'required|string'
         ]);
         if(!screenInput($data['body'])) {
-            $entry_comment->post->no_of_engagements--;
+            $entry_comment->entry->no_of_engagements--;
             $entry_comment->push();
             $data['status'] = 'pending';
         }
@@ -94,8 +94,8 @@ class EntryCommentController extends Controller
     {
         if(request()->user()->id !== $entry_comment->user_id)
             return response()->json(['message' => 'You are not authorized to delete this comment'], 403);
-        $entry_comment->post->no_of_engagements -= $entry_comment->replies->count() + 1;
-        $entry_comment->post->save();
+        $entry_comment->entry->no_of_engagements -= $entry_comment->replies->count() + 1;
+        $entry_comment->entry->save();
         $entry_comment->delete();
         return response('', 204);
     }

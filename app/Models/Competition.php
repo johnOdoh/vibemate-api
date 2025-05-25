@@ -11,7 +11,8 @@ class Competition extends Model
     protected $casts = [
         'start' => 'date',
         'end' => 'date',
-        'is_multiple' => 'boolean'
+        'is_multiple' => 'boolean',
+        'is_featured' => 'boolean'
     ];
 
     public function user()

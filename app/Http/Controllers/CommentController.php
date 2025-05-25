@@ -61,8 +61,7 @@ class CommentController extends Controller
      */
     public function show(string $id)
     {
-        $post = Post::findOrFail($id);
-        return CommentResource::collection($post->comments()->where('status', 'approved')->orderByDesc('id')->get());
+        return CommentResource::collection(Comment::where('post_id', $id)->where('status', 'approved')->orderByDesc('created_at')->get());
     }
 
     /**

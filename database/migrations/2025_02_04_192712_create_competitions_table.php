@@ -21,9 +21,10 @@ return new class extends Migration
             $table->string('category');
             $table->string('hashtag')->unique();
             $table->string('status')->default('approved');
-            $table->string('phase')->default('upcoming');
+            $table->string('phase')->default('upcoming'); //upcoming, active, expired
             $table->string('image');
             $table->boolean('is_multiple');
+            $table->boolean('is_featured')->default(false);
             $table->decimal('prize_1')->nullable();
             $table->decimal('prize_2')->nullable();
             $table->decimal('prize_3')->nullable();

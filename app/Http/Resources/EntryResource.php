@@ -15,16 +15,18 @@ class EntryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'no_of_engagements' => $this->no_of_engagements,
+            'competition_id' => $this->competition_id,
             'file_url' => asset('storage/'.$this->url),
             'posted_by' => [
                 'id' => $this->user->id,
-                'username' => $this->user->profile->username
+                'username' => $this->user->profile->username,
+                'image' => asset('storage/'.$this->user->profile->image),
             ],
-            'is_image' => $this->is_image,
-            'created_at' => $this->created_at,
-            // 'competition' => new CompetitionResource($this->competition),
-            // 'comments' => CommentResource::collection($this->comments)
+            'no_of_likes' => formatNumber($this->likes()->count()),
+            'no_of_comments' => formatNumber($this->comments()->count()),
+            'is_liked' => $this->likes()->where('user_id', $request->user()->id)->exists(),
+            'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->exists(),
+            'created_at' => $this->created_at
         ];
     }
 }

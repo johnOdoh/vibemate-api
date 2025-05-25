@@ -6,6 +6,7 @@ use App\Models\Entry;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\EntryCommentReply;
+use App\Http\Resources\ReplyResource;
 
 class EntryCommentReplyController extends Controller
 {
@@ -65,7 +66,7 @@ class EntryCommentReplyController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return ReplyResource::collection(EntryCommentReply::where('entry_comment_id', $id)->where('status', 'approved')->orderByDesc('created_at')->get());
     }
 
     /**

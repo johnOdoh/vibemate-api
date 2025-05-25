@@ -15,11 +15,11 @@ class EntryController extends Controller
      */
     public function index()
     {
-        $entries = Entry::where('competition_id', request()->competition_id)->where('status', 'approved')->orderBy('created_at', 'desc')->get();
-        return response()->json([
-            'entries' => EntryResource::collection($entries),
-            'count' => $entries->count()
-        ]);
+        $entries = Entry::where('competition_id', request()->competition_id)
+            ->where('status', 'approved')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return EntryResource::collection($entries);
     }
 
     /**
@@ -98,7 +98,7 @@ class EntryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        return $request;
+        //
     }
 
     /**

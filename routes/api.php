@@ -92,10 +92,11 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
             ]);
     });
 
-    Route::get('leaderboard/most-followed', [LeaderboardController::class, 'getMostFollowed']);
-    Route::get('leaderboard/most-matches', [LeaderboardController::class, 'getMostMatches']);
-    Route::get('leaderboard/most-popular', [LeaderboardController::class, 'getMostPopular']);
-    Route::get('leaderboard/most-engaged', [LeaderboardController::class, 'getMostEngaged']);
+    Route::get('leaderboard', [LeaderboardController::class, 'getLeaderboard']);
+    // Route::get('leaderboard/most-followed', [LeaderboardController::class, 'getMostFollowed']);
+    // Route::get('leaderboard/most-matches', [LeaderboardController::class, 'getMostMatches']);
+    // Route::get('leaderboard/most-popular', [LeaderboardController::class, 'getMostPopular']);
+    // Route::get('leaderboard/most-engaged', [LeaderboardController::class, 'getMostEngaged']);
 
     Route::get('livestream/{livestream}', [LivestreamController::class, 'show']);
     Route::post('livestream', [LivestreamController::class, 'store']);

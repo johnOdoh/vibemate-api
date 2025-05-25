@@ -12,10 +12,22 @@ class CompetitionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $competitions = Competition::where('status', 'approved')->get();
-        return CompetitionResource::collection($competitions);
+        $request->query('live', 'false');
+        if($request->query('live') === 'true') {
+            $competitions = Competition::where('status', 'approved')
+                ->where('phase', 'in_progress')
+                ->orderByDesc('created_at')
+                ->get();
+            return CompetitionResource::collection($competitions);
+        }
+        $competitions = Competition::where('status', 'approved')->orderByDesc('created_at')->get();
+        return response()->json([
+            'available_tokens' => $request->user()->wallet,
+            'amount_in_pounds' => $request->user()->wallet * 0.01,
+            'competitions' => CompetitionResource::collection($competitions)
+        ]);
     }
 
     /**

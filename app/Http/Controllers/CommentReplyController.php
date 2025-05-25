@@ -67,8 +67,7 @@ class CommentReplyController extends Controller
      */
     public function show(string $id)
     {
-        $comment = Comment::findOrFail($id);
-        return ReplyResource::collection($comment->replies()->where('status', 'approved')->orderByDesc('id')->get());
+        return ReplyResource::collection(CommentReply::where('comment_id', $id)->where('status', 'approved')->orderByDesc('created_at')->get());
     }
 
     /**

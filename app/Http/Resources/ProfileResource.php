@@ -39,12 +39,14 @@ class ProfileResource extends JsonResource
             'interests' => $this->user->interests->pluck('name'),
             $this->mergeWhen($this->showExtra, [
                 'posts_count' => formatNumber($this->user->posts->count()),
-                'followers' => $this->user->followers()->where('is_active', true)->get()->map(fn($follower) => [
-                    'id' => $follower->id,
-                ]),
+                // 'followers' => $this->user->followers()->where('is_active', true)->get()->map(fn($follower) => [
+                //     'id' => $follower->id,
+                // ]),
+                'followers_count' => formatNumber($this->user->followers()->where('is_active', true)->count()),
                 'following_count' => formatNumber($this->user->following()->where('is_active', true)->count()),
+                'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->exists(),
                 'likes_count' => formatNumber($this->user->liked_by->count()),
-                'posts' => PostResource::collection($this->user->posts),
+                'posts' => PostResource::collection($this->user->posts)
             ]),
         ];
     }
