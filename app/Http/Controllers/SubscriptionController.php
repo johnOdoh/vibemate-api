@@ -22,7 +22,7 @@ class SubscriptionController extends Controller
                     ->setReturnAndCancelUrl(route('subscription.paypal.success'), route('subscription.paypal.cancel'))
                     ->setupSubscription($request->user()->profile->username, $request->user()->email, now()->addSeconds(60));
 
-        if ($response['status'] !== 'CREATED') {
+        if ($response['status'] !== 'APPROVAL_PENDING') {
             return response()->json(['message' => 'Failed to create subscription'], 500);
         }
         $request->user()->subscription ? $request->user()->subscription->delete() : null;

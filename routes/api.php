@@ -26,6 +26,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\EntryCommentReplyController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\TicketController;
+use App\Models\Gift;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -76,8 +77,20 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('entry/like/{entry}', [EntryController::class, 'like']);
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
+    Route::get('gift', function () {
+        return Gift::orderBy('price')
+            ->get()
+            ->map(fn ($gift) => [
+                'id' => $gift->id,
+                'name' => $gift->name,
+                'price' => $gift->price,
+                'category' => $gift->category,
+                'icon' => $gift->icon
+            ]);
+    });
+
     Route::get('interest', function () {
-        return Interest::orderBy('name')->get(['id', 'name', 'description', 'icon']);
+        return Interest::orderBy('name')->get(['id', 'name', 'icon']);
     });
 
     Route::get('interest/list', function () {
