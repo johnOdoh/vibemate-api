@@ -65,7 +65,7 @@ class SubscriptionController extends Controller
 
     public function paypalSubscriptionSuccess(Request $request)
     {
-        $subscription = Subscription::where('subscription_id', $request->subscription_id)->first();
+        $subscription = Subscription::where('subscription_id', $request->subscription_id)->firstOrFail();
         $subscription->status = SubscriptionStatus::Active->value;
         $subscription->user->is_subscribed = true;
         $subscription->push();
@@ -123,7 +123,7 @@ class SubscriptionController extends Controller
     {
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);
-        $subscription = Subscription::where('subscription_id', $session->client_reference_id)->first();
+        $subscription = Subscription::where('subscription_id', $session->client_reference_id)->firstOrFail();
         $subscription->status = SubscriptionStatus::Active->value;
         $subscription->user->is_subscribed = true;
         $subscription->subscription_id = $session->subscription;
@@ -196,10 +196,10 @@ class SubscriptionController extends Controller
 
     public function paystackSubscriptionSuccess(Request $request)
     {
-        Subscription::where('subscription_id', $request->reference)->update([
-            'status' => SubscriptionStatus::Active->value,
-            'user->is_subscribed' => true
-        ]);
+        $subscription = Subscription::where('subscription_id', $request->reference)->firstOrFail();
+        $subscription->status = SubscriptionStatus::Active->value;
+        $subscription->user->is_subscribed = true;
+        $subscription->push();
         return response()->json(['message' => 'Subscription activated']);
     }
 
