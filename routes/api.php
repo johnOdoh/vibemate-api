@@ -142,6 +142,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('payment/giftcard/products/{countryCode}', [PaymentController::class, 'getGiftCardsByCountry']);
     Route::post('payment/giftcard/order/{productId}', [PaymentController::class, 'orderGiftCard']);
 
+    Route::get('post/{id}/reels', [PostController::class, 'getReels']);
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
     Route::put('post/unlike/{post}', [PostController::class, 'unlike']);

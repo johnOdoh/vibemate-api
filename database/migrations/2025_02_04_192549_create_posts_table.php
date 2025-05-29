@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('meta_location');
             $table->boolean('allow_comments');
             $table->boolean('allow_like_counts');
+            $table->boolean('has_video')->default(false);
             $table->timestamps();
         });
     }

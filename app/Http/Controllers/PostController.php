@@ -33,6 +33,28 @@ class PostController extends Controller
         return PostResource::collection($posts);
     }
 
+    public function getReels($id)
+    {
+        $posts = Post::where('user_id', $id)->where('has_video', true)->orderByDesc('created_at')->get();
+        // return $posts;
+        return $posts->map(fn ($post) => [
+            'id' => $post->id,
+            'posted_by' => [
+                'id' => $post->user->id,
+                'username' => $post->user->profile ? $post->user->profile->username : null,
+                'image' => $post->user->profile ? asset('storage/'.$post->user->profile->image) : null,
+            ],
+            'body' => $post->body,
+            'hashtags' => $post->hashtags,
+            'file_url' => array_values(array_filter(explode(', ', $post->file_url), fn ($file) => str_contains($file, '/video/')))[0],
+            'likes_count' => $post->likes->count(),
+            'is_liked' => $post->likes->contains('user_id', request()->user()->id),
+            'is_following' => $post->user->followers()->where('follower_id', request()->user()->id)->where('is_active', true)->exists() || request()->user()->id === $post->user->id,
+            'comments_count' => formatNumber($post->comments->count()),
+            'created_at' => $post->created_at,
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -75,6 +97,7 @@ class PostController extends Controller
                 else {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
                     $path[] = $file->storeAs('posts/videos', $fileName, 'public');
+                    $data['has_video'] = true;
                 }
             }
         }

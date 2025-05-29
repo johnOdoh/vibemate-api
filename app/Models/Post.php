@@ -16,7 +16,7 @@ class Post extends Model
     protected $casts = [
         'allow_comments' => 'boolean',
         'allow_like_counts' => 'boolean',
-        'is_image' => 'boolean'
+        'has_video' => 'boolean'
     ];
 
     public static function getTopHashtags($limit, $duration)

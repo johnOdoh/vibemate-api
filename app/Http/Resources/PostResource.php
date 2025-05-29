@@ -39,7 +39,7 @@ class PostResource extends JsonResource
             ],
             // 'updated_at' => $this->updated_at,
             'likes' => $this->likes->pluck('user_id'),
-            'is_following' => request()->user()->following->contains($this->user->id),
+            'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->where('is_active', true)->exists() || $this->user->id === $request->user()->id,
             'comments_count' => formatNumber($this->comments->count())
             // $this->mergeWhen($this->single, [
             //     'comments' => CommentResource::collection($this->comments),

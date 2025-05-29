@@ -44,7 +44,7 @@ class ProfileResource extends JsonResource
                 // ]),
                 'followers_count' => formatNumber($this->user->followers()->where('is_active', true)->count()),
                 'following_count' => formatNumber($this->user->following()->where('is_active', true)->count()),
-                'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->exists(),
+                'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->where('is_active', true)->exists(),
                 'likes_count' => formatNumber($this->user->liked_by->count()),
                 'posts' => PostResource::collection($this->user->posts)
             ]),
