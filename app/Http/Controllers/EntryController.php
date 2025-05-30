@@ -128,7 +128,7 @@ class EntryController extends Controller
         $status = $entry->likes()->where('user_id', request()->user()->id)->delete();
         if($status && $entry->no_of_engagements > 0) $entry->no_of_engagements--;
         $entry->save();
-        return response()->json(['message' => 'Entry unliked'], 201);;
+        return response()->json(['message' => 'Entry unliked'], 200);;
     }
 
     /**

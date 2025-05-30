@@ -14,15 +14,19 @@ class CompetitionController extends Controller
      */
     public function index(Request $request)
     {
-        $request->query('live', 'false');
-        if($request->query('live') === 'true') {
+        $is_live = $request->query('live', 'false');
+        if($is_live === 'true') {
             $competitions = Competition::where('status', 'approved')
-                ->where('phase', 'in_progress')
+                ->where('phase', 'active')
                 ->orderByDesc('created_at')
                 ->get();
             return CompetitionResource::collection($competitions);
         }
-        $competitions = Competition::where('status', 'approved')->orderByDesc('created_at')->get();
+        $filter = $request->query('filter', 'active');
+        $competitions = Competition::where('status', 'approved')
+            ->where('phase', $filter)
+            ->orderByDesc('created_at')
+            ->get();
         return response()->json([
             'available_tokens' => $request->user()->wallet,
             'amount_in_pounds' => $request->user()->wallet * 0.01,
@@ -161,8 +165,8 @@ class CompetitionController extends Controller
     public function start(Competition $competition)
     {
         if($competition->status !== 'approved') return response()->json(['message' => 'Competition has not been approved.'], 403);
-        if($competition->phase === 'in_progress') return response()->json(['message' => 'Competition has already started.'], 403);
-        $competition->phase = 'in_progress';
+        if($competition->phase === 'active') return response()->json(['message' => 'Competition has already started.'], 403);
+        $competition->phase = 'active';
         $competition->save();
         return response()->json(['message' => 'Competition has started.'], 200);
     }

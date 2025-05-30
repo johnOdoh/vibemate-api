@@ -2,17 +2,11 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Support\Collection;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CompetitionResource extends JsonResource
 {
-    protected $not_collection;
-
-    public function __construct($resource, $not_collection = false)
-    {
-        parent::__construct($resource);
-        $this->not_collection = $not_collection;
-    }
     /**
      * Transform the resource into an array.
      *
@@ -33,14 +27,12 @@ class CompetitionResource extends JsonResource
             'start' => $this->start->diffForHumans(),
             'end' => $this->end->diffForHumans(),
             'is_featured' => $this->is_featured,
-            $this->mergeWhen($this->not_collection, [
-                'is_multiple' => $this->is_multiple,
-                'hashtag' => $this->hashtag,
-                'prize_1' => $this->prize_1,
-                'prize_2' => $this->prize_2,
-                'prize_3' => $this->prize_3,
-                'image' => asset('storage/'.$this->image),
-            ]),
+            'is_multiple' => $this->is_multiple,
+            'hashtag' => $this->hashtag,
+            'prize_1' => $this->prize_1,
+            'prize_2' => $this->prize_2,
+            'prize_3' => $this->prize_3,
+            'image' => asset('storage/'.$this->image),
             'user' => [
                 'firstname' => $this->user->profile->firstname,
                 'lastname' => $this->user->profile->lastname,
