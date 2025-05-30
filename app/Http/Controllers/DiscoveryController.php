@@ -46,6 +46,9 @@ class DiscoveryController extends Controller
             case 'zodiac':
                 $user->discovery->update(['zodiac' => $request->data]);
                 break;
+            case 'height':
+                $user->discovery->update(['height' => $request->data]);
+                break;
             case 'education':
                 $user->discovery->update(['education' => $request->data]);
                 break;
@@ -75,6 +78,17 @@ class DiscoveryController extends Controller
                 break;
             case 'communication':
                 $user->discovery->update(['communication' => $request->data]);
+                break;
+            case 'working':
+                $user->discovery->update([
+                    'employment_company' => $request->company,
+                    'employment_role' => $request->role,
+                    'employment_location' => $request->location,
+                    'employment_type' => $request->type,
+                ]);
+                break;
+            case 'down_to_meet':
+                $user->discovery->update(['down_to_meet' => $request->data]);
                 break;
             default:
                 return response()->json(['error' => 'Invalid field'], 403);

@@ -46,7 +46,7 @@ class PostController extends Controller
             ],
             'body' => $post->body,
             'hashtags' => $post->hashtags,
-            'file_url' => array_values(array_filter(explode(', ', $post->file_url), fn ($file) => str_contains($file, '/video/')))[0],
+            'file_url' => asset('storage/'.array_values(array_filter(explode(', ', $post->file_url), fn ($file) => str_contains($file, '/videos/')))[0] ?? ''),
             'likes_count' => $post->likes->count(),
             'is_liked' => $post->likes->contains('user_id', request()->user()->id),
             'is_following' => $post->user->followers()->where('follower_id', request()->user()->id)->where('is_active', true)->exists() || request()->user()->id === $post->user->id,

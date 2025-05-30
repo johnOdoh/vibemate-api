@@ -32,6 +32,12 @@ return new class extends Migration
             $table->string('drinking')->nullable();
             $table->string('smoking')->nullable();
             $table->string('communication')->nullable();
+            $table->string('height')->nullable();
+            $table->string('down_to_meet')->nullable();
+            $table->string('employment_company')->nullable();
+            $table->string('employment_type')->nullable();
+            $table->string('employment_location')->nullable();
+            $table->string('employment_role')->nullable();
             $table->timestamps();
         });
     }
