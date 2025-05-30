@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Gift;
 use App\Models\Interest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -11,22 +12,22 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
 use App\Http\Controllers\MusicController;
 use App\Http\Controllers\StatusController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\VerifyPaypalWebhook;
+use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\LivestreamController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\CommentReplyController;
-use App\Http\Controllers\DiscoveryController;
 use App\Http\Controllers\EntryCommentController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\EntryCommentReplyController;
-use App\Http\Controllers\LeaderboardController;
-use App\Http\Controllers\TicketController;
-use App\Models\Gift;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -191,5 +192,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::resource('reply', CommentReplyController::class);
     Route::resource('status', StatusController::class);
     Route::resource('ticket', TicketController::class);
+    Route::resource('verification', VerificationController::class);
     // Route::resource('user', UserController::class);
 });
