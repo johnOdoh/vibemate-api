@@ -22,9 +22,7 @@ class CompetitionController extends Controller
                 ->get();
             return CompetitionResource::collection($competitions);
         }
-        $filter = $request->query('filter', 'active');
         $competitions = Competition::where('status', 'approved')
-            ->where('phase', $filter)
             ->orderByDesc('created_at')
             ->get();
         return response()->json([
