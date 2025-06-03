@@ -6,6 +6,8 @@ use App\Models\Post;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Resources\PostResource;
+use App\Http\Resources\ReelResource;
+use App\Jobs\GenerateVideoThumbnail;
 
 class PostController extends Controller
 {
@@ -36,23 +38,7 @@ class PostController extends Controller
     public function getReels($id)
     {
         $posts = Post::where('user_id', $id)->where('has_video', true)->orderByDesc('created_at')->get();
-        // return $posts;
-        return $posts->map(fn ($post) => [
-            'id' => $post->id,
-            'posted_by' => [
-                'id' => $post->user->id,
-                'username' => $post->user->profile ? $post->user->profile->username : null,
-                'image' => $post->user->profile ? asset('storage/'.$post->user->profile->image) : null,
-            ],
-            'body' => $post->body,
-            'hashtags' => $post->hashtags,
-            'file_url' => asset('storage/'.array_values(array_filter(explode(', ', $post->file_url), fn ($file) => str_contains($file, '/videos/')))[0] ?? ''),
-            'likes_count' => $post->likes->count(),
-            'is_liked' => $post->likes->contains('user_id', request()->user()->id),
-            'is_following' => $post->user->followers()->where('follower_id', request()->user()->id)->where('is_active', true)->exists() || request()->user()->id === $post->user->id,
-            'comments_count' => formatNumber($post->comments->count()),
-            'created_at' => $post->created_at,
-        ]);
+        return ReelResource::collection($posts);
     }
 
     /**
@@ -95,9 +81,11 @@ class PostController extends Controller
                     }
                 }
                 else {
-                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $path[] = $file->storeAs('posts/videos', $fileName, 'public');
+                    $fileName = microtime(true);
+                    $fileNameWithExtension = $fileName.'.'.$file->getClientOriginalExtension();
+                    $path[] = $file->storeAs('posts/videos', $fileNameWithExtension, 'public');
                     $data['has_video'] = true;
+                    GenerateVideoThumbnail::dispatch($fileNameWithExtension, $fileName)->onQueue('thumbnails');
                 }
             }
         }

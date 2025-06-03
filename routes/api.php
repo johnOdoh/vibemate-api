@@ -171,6 +171,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('user', [UserController::class, 'index']);
     Route::get('user/my-details', [UserController::class, 'show']);
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
+    Route::get('user/analytics', [UserController::class, 'getUserAnalytics']);
     Route::get('user/favorites', [UserController::class, 'getFavorites']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/like/{id}', [UserController::class, 'like']);

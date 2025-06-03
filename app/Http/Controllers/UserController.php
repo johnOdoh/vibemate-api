@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\DatingResource;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\DatingResource;
 use App\Http\Resources\ProfileResource;
 
 class UserController extends Controller
@@ -194,6 +195,26 @@ class UserController extends Controller
                 'image' => asset('storage/' . $referral->profile->image),
                 'created_at' => $referral->created_at->diffForHumans()
             ]),
+        ]);
+    }
+
+    public function getUserAnalytics(Request $request)
+    {
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::SUNDAY);
+        $endOfWeek = Carbon::now()->endOfWeek(Carbon::SATURDAY);
+
+        // YourModel::whereBetween('created_at', [$startOfWeek, $endOfWeek])->get();
+        return response()->json([
+            'post_engagements' => $request->user()->posts()->sum('no_of_engagements'),
+            'matches' => $request->user()->likes()->where('is_matched', true)->count() + $request->user()->liked_by()->where('is_matched', true)->count(),
+            'profile_views' => $request->user()->profile->profile_views,
+            'weekly_profile_views' => $request->user()->profile->weekly_profile_views,
+            'weekly_post_engagements' => $request->user()->posts()->sum('most_engagements_points'),
+            'weekly_likes_received' => $request->user()->posts()
+                                               ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+                                               ->withCount('likes')
+                                               ->get()
+                                               ->sum('likes_count')
         ]);
     }
 

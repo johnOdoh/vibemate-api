@@ -28,6 +28,9 @@ return new class extends Migration
             $table->string('phone');
             $table->string('city');
             $table->string('country');
+            $table->unsignedBigInteger('profile_views')->default(0);
+            $table->unsignedInteger('weekly_profile_views')->default(0);
+            $table->string('profile_views')->default(0);
             $table->text('favorites')->default('');
             $table->text('discarded')->default('');
             $table->string('visibility')->default('public');
