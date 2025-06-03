@@ -18,14 +18,14 @@ return new class extends Migration
             $table->decimal('wallet', 10, 2)->default(0);
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_subscribed')->default(false);
-            $table->boolean('has_badge')->default(false);
+            $table->enum('badge_status', ['paid', 'active', 'unpaid'])->default('unpaid'); //paid, active, unpaid
             $table->string('status')->default('active');
             $table->unsignedBigInteger('no_of_swipes')->default(0);
             $table->string('email_token')->nullable();
             $table->string('reset_token')->nullable();
-            $table->decimal('referral_amount_earned', 10, 2)->default(0);
+            $table->decimal('referral_amount_earned', 10, 2)->default(2.00);
             $table->decimal('referral_amount_withdrawn', 10, 2)->default(0);
-            $table->unsignedInteger('referral_count')->default(0);
+            $table->unsignedInteger('referral_count')->default(1);
             $table->unsignedInteger('most_popular_points')->default(0);
             $table->unsignedInteger('most_followed_points')->default(0);
             $table->unsignedInteger('most_matches_points')->default(0);

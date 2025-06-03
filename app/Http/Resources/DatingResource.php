@@ -30,6 +30,12 @@ class DatingResource extends JsonResource
             'country' => $this->profile->country,
             'distance' => formatNumber(getDistanceInMiles($this->my_distance, getLocation($this->profile->city, $this->profile->country), 'miles')). ' miles away',
             'bio' => $this->profile->bio,
+            // 'height' => $this->discovery->height,
+            // 'education' => $this->discovery->education,
+            // 'working' => $this->discovery->employment_company,
+            // 'languages' => explode(', ', $this->discovery->languages),
+            // 'looking_for' => explode(', ', $this->profile->here_for),
+            // 'down_to_meet' => explode(', ', $this->discovery->down_to_meet),
 
         ];
     }

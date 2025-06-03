@@ -133,7 +133,7 @@ class UserController extends Controller
         if(!in_array($id, $favorites)) {
             $request->user()->profile->update(['favorites' => implode(',', array_merge($favorites, [$id]))]);
         }
-        return response()->json(['message' => 'User Saved.'], 200);
+        return response()->json(['message' => 'Profile Saved.'], 200);
     }
 
     public function unfavoriteUser(Request $request, string $id)
@@ -142,7 +142,7 @@ class UserController extends Controller
         if(in_array($id, $favorites)) {
             $request->user()->profile->update(['favorites' => implode(',', array_diff($favorites, [$id]))]);
         }
-        return response()->json(['message' => 'User Unsaved.'], 200);
+        return response()->json(['message' => 'Profile Unsaved.'], 200);
     }
 
     public function getFavorites(Request $request)
@@ -159,6 +159,24 @@ class UserController extends Controller
                 'city' => $user->profile->city,
                 'country' => $user->profile->country,
             ]);
+    }
+
+    public function discardUser(Request $request, string $id)
+    {
+        $discarded = empty($request->user()->profile->discarded) ? [] : explode(',', $request->user()->profile->discarded);
+        if(!in_array($id, $discarded)) {
+            $request->user()->profile->update(['discarded' => implode(',', array_merge($discarded, [$id]))]);
+        }
+        return response()->json(['message' => 'Profile Discarded.'], 200);
+    }
+
+    public function unDiscardUser(Request $request, string $id)
+    {
+        $discarded = empty($request->user()->profile->discarded) ? [] : explode(',', $request->user()->profile->discarded);
+        if(in_array($id, $discarded)) {
+            $request->user()->profile->update(['discarded' => implode(',', array_diff($discarded, [$id]))]);
+        }
+        return response()->json(['message' => 'Profile Undiscarded.'], 200);
     }
 
     public function getAffiliatePage(Request $request)

@@ -76,7 +76,7 @@ function approvePayment($transaction_ref)
     $transaction = Transaction::where('reference', $transaction_ref)->first();
     if (!$transaction) return response()->json(['message' => 'Transaction not found'], 404);
     if ($transaction->title === 'Verification Badge') {
-        $transaction->user->has_badge = true;
+        $transaction->user->badge_status = 'paid';
         $transaction->status = 'APPROVED';
         $transaction->push();
     }

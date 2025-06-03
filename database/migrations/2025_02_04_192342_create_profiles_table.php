@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('city');
             $table->string('country');
             $table->text('favorites')->default('');
+            $table->text('discarded')->default('');
             $table->string('visibility')->default('public');
             $table->timestamps();
         });

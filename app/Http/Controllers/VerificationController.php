@@ -18,6 +18,7 @@ class VerificationController extends Controller
         return response()->json([
             'id' => $verification->id,
             'type' => $verification->type,
+            'status' => $verification->status,
             'created_at' => $verification->created_at->format('m d, Y')
         ]);
     }
@@ -43,10 +44,11 @@ class VerificationController extends Controller
             'url' => 'nullable|url',
             'reason' => 'required|string|max:255',
         ]);
-
-        $data['front'] = $request->file('front')->storeAs('verifications', $request->user()->profile->username.'-front', 'public');
+        $fileName = $request->user()->profile->username.'-front.'.$request->file('front')->getClientOriginalExtension();
+        $data['front'] = $request->file('front')->storeAs('verifications', $fileName, 'public');
         if ($request->hasFile('back')) {
-            $data['back'] = $request->file('back')->storeAs('verifications', $request->user()->profile->username.'-back', 'public');
+            $fileName = $request->user()->profile->username.'-back.'.$request->file('back')->getClientOriginalExtension();
+            $data['back'] = $request->file('back')->storeAs('verifications', $fileName, 'public');
         }
         $request->user()->verification()->create($data);
         return response()->json(['message' => 'Verification request submitted successfully.'], 201);

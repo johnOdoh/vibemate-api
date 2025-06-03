@@ -19,7 +19,7 @@ class UserResource extends JsonResource
             'wallet' => $this->wallet,
             'is_verified' => $this->is_verified,
             'is_subscribed' => $this->is_subscribed,
-            'has_badge' => $this->has_badge,
+            'badge_status' => $this->badge_status,
             'status' => $this->status,
         ];
     }

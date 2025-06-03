@@ -180,6 +180,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('user/save/{id}', [UserController::class, 'favoriteUser']);
     Route::put('user/unsave/{id}', [UserController::class, 'unfavoriteUser']);
     Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
+    Route::put('user/discard/{id}', [UserController::class, 'discardUser']);
+    Route::put('user/undiscard/{id}', [UserController::class, 'unDiscardUser']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::resource('comment', CommentController::class);

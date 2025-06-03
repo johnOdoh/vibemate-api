@@ -52,7 +52,7 @@ class CompetitionController extends Controller
             'type' => 'required|string',
             'category' => 'required|string',
             'is_multiple' => 'required|boolean',
-            'prize' => ['required', 'numeric', 'min:1',
+            'prize' => ['required', 'numeric', 'min:10000',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->is_multiple) {
                         if ($request->prize_1 + $request->prize_2 + $request->prize_3 != $value) {
@@ -80,9 +80,10 @@ class CompetitionController extends Controller
             'end' => 'required|date',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120'
         ], [
-            'hashtag.regex' => 'hashtag must start with a # and contain only lowercase letters and numbers.'
+            'hashtag.regex' => 'hashtag must start with a # and contain only lowercase letters and numbers.',
+            'prize.min' => 'The reward must be at least 10,000 VBM tokens.',
         ]);
-        // if($request->user()->wallet < ($data['prize'] + (0.1 * $data['prize']))) {
+        // if($request->user()->wallet < ($data['prize'] + (0.2 * $data['prize']))) {
         //     return response()->json(['message' => 'Insufficient funds.'], 403);
         // }
         // $request->user()->wallet -= ($data['prize'] + (0.1 * $data['prize']));
@@ -93,6 +94,10 @@ class CompetitionController extends Controller
         }
         $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
+        $user = $request->user();
+        if ($user->badge_status === 'active' || $user->is_subscribed || $user->followers()->where('is_active', true)->count() >= 1000 || $data['prize'] >= 50000) {
+            $data['is_featured'] = true;
+        }
         $competition = new Competition($data);
         $request->user()->save();
         $competition->save();

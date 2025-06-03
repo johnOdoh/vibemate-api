@@ -88,7 +88,7 @@ class DiscoveryController extends Controller
                 ]);
                 break;
             case 'down_to_meet':
-                $user->discovery->update(['down_to_meet' => $request->data]);
+                $user->discovery->update(['down_to_meet' => implode(', ', $request->data)]);
                 break;
             default:
                 return response()->json(['error' => 'Invalid field'], 403);

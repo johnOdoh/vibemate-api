@@ -104,7 +104,7 @@ class PostController extends Controller
         unset($data['files']);
         if(!empty($data['body']) && !screenInput($data['body'])) $data['status'] = 'pending';
         $data['file_url'] = implode(', ', $path);
-        $data['hashtags'] = $data['hashtags'] ? implode(', ', $data['hashtags']) : null;
+        $data['hashtags'] = !empty($data['hashtags']) ? implode(', ', $data['hashtags']) : null;
         $data['user_id'] = $request->user()->id;
         $data['meta_location'] = getCountryFromIp();
         $post = new Post($data);
