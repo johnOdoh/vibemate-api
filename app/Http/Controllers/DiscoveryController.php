@@ -11,7 +11,34 @@ class DiscoveryController extends Controller
         if (!$request->user()->discovery->exists()) {
             $request->user()->discovery()->create();
         }
-        return request()->user()->discovery;
+        return $request->user()->discovery()->get()->map(fn($discovery) => [
+            'location' => $discovery->location,
+            'distance' => $discovery->distance,
+            'min_age' => $discovery->min_age,
+            'max_age' => $discovery->max_age,
+            'min_photos' => $discovery->min_photo,
+            'relationship_type' => $discovery->relationship_type,
+            'open_to' => explode(', ', $discovery->open_to),
+            'languages' => explode(', ', $discovery->languages),
+            'zodiac' => $discovery->zodiac,
+            'height' => $discovery->height,
+            'education' => $discovery->education,
+            'family_plan' => $discovery->family_plan,
+            'covid_vaccine' => $discovery->covid_vaccine,
+            'personality_style' => $discovery->personality_style,
+            'love_style' => $discovery->love_style,
+            'communication_style' => $discovery->communication_style,
+            'pets' => $discovery->pets,
+            'drinking' => $discovery->drinking,
+            'communication' => $discovery->communication,
+            'working' => [
+                'company' => $discovery->employment_company,
+                'role' => $discovery->employment_role,
+                'location' => $discovery->employment_location,
+                'type' => $discovery->employment_type
+            ],
+            'down_to_meet' => explode(', ', $discovery->down_to_meet)
+        ]);
     }
 
     public function update(Request $request)
@@ -31,14 +58,14 @@ class DiscoveryController extends Controller
             case 'age_range':
                 $user->discovery->update(['min_age' => $request->min, 'max_age' => $request->max]);
                 break;
-            case 'min_photo':
+            case 'min_photos':
                 $user->discovery->update(['min_photo' => $request->data]);
                 break;
             case 'relationship_type':
                 $user->discovery->update(['relationship_type' => $request->data]);
                 break;
             case 'open_to':
-                $user->discovery->update(['open_to' => $request->data]);
+                $user->discovery->update(['open_to' => implode(', ', $request->data)]);
                 break;
             case 'languages':
                 $user->discovery->update(['languages' => implode(', ', $request->data)]);
@@ -72,9 +99,6 @@ class DiscoveryController extends Controller
                 break;
             case 'drinking':
                 $user->discovery->update(['drinking' => $request->data]);
-                break;
-            case 'smoking':
-                $user->discovery->update(['smoking' => $request->data]);
                 break;
             case 'communication':
                 $user->discovery->update(['communication' => $request->data]);
