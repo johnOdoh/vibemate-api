@@ -76,6 +76,7 @@ class UserController extends Controller
     {
         if(!$request->user()->likes()->where('receiver_id', $id)->exists()) {//if user has not liked this user already
             $user = User::findOrFail($id);
+            $user->profile->profile_views++;
             if($request->user()->liked_by()->where('sender_id', $id)->exists()) {//if user has been liked by this user already
                 //update the pivot table to show that there is a match
                 $request->user()->liked_by()->updateExistingPivot($id, ['is_matched' => true]);
@@ -83,12 +84,12 @@ class UserController extends Controller
                 $request->user()->save();
                 $user->most_matches_points++;
                 $user->most_popular_points++;
-                $user->save();
+                $user->push();
                 return response()->json(['message' => 'You have a match.', 'is_matched' => true], 200);
             }else {
                 $request->user()->likes()->attach($id);
                 $user->most_popular_points++;
-                $user->save();
+                $user->push();
                 return response()->json(['message' => 'You have liked this user.', 'is_matched' => false], 200);
             }
         }else {
@@ -134,6 +135,9 @@ class UserController extends Controller
         if(!in_array($id, $favorites)) {
             $request->user()->profile->update(['favorites' => implode(',', array_merge($favorites, [$id]))]);
         }
+        $user = User::findOrFail($id);
+        $user->profile->profile_views++;
+        $user->profile->save();
         return response()->json(['message' => 'Profile Saved.'], 200);
     }
 
@@ -168,6 +172,9 @@ class UserController extends Controller
         if(!in_array($id, $discarded)) {
             $request->user()->profile->update(['discarded' => implode(',', array_merge($discarded, [$id]))]);
         }
+        $user = User::findOrFail($id);
+        $user->profile->profile_views++;
+        $user->profile->save();
         return response()->json(['message' => 'Profile Discarded.'], 200);
     }
 
@@ -178,6 +185,14 @@ class UserController extends Controller
             $request->user()->profile->update(['discarded' => implode(',', array_diff($discarded, [$id]))]);
         }
         return response()->json(['message' => 'Profile Undiscarded.'], 200);
+    }
+
+    public function swipe(string $id)
+    {
+        $user = User::findOrFail($id);
+        $user->profile->profile_views++;
+        $user->profile->save();
+        return response()->json(['message' => 'Profile swiped.'], 200);
     }
 
     public function getAffiliatePage(Request $request)

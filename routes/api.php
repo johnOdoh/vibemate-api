@@ -183,6 +183,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('user/unlike/{id}', [UserController::class, 'unlike']);
     Route::put('user/discard/{id}', [UserController::class, 'discardUser']);
     Route::put('user/undiscard/{id}', [UserController::class, 'unDiscardUser']);
+    Route::put('user/swipe/{id}', [UserController::class, 'swipe']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::resource('comment', CommentController::class);
