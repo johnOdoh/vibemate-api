@@ -85,7 +85,7 @@ class PostController extends Controller
                     $fileNameWithExtension = $fileName.'.'.$file->getClientOriginalExtension();
                     $path[] = $file->storeAs('posts/videos', $fileNameWithExtension, 'public');
                     $data['has_video'] = true;
-                    // GenerateVideoThumbnail::dispatch($fileNameWithExtension, $fileName)->onQueue('thumbnails');
+                    GenerateVideoThumbnail::dispatch($fileNameWithExtension, $fileName)->onQueue('thumbnails');
                 }
             }
         }
