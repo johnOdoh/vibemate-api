@@ -68,6 +68,7 @@ Route::post('sightengine/video-moderation/callback', function (Request $request)
 ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
+    // Route::post('ad/create-gift', [AdController::class, 'createGift']);
 
     Route::patch('competition/start/{competition}', [CompetitionController::class, 'start']);
     Route::patch('competition/end/{competition}', [CompetitionController::class, 'end']);
@@ -79,14 +80,14 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('entry/unlike/{entry}', [EntryController::class, 'unlike']);
 
     Route::get('gift', function () {
-        return Gift::orderBy('price')
+        return Gift::orderBy('category')
             ->get()
             ->map(fn ($gift) => [
                 'id' => $gift->id,
                 'name' => $gift->name,
                 'price' => $gift->price,
                 'category' => $gift->category,
-                'icon' => $gift->icon
+                'icon' => asset('storage/gifts/'.$gift->icon)
             ]);
     });
 
@@ -184,6 +185,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('user/discard/{id}', [UserController::class, 'discardUser']);
     Route::put('user/undiscard/{id}', [UserController::class, 'unDiscardUser']);
     Route::put('user/swipe/{id}', [UserController::class, 'swipe']);
+    Route::put('user/transfer-token/{user}', [UserController::class, 'transferToken']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::resource('comment', CommentController::class);

@@ -255,6 +255,7 @@ class PaymentController extends Controller
 
             return collect($response->json())
                 ->filter(fn ($product) => $product['status'] === 'ACTIVE')
+                // ->filter(fn ($product) => $product['recipientCurrencyCode'] === 'GBP')
                 ->map(fn ($product) => [
                     'id' => $product['productId'],
                     'name' => $product['productName'],
@@ -262,6 +263,7 @@ class PaymentController extends Controller
                     'fixedDenominations' => $product['fixedRecipientDenominations'],
                     'minDenomination' => $product['minRecipientDenomination'],
                     'maxDenomination' => $product['maxRecipientDenomination'],
+                    'currency' => $product['recipientCurrencyCode'],
                 ])
                 ->all();
     }

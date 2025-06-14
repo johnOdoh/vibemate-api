@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\DatingResource;
@@ -77,6 +78,8 @@ class UserController extends Controller
         if(!$request->user()->likes()->where('receiver_id', $id)->exists()) {//if user has not liked this user already
             $user = User::findOrFail($id);
             $user->profile->profile_views++;
+            $user->profile->weekly_profile_views++;
+            $request->user()->no_of_swipes++;
             if($request->user()->liked_by()->where('sender_id', $id)->exists()) {//if user has been liked by this user already
                 //update the pivot table to show that there is a match
                 $request->user()->liked_by()->updateExistingPivot($id, ['is_matched' => true]);
@@ -88,6 +91,7 @@ class UserController extends Controller
                 return response()->json(['message' => 'You have a match.', 'is_matched' => true], 200);
             }else {
                 $request->user()->likes()->attach($id);
+                $request->user()->save();
                 $user->most_popular_points++;
                 $user->push();
                 return response()->json(['message' => 'You have liked this user.', 'is_matched' => false], 200);
@@ -137,7 +141,10 @@ class UserController extends Controller
         }
         $user = User::findOrFail($id);
         $user->profile->profile_views++;
+        $user->profile->weekly_profile_views++;
         $user->profile->save();
+        $request->user()->no_of_swipes++;
+        $request->user()->save();
         return response()->json(['message' => 'Profile Saved.'], 200);
     }
 
@@ -174,7 +181,10 @@ class UserController extends Controller
         }
         $user = User::findOrFail($id);
         $user->profile->profile_views++;
+        $user->profile->weekly_profile_views++;
         $user->profile->save();
+        $request->user()->no_of_swipes++;
+        $request->user()->save();
         return response()->json(['message' => 'Profile Discarded.'], 200);
     }
 
@@ -187,11 +197,14 @@ class UserController extends Controller
         return response()->json(['message' => 'Profile Undiscarded.'], 200);
     }
 
-    public function swipe(string $id)
+    public function swipe(Request $request, string $id)
     {
         $user = User::findOrFail($id);
         $user->profile->profile_views++;
+        $user->profile->weekly_profile_views++;
         $user->profile->save();
+        $request->user()->no_of_swipes++;
+        $request->user()->save();
         return response()->json(['message' => 'Profile swiped.'], 200);
     }
 
@@ -218,7 +231,27 @@ class UserController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::SUNDAY);
         $endOfWeek = Carbon::now()->endOfWeek(Carbon::SATURDAY);
 
-        // YourModel::whereBetween('created_at', [$startOfWeek, $endOfWeek])->get();
+        $matches = DB::table('matches')
+            ->select('sender_id', DB::raw('COUNT(*) as total_matches'))
+            ->where('is_matched', true)
+            ->groupBy('sender_id')
+            ->orderByDesc('total_matches')
+            ->limit(2)
+            ->get();
+        $matches = $matches->map(function ($match) {
+            $user = User::find($match->sender_id);
+            $total_likes = Db::table('matches')
+                ->where('sender_id', $match->sender_id)
+                ->count();
+            return [
+                'id' => $user->id,
+                'firstname' => $user->profile->firstname,
+                'lastname' => $user->profile->lastname,
+                'image' => asset('storage/' . $user->profile->image),
+                'match_percentage' => round($match->total_matches / $total_likes * 100).'%', 
+            ];
+        })->sortBy('match_percentage')->values();
+        
         return response()->json([
             'post_engagements' => $request->user()->posts()->sum('no_of_engagements'),
             'matches' => $request->user()->likes()->where('is_matched', true)->count() + $request->user()->liked_by()->where('is_matched', true)->count(),
@@ -226,11 +259,24 @@ class UserController extends Controller
             'weekly_profile_views' => $request->user()->profile->weekly_profile_views,
             'weekly_post_engagements' => $request->user()->posts()->sum('most_engagements_points'),
             'weekly_likes_received' => $request->user()->posts()
-                                               ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
-                                               ->withCount('likes')
-                                               ->get()
-                                               ->sum('likes_count')
+                ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
+                ->withCount('likes')
+                ->get()
+                ->sum('likes_count'),
+            'top_matches' => $matches
         ]);
+    }
+
+    public function transferToken(Request $request, User $user)
+    {
+        if ($request->user()->wallet < $request->amount) {
+            return response()->json(['message' => 'Insufficient token balance.'], 403);
+        }
+        $request->user()->wallet -= $request->amount;
+        $user->wallet += $request->amount;
+        $request->user()->save();
+        $user->save();
+        return response()->json(['message' => 'Token transfer successful.'], 200);
     }
 
     public function logout(Request $request)
