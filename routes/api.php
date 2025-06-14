@@ -68,7 +68,7 @@ Route::post('sightengine/video-moderation/callback', function (Request $request)
 ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
-    // Route::post('ad/create-gift', [AdController::class, 'createGift']);
+    Route::post('ad/create-gift', [AdController::class, 'createGift']);
 
     Route::patch('competition/start/{competition}', [CompetitionController::class, 'start']);
     Route::patch('competition/end/{competition}', [CompetitionController::class, 'end']);
