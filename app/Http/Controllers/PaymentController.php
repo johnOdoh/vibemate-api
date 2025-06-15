@@ -265,7 +265,7 @@ class PaymentController extends Controller
                     'maxDenomination' => $product['maxRecipientDenomination'],
                     'currency' => $product['recipientCurrencyCode'],
                 ])
-                ->all();
+                ->values();
     }
 
     public function orderGiftCard(Request $request, $productId)
