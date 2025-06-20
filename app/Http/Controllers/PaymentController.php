@@ -245,6 +245,7 @@ class PaymentController extends Controller
 
     public function getGiftcardsByCountry($countryCode)
     {
+        $rates = getExchangeRates();
         $url = "https://giftcards-sandbox.reloadly.com/countries/$countryCode/products";
         $response = Http::withToken(getReloadlyToken())
             ->withHeaders([
@@ -256,15 +257,34 @@ class PaymentController extends Controller
             return collect($response->json())
                 ->filter(fn ($product) => $product['status'] === 'ACTIVE')
                 // ->filter(fn ($product) => $product['recipientCurrencyCode'] === 'GBP')
-                ->map(fn ($product) => [
-                    'id' => $product['productId'],
-                    'name' => $product['productName'],
-                    'type' => $product['denominationType'],
-                    'fixedDenominations' => $product['fixedRecipientDenominations'],
-                    'minDenomination' => $product['minRecipientDenomination'],
-                    'maxDenomination' => $product['maxRecipientDenomination'],
-                    'currency' => $product['recipientCurrencyCode'],
-                ])
+                ->map(function ($product) use ($rates) {
+                    $denominations = $product['fixedRecipientDenominations'];
+                    $ranges = [25, 50, 75, 100];
+                    if ($product['denominationType'] === 'RANGE') {
+                        foreach ($ranges as $range) {
+                            if($range >= $product['minRecipientDenomination'] && $range <= $product['maxRecipientDenomination']) {
+                                $denominations[] = $range;
+                            }
+                        }
+                    }
+                    if ($product['recipientCurrencyCode'] !== 'GBP') {
+                        $rate = $rates[$product['recipientCurrencyCode']];
+                        $denominations = array_map(fn ($denomination) => [
+                            'base_value' => $denomination,
+                            'converted_value' => round($denomination / $rate, 2)
+                        ], $denominations);
+                    }
+                    return [
+                        'id' => $product['productId'],
+                        'name' => $product['productName'],
+                        // 'type' => $product['denominationType'],
+                        'fixedDenominations' => $denominations,
+                        // 'minDenomination' => $product['minRecipientDenomination'],
+                        // 'maxDenomination' => $product['maxRecipientDenomination'],
+                        'currency' => $product['recipientCurrencyCode'],
+                        'rate' => $product['recipientCurrencyCode'] === 'GBP' ? 1 : round(1/$rates[$product['recipientCurrencyCode']], 2)
+                    ];
+                })
                 ->values();
     }
 

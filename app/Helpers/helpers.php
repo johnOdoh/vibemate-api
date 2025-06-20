@@ -162,3 +162,15 @@ function formatNumber($num)
     return $num;
 }
 
+function getExchangeRates()
+{
+    if (Cache::has('exchange_rates')) {
+        return Cache::get('exchange_rates');
+    }
+
+    $response = Http::post('https://api.frankfurter.dev/v1/latest?base=GBP&symbols=USD,EUR');
+
+    $rates = $response->json()['rates'];
+    Cache::put('exchange_rates', $rates, now()->addHours(6));
+    return $rates;
+}
