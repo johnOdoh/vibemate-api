@@ -59,9 +59,8 @@ class UserController extends Controller
         if(!$request->user()->following()->where('following_id', $id)->exists()) {//if user has followed this user before
             $request->user()->following()->attach($id);
             $user = User::find($id);
-            $user->most_followed_points++;
-            $user->most_popular_points++;
-            $user->save();
+            $user->increment('most_followed_points');
+            $user->increment('most_popular_points');
         }
         else $request->user()->following()->updateExistingPivot($id, ['is_active' => true]);
         return response()->json(['message' => 'You are now following this user.'], 200);
@@ -77,23 +76,19 @@ class UserController extends Controller
     {
         if(!$request->user()->likes()->where('receiver_id', $id)->exists()) {//if user has not liked this user already
             $user = User::findOrFail($id);
-            $user->profile->profile_views++;
-            $user->profile->weekly_profile_views++;
-            $request->user()->no_of_swipes++;
+            $user->profile->increment('profile_views');
+            $user->profile->increment('weekly_profile_views');
+            $request->user()->increment('no_of_swipes');
             if($request->user()->liked_by()->where('sender_id', $id)->exists()) {//if user has been liked by this user already
-                //update the pivot table to show that there is a match
+                // update the pivot table to show that there is a match
                 $request->user()->liked_by()->updateExistingPivot($id, ['is_matched' => true]);
-                $request->user()->most_matches_points++;
-                $request->user()->save();
-                $user->most_matches_points++;
-                $user->most_popular_points++;
-                $user->push();
+                $request->user()->increment('most_matches_points');
+                $user->increment('most_matches_points');
+                $user->increment('most_popular_points');
                 return response()->json(['message' => 'You have a match.', 'is_matched' => true], 200);
             }else {
                 $request->user()->likes()->attach($id);
-                $request->user()->save();
-                $user->most_popular_points++;
-                $user->push();
+                $user->increment('most_popular_points');
                 return response()->json(['message' => 'You have liked this user.', 'is_matched' => false], 200);
             }
         }else {
@@ -140,11 +135,9 @@ class UserController extends Controller
             $request->user()->profile->update(['favorites' => implode(',', array_merge($favorites, [$id]))]);
         }
         $user = User::findOrFail($id);
-        $user->profile->profile_views++;
-        $user->profile->weekly_profile_views++;
-        $user->profile->save();
-        $request->user()->no_of_swipes++;
-        $request->user()->save();
+        $user->profile->increment('profile_views');
+        $user->profile->increment('weekly_profile_views');
+        $request->user()->increment('no_of_swipes');
         return response()->json(['message' => 'Profile Saved.'], 200);
     }
 
@@ -180,11 +173,9 @@ class UserController extends Controller
             $request->user()->profile->update(['discarded' => implode(',', array_merge($discarded, [$id]))]);
         }
         $user = User::findOrFail($id);
-        $user->profile->profile_views++;
-        $user->profile->weekly_profile_views++;
-        $user->profile->save();
-        $request->user()->no_of_swipes++;
-        $request->user()->save();
+        $user->profile->increment('profile_views');
+        $user->profile->increment('weekly_profile_views');
+        $request->user()->increment('no_of_swipes');
         return response()->json(['message' => 'Profile Discarded.'], 200);
     }
 
@@ -200,11 +191,9 @@ class UserController extends Controller
     public function swipe(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-        $user->profile->profile_views++;
-        $user->profile->weekly_profile_views++;
-        $user->profile->save();
-        $request->user()->no_of_swipes++;
-        $request->user()->save();
+        $user->profile->increment('profile_views');
+        $user->profile->increment('weekly_profile_views');
+        $request->user()->increment('no_of_swipes');
         return response()->json(['message' => 'Profile swiped.'], 200);
     }
 
@@ -248,10 +237,10 @@ class UserController extends Controller
                 'firstname' => $user->profile->firstname,
                 'lastname' => $user->profile->lastname,
                 'image' => asset('storage/' . $user->profile->image),
-                'match_percentage' => round($match->total_matches / $total_likes * 100).'%', 
+                'match_percentage' => round($match->total_matches / $total_likes * 100).'%',
             ];
         })->sortBy('match_percentage')->values();
-        
+
         return response()->json([
             'post_engagements' => $request->user()->posts()->sum('no_of_engagements'),
             'matches' => $request->user()->likes()->where('is_matched', true)->count() + $request->user()->liked_by()->where('is_matched', true)->count(),

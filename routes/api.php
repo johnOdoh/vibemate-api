@@ -117,6 +117,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('livestream', [LivestreamController::class, 'store']);
     Route::post('livestream/gift/{livestream}', [LivestreamController::class, 'sendGift']);
     Route::post('livestream/comment/{livestream}', [LivestreamController::class, 'comment']);
+    Route::put('livestream/like/{livestream}', [LivestreamController::class, 'like']);
     Route::get('livestream/comments/{livestream}', [LivestreamController::class, 'getComments']);
     Route::post('livestream/viewer-joins/{livestream}', [LivestreamController::class, 'viewerJoins']);
     Route::put('livestream/viewer-leaves/{livestream}', [LivestreamController::class, 'viewerLeaves']);

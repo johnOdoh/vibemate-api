@@ -64,6 +64,12 @@ class LivestreamController extends Controller
         return response()->json(['message' => 'Gift sent successfully'], 200);
     }
 
+    public function like(Livestream $livestream)
+    {
+        $livestream->increment('no_of_likes', 100);
+        return response()->json(['message' => 'Livestream liked successfully'], 200);
+    }
+
     public function comment(Request $request, livestream $livestream)
     {
         $request->validate([
