@@ -35,7 +35,7 @@ class livestream extends Model
 
     public function comments()
     {
-        return $this->hasMany(LivestreamComment::class);
+        return $this->hasMany(LivestreamComment::class)->orderByDesc('id');
     }
 
     public function viewers()

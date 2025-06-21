@@ -59,7 +59,7 @@ class LivestreamController extends Controller
         ]);
         $livestream->comments()->create([
             'user_id' => $request->user()->id,
-            'body' => "Sent a $gift->name $gift->image"
+            'body' => "Sent a $gift->name ".asset('storage/gifts/'.$gift->icon)
         ]);
         return response()->json(['message' => 'Gift sent successfully'], 200);
     }
