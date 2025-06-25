@@ -171,6 +171,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('subscription/stripe/reactivate/{subscription_id}', [SubscriptionController::class, 'reactivateStripeSubscription']);
 
     Route::get('user', [UserController::class, 'index']);
+    Route::get('user/get-creators', [UserController::class, 'getCreators']);
     Route::get('user/my-details', [UserController::class, 'show']);
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
     Route::get('user/analytics', [UserController::class, 'getUserAnalytics']);

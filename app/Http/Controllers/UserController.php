@@ -49,8 +49,26 @@ class UserController extends Controller
         return ProfileResource::collection($users);
     }
 
+    public function getCreators(Request $request)
+    {
+        $users = User::whereHas('profile')
+            ->withCount([
+                'followers as active_followers_count' => function ($q) {
+                    $q->where('is_active', true);
+                }
+            ])
+            ->having('active_followers_count', '>', 0)
+            ->get();
+        return $users->map(fn($user) => [
+            'id' => $user->id,
+            'username' => $user->profile->username,
+            'image' => asset('storage/' . $user->profile->image),
+            'has_badge' => $user->badge_status == 'active'
+        ]);
+    }
+
     public function show(Request $request)
-    {;
+    {
         return new UserResource($request->user());
     }
 
