@@ -86,20 +86,20 @@ class CompetitionController extends Controller
         // if($request->user()->wallet < ($data['prize'] + (0.2 * $data['prize']))) {
         //     return response()->json(['message' => 'Insufficient funds.'], 403);
         // }
+        $user = $request->user();
         // $request->user()->wallet -= ($data['prize'] + (0.1 * $data['prize']));
-        $imageName = time().'-'.$request->user()->id.'.'.$request->file('image')->getClientOriginalExtension();
+        $imageName = time().'-'.$user->id.'.'.$request->file('image')->getClientOriginalExtension();
         $path = $request->file('image')->storeAs('competitions', $imageName, 'public');
         if(!screenInput($data['name']) || !screenInput($data['description'])) {
             $data['status'] = 'pending';
         }
         $data['image'] = $path;
-        $data['user_id'] = $request->user()->id;
-        $user = $request->user();
+        $data['user_id'] = $user->id;
         if ($user->badge_status === 'active' || $user->is_subscribed || $user->followers()->where('is_active', true)->count() >= 1000 || $data['prize'] >= 50000) {
             $data['is_featured'] = true;
         }
         $competition = new Competition($data);
-        $request->user()->save();
+        $user->save();
         $competition->save();
         return response()->json(['message' => 'Competition created successfully'], 201);
     }

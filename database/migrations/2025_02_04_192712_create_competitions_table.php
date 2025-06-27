@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('category');
             $table->string('hashtag')->unique();
             $table->string('status')->default('approved');
-            $table->string('phase')->default('upcoming'); //upcoming, active, expired
+            $table->enum('phase', ['upcoming', 'active', 'expired'])->default('upcoming');
             $table->string('image');
             $table->boolean('is_multiple');
             $table->boolean('is_featured')->default(false);

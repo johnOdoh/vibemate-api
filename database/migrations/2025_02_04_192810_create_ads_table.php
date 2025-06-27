@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('content_url');
             $table->string('target_url');
-            $table->boolean('is_image');
+            $table->decimal('amount', 10, 2);
             $table->timestamp('start');
             $table->timestamp('end');
             $table->string('action');
