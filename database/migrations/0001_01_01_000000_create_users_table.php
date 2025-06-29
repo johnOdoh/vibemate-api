@@ -19,6 +19,7 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_subscribed')->default(false);
             $table->enum('badge_status', ['paid', 'active', 'unpaid'])->default('unpaid'); //paid, active, unpaid
+            $table->string('dating_section_pin')->nullable();
             $table->string('status')->default('active');
             $table->unsignedBigInteger('no_of_swipes')->default(0);
             $table->string('email_token')->nullable();

@@ -188,6 +188,10 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('user/undiscard/{id}', [UserController::class, 'unDiscardUser']);
     Route::put('user/swipe/{id}', [UserController::class, 'swipe']);
     Route::put('user/transfer-token/{user}', [UserController::class, 'transferToken']);
+    Route::put('user/set-pin', [UserController::class, 'setPin']);
+    Route::put('user/reset-pin', [UserController::class, 'resetPin']);
+    Route::put('user/lock-dating-section', [UserController::class, 'lockDatingSection']);
+    Route::put('user/unlock-dating-section', [UserController::class, 'unlockDatingSection']);
     Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::resource('comment', CommentController::class);

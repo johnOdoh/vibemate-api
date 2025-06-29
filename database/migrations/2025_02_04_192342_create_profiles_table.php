@@ -34,6 +34,7 @@ return new class extends Migration
             $table->text('favorites')->default('');
             $table->text('discarded')->default('');
             $table->string('visibility')->default('public');
+            $table->boolean('show_dating_section')->default(true);
             $table->timestamps();
         });
     }

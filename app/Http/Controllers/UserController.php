@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\DatingResource;
 use App\Http\Resources\ProfileResource;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -284,6 +285,50 @@ class UserController extends Controller
         $request->user()->save();
         $user->save();
         return response()->json(['message' => 'Token transfer successful.'], 200);
+    }
+
+    public function setPin(Request $request)
+    {
+        $request->validate([
+            'pin' => 'required|numeric|digits:4'
+        ]);
+        $request->user()->dating_section_pin = Hash::make($request->pin);
+        $request->user()->save();
+        return response()->json(['message' => 'Pin set successfully.'], 200);
+    }
+
+    public function resetPin(Request $request)
+    {
+        $request->validate([
+            'password' => 'required|string',
+            'pin' => 'required|numeric|digits:4'
+        ]);
+        if(!Hash::check($request->password, $request->user()->password)) {
+            return response()->json(['message' => 'Password is incorrect.'], 403);
+        }
+        $request->user()->dating_section_pin = Hash::make($request->pin);
+        $request->user()->save();
+        return response()->json(['message' => 'Pin reset successfully.'], 200);
+    }
+
+    public function lockDatingSection(Request $request)
+    {
+        $request->user()->profile->show_dating_section = false;
+        $request->user()->profile->save();
+        return response()->json(['message' => 'Dating section locked successfully.'], 200);
+    }
+
+    public function unlockDatingSection(Request $request)
+    {
+        $request->validate([
+            'pin' => 'required|numeric|digits:4'
+        ]);
+        if(!Hash::check($request->pin, $request->user()->dating_section_pin)) {
+            return response()->json(['message' => 'Pin is incorrect.'], 403);
+        }
+        $request->user()->profile->show_dating_section = true;
+        $request->user()->profile->save();
+        return response()->json(['message' => 'Dating section unlocked successfully.'], 200);
     }
 
     public function logout(Request $request)
