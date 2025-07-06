@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'is_subscribed' => $this->is_subscribed,
             'badge_status' => $this->badge_status,
             'status' => $this->status,
+            'is_social' => $this->is_social
         ];
     }
 }

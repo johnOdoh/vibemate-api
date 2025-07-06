@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('hashtags')->nullable();
             $table->string('privacy');
             $table->string('status')->default('approved');
+            $table->string('remark')->nullable();
             $table->string('location')->nullable();
             $table->string('meta_location');
             $table->boolean('allow_comments');

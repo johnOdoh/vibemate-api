@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
 use App\Models\User;
 use App\Models\Profile;
 use App\Mail\ResetToken;
@@ -42,7 +41,8 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'is_verified' => $verified,
-            'email_token' => $token
+            'email_token' => $token,
+            'is_social' => $data['isSocial']
         ]);
         DB::beginTransaction();
         try {
@@ -97,20 +97,18 @@ class AuthController extends Controller
                 $user = $profile->user;
             }else {
                 $user = User::where('email', $request->login)->first();
+                if(!$user) return response()->json(['message' => "Invalid $loginField or password"], 401);
             }
-            if($user) {
-                if(Hash::check($request->password, $user->password)) {//if user entered correct password
-                    if($user->is_verified) {
-                        $user->token = $user->createToken("android device")->plainTextToken;
-                        $streamService = new GetStreamService();
-                        $user->stream_token = $streamService->getUserToken($user->id);
-                        return new LoginResource($user);
-                    }  //if user has verified account
-                    else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
-                }
-                else return response()->json(['message' => "Invalid $loginField or password"], 401);
+            if(Hash::check($request->password, $user->password)) {//if user entered correct password
+                if($user->is_verified) {
+                    $user->token = $user->createToken("android device")->plainTextToken;
+                    $streamService = new GetStreamService();
+                    $user->stream_token = $streamService->getUserToken($user->id);
+                    return new LoginResource($user);
+                }  //if user has verified account
+                else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
             }
-            return response()->json(['message' => "Invalid $loginField or password"], 401);//if user does not exist or entered wrong password
+            else return response()->json(['message' => "Invalid $loginField or password"], 401);
         }
     }
 

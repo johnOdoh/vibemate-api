@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('email')->unique();
+            $table->boolean('is_social');
             $table->string('password');
             $table->decimal('wallet', 10, 2)->default(0);
             $table->boolean('is_verified')->default(false);
