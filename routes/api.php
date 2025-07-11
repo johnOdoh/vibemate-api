@@ -176,6 +176,8 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
     Route::get('user/analytics', [UserController::class, 'getUserAnalytics']);
     Route::get('user/favorites', [UserController::class, 'getFavorites']);
+    Route::get('user/{user}/followers', [UserController::class, 'getFollowers']);
+    Route::get('user/{user}/following', [UserController::class, 'getFollowing']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
     Route::post('user/like/{id}', [UserController::class, 'like']);
     Route::get('user/liked', [UserController::class, 'getLiked']);
@@ -189,6 +191,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('user/swipe/{id}', [UserController::class, 'swipe']);
     Route::put('user/transfer-token/{user}', [UserController::class, 'transferToken']);
     Route::put('user/set-pin', [UserController::class, 'setPin']);
+    Route::put('user/send-pin-reset-token', [UserController::class, 'sendResetToken']);
     Route::put('user/reset-pin', [UserController::class, 'resetPin']);
     Route::put('user/lock-dating-section', [UserController::class, 'lockDatingSection']);
     Route::put('user/unlock-dating-section', [UserController::class, 'unlockDatingSection']);

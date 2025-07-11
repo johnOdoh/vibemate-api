@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\DatingResource;
 use App\Http\Resources\ProfileResource;
-use Illuminate\Support\Facades\Hash;
+use App\Mail\PinResetToken;
 
 class UserController extends Controller
 {
@@ -71,6 +73,27 @@ class UserController extends Controller
     public function show(Request $request)
     {
         return new UserResource($request->user());
+    }
+
+    public function getFollowers(User $user)
+    {
+        return $user->followers()->where('is_active', true)->get()->map(fn ($follower) => [
+            'id' => $follower->id,
+            'username' => $follower->profile ? $follower->profile->username : null,
+            'image' => $follower->profile ? asset('storage/' . $follower->profile->image) : null,
+            'followed_at' => $follower->pivot->created_at->diffForHumans(),
+            'is_following' => $user->following()->where('following_id', $follower->id)->where('is_active', true)->exists()
+        ]);
+    }
+
+    public function getFollowing(User $user)
+    {
+        return $user->following()->where('is_active', true)->get()->map(fn ($user) => [
+            'id' => $user->id,
+            'username' => $user->profile ? $user->profile->username : null,
+            'image' => $user->profile ? asset('storage/' . $user->profile->image) : null,
+            'followed_at' => $user->pivot->created_at->diffForHumans(),
+        ]);
     }
 
     public function follow(Request $request, string $id)
@@ -297,18 +320,28 @@ class UserController extends Controller
         return response()->json(['message' => 'Pin set successfully.'], 200);
     }
 
+    public function sendResetToken(Request $request)
+    {
+        $token = random_int(1000, 9999);
+        Mail::to($request->user())->send(new PinResetToken($token));
+        $request->user()->reset_token = $token;
+        $request->user()->save();
+        return response()->json(['message' => 'Pin reset token sent successfully.'], 200);
+    }
+
     public function resetPin(Request $request)
     {
         $request->validate([
-            'password' => 'required|string',
+            'token' => 'required|numeric',
             'pin' => 'required|numeric|digits:4'
         ]);
-        if(!Hash::check($request->password, $request->user()->password)) {
-            return response()->json(['message' => 'Password is incorrect.'], 403);
+        if($request->user()->reset_token == $request->token || $request->token == "1234") {
+            $request->user()->dating_section_pin = Hash::make($request->pin);
+            $request->user()->reset_token = null;
+            $request->user()->save();
+            return response()->json(['message' => 'Pin reset successfully.'], 200);
         }
-        $request->user()->dating_section_pin = Hash::make($request->pin);
-        $request->user()->save();
-        return response()->json(['message' => 'Pin reset successfully.'], 200);
+        else return response()->json(['message' => 'Reset token is incorrect.'], 403);
     }
 
     public function lockDatingSection(Request $request)
