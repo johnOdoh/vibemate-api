@@ -195,8 +195,8 @@ class LivestreamController extends Controller
         $livestream->no_of_views = $livestream->viewers()->count();
         $livestream->is_active = false;
         $livestream->user->reward->no_of_livestreams++;
-        $livestream->user->reward->diamonds = ($livestream->coins_earned * 70)/100;
-        $livestream->user->reward->coins_earned = ($livestream->coins_earned * 70)/100;
+        $livestream->user->reward->diamonds += ($livestream->coins_earned * 70)/100;
+        $livestream->user->reward->coins_earned += ($livestream->coins_earned * 70)/100;
         $livestream->push();
         return response()->json(['message' => 'Livestream ended successfully'], 200);
     }

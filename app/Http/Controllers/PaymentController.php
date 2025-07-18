@@ -197,7 +197,10 @@ class PaymentController extends Controller
             ->post('https://api.paystack.co/transaction/initialize', [
                 'email' => $request->user()->email,
                 'amount' => $amount*100,
-                'callback_url' => route('payment.paystack.success')
+                'callback_url' => route('payment.paystack.success'),
+                'metadata' => [
+                    'cancel_action' => route('payment.paystack.cancel')
+                ]
             ]);
 
         if (!$response->successful()) {
@@ -224,7 +227,7 @@ class PaymentController extends Controller
 
     public function paystackPaymentCancel(Request $request)
     {
-        return $request;
+        return response()->json(['message' => 'Transaction cancelled']);
     }
 
     public function getGiftCardCountries()
