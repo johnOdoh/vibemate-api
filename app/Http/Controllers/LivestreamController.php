@@ -14,10 +14,10 @@ class LivestreamController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string'
         ]);
-        if ($request->user()->followers()->count() < 500) {
-            return response()->json(['message' => 'You need at least 500 followers to start a livestream'], 403);
-        }
-        livestream::create([
+        // if ($request->user()->followers()->count() < 500) {
+        //     return response()->json(['message' => 'You need at least 500 followers to start a livestream'], 403);
+        // }
+        $livestream = livestream::create([
             'user_id' => $request->user()->id,
             'moderator_id' => $request->user()->id,
             'title' => $request->title,
@@ -25,7 +25,10 @@ class LivestreamController extends Controller
             'country' => getCountryFromIp(),
             'type' => 'single'
         ]);
-        return response()->json(['message' => 'Livestream created successfully'], 201);
+        return response()->json([
+            'message' => 'Livestream created successfully',
+            'livestream' => $livestream
+        ], 201);
     }
 
     public function show(livestream $livestream)
@@ -93,6 +96,16 @@ class LivestreamController extends Controller
         return response()->json($livestream->comments, 200);
     }
 
+    public function getCurrentViewers(livestream $livestream)
+    {
+        return $livestream->viewers()->where('is_watching', true)->get();
+    }
+
+    public function getViewers(livestream $livestream)
+    {
+        return $livestream->viewers;
+    }
+
     public function viewerJoins(Request $request, livestream $livestream)
     {
         if (in_array($request->user()->id, explode(',', $livestream->block_list))) {
@@ -106,6 +119,7 @@ class LivestreamController extends Controller
                 'user_id' => $request->user()->id
             ]);
         }
+        $livestream->increment('no_of_views');
         $livestream->comments()->create([
             'user_id' => $request->user()->id,
             'body' => 'joined the livestream'
@@ -120,6 +134,7 @@ class LivestreamController extends Controller
             'user_id' => $request->user()->id,
             'body' => 'Left the livestream'
         ]);
+        if ($livestream->no_of_views > 0) $livestream->decrement('no_of_views');
         return response()->json(['message' => 'You have left the livestream'], 201);
     }
 
@@ -135,6 +150,7 @@ class LivestreamController extends Controller
         ]);
         //add user to blocked list
         $livestream->block_list == null ? $livestream->block_list = $request->viewer_id : $livestream->block_list .= "{,$request->viewer_id}";
+        if ($livestream->no_of_views > 0) $livestream->decrement('no_of_views');
         return response()->json(['message' => 'Viewer removed successfully'], 201);
     }
 
