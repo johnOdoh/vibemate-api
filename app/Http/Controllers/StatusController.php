@@ -22,7 +22,10 @@ class StatusController extends Controller
         ->orderByDesc('statuses_max_created_at') // Sort users by latest status
         ->get();
         $users = $users->sortBy(fn ($u) => $u['id'] === request()->user()->id ? 0 : 1)->values();
-        return StatusResource::collection($users);
+        return response()->json([
+            'user' => new StatusResource(request()->user()),
+            'following' => StatusResource::collection($users)
+        ]);
     }
 
     /**
