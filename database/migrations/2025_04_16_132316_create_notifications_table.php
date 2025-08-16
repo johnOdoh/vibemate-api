@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('message');
             $table->boolean('is_read')->default(false);
             $table->string('action');
+            $table->string('image')->nullable();
+            $table->string('comment')->nullable();
             $table->unsignedBigInteger('action_id')->nullable();
             $table->timestamps();
         });

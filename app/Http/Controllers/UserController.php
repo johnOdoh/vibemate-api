@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Mail\PinResetToken;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -12,7 +14,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\DatingResource;
 use App\Http\Resources\ProfileResource;
-use App\Mail\PinResetToken;
 
 class UserController extends Controller
 {
@@ -103,6 +104,13 @@ class UserController extends Controller
             $user = User::find($id);
             $user->increment('most_followed_points');
             $user->increment('most_popular_points');
+            Notification::create([
+                'user_id' => $id,
+                'action' => 'Follow',
+                'action_id' => $id,
+                'image' => $request->user()->profile->image,
+                'message' => "{$request->user()->profile->username} followed you"
+            ]);
         }
         else $request->user()->following()->updateExistingPivot($id, ['is_active' => true]);
         return response()->json(['message' => 'You are now following this user.'], 200);
@@ -127,10 +135,24 @@ class UserController extends Controller
                 $request->user()->increment('most_matches_points');
                 $user->increment('most_matches_points');
                 $user->increment('most_popular_points');
+                Notification::create([
+                    'user_id' => $id,
+                    'action' => 'Profile Match',
+                    'action_id' => $id,
+                    'image' => $request->user()->profile->image,
+                    'message' => "Congratulations! You have been matched with {$request->user()->profile->username}"
+                ]);
                 return response()->json(['message' => 'You have a match.', 'is_matched' => true], 200);
             }else {
                 $request->user()->likes()->attach($id);
                 $user->increment('most_popular_points');
+                Notification::create([
+                    'user_id' => $id,
+                    'action' => 'Profile Like',
+                    'action_id' => $id,
+                    'image' => $request->user()->profile->image,
+                    'message' => "{$request->user()->profile->username} liked your profile"
+                ]);
                 return response()->json(['message' => 'You have liked this user.', 'is_matched' => false], 200);
             }
         }else {

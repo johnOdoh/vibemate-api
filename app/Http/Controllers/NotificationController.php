@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\NotificationResource;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 
@@ -13,9 +14,9 @@ class NotificationController extends Controller
     public function index()
     {
         $notifications = request()->user()->notifications()
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->get();
-        return response()->json($notifications);
+        return NotificationResource::collection($notifications);
     }
 
     /**

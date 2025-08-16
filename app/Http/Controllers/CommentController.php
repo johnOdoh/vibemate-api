@@ -45,8 +45,10 @@ class CommentController extends Controller
             if($comment->post->user_id !== $comment->user_id) {
                 Notification::create([
                     'user_id' => $comment->post->user_id,
-                    'action' => 'post comment',
+                    'action' => 'Post Comment',
                     'action_id' => $comment->post->id,
+                    'image' => $request->user()->profile->image,
+                    'comment' => $comment->body,
                     'message' => "{$request->user()->profile->username} commented on your post",
                 ]);
             }

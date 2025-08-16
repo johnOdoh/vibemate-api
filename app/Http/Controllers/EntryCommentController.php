@@ -42,8 +42,10 @@ class EntryCommentController extends Controller
             if($comment->entry->user_id !== $comment->user_id) {
                 Notification::create([
                     'user_id' => $comment->entry->user_id,
-                    'action' => 'entry comment',
+                    'action' => 'Entry Comment',
                     'action_id' => $comment->entry->id,
+                    'image' => $request->user()->profile->image,
+                    'comment' => $comment->body,
                     'message' => "{$request->user()->profile->username} commented on your entry",
                 ]);
             }

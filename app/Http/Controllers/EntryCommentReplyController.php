@@ -43,16 +43,20 @@ class EntryCommentReplyController extends Controller
             if($reply->entryComment->user_id !== $reply->user_id) {
                 Notification::create([
                     'user_id' => $reply->entryComment->user_id,
-                    'action' => 'entry comment reply',
+                    'action' => 'Entry Comment Reply',
                     'action_id' => $reply->entryComment->entry->id,
+                    'image' => $request->user()->profile->image,
+                    'comment' => $reply->entryComment->body,
                     'message' => "{$request->user()->profile->username} replied to your comment",
                 ]);
             }
             if($reply->entryComment->entry->user_id !== $reply->user_id) {
                 Notification::create([
                     'user_id' => $reply->entryComment->entry->user_id,
-                    'action' => 'entry comment',
+                    'action' => 'Entry Comment',
                     'action_id' => $reply->entryComment->entry->id,
+                    'image' => $request->user()->profile->image,
+                    'comment' => $reply->entryComment->body,
                     'message' => "{$request->user()->profile->username} commented on your entry",
                 ]);
             }

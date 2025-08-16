@@ -44,16 +44,20 @@ class CommentReplyController extends Controller
             if($reply->comment->user_id !== $reply->user_id) {
                 Notification::create([
                     'user_id' => $reply->comment->user_id,
-                    'action' => 'comment reply',
+                    'action' => 'Post Comment Reply',
                     'action_id' => $reply->comment->post->id,
+                    'image' => $request->user()->profile->image,
+                    'comment' => $reply->comment->body,
                     'message' => "{$request->user()->profile->username} replied to your comment",
                 ]);
             }
             if($reply->comment->post->user_id !== $reply->user_id) {
                 Notification::create([
                     'user_id' => $reply->comment->post->user_id,
-                    'action' => 'post comment',
+                    'action' => 'Post Comment',
                     'action_id' => $reply->comment->post->id,
+                    'image' => $request->user()->profile->image,
+                    'comment' => $reply->comment->body,
                     'message' => "{$request->user()->profile->username} commented on your post",
                 ]);
             }
