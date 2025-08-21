@@ -23,9 +23,21 @@ class ProfileController extends Controller
     /**
      * searching for records.
      */
-    public function search()
+    public function search(Request $request)
     {
-        //
+        $input = $request->input('input');
+        return Profile::whereLike('username', "%$input%")
+            ->orWhereLike('firstname', "%$input%")
+            ->orWhereLike('lastname', "%$input%")
+            ->limit(10)
+            ->get()
+            ->map(fn ($profile) => [
+                'id' => $profile->user->id,
+                'username' => $profile->username,
+                'firstname' => $profile->firstname,
+                'lastname' => $profile->lastname,
+                'image' => asset('storage/' . $profile->image)
+            ]);
     }
 
     public function checkUsername(Request $request)

@@ -55,8 +55,11 @@ class UserController extends Controller
 
     public function getNearby(Request $request)
     {
+        $my_location = getLocation(request()->user()->profile->city, request()->user()->profile->country);
         $users = User::whereHas('profile')->limit(10)->get();
-        return ProfileResource::collection($users);
+        return DatingResource::collection(
+            $users->map(fn($user) => new DatingResource($user, $my_location))
+        );
     }
 
     public function getCreators(Request $request)

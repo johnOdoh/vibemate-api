@@ -155,6 +155,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
     Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
     Route::put('profile/change-image', [ProfileController::class, 'changeImage']);
+    Route::get('profile/search', [ProfileController::class, 'search']);
 
     Route::get('status/get-viewers/{status}', [StatusController::class, 'getViewers']);
 
