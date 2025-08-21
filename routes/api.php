@@ -177,7 +177,16 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('user/my-details', [UserController::class, 'show']);
     Route::get('user/get-affiliate', [UserController::class, 'getAffiliatePage']);
     Route::get('user/analytics', [UserController::class, 'getUserAnalytics']);
+    Route::put('user/transfer-token/{user}', [UserController::class, 'transferToken']);
+    Route::put('user/set-pin', [UserController::class, 'setPin']);
+    Route::put('user/send-pin-reset-token', [UserController::class, 'sendResetToken']);
+    Route::put('user/reset-pin', [UserController::class, 'resetPin']);
+    Route::put('user/lock-dating-section', [UserController::class, 'lockDatingSection']);
+    Route::put('user/unlock-dating-section', [UserController::class, 'unlockDatingSection']);
+    Route::delete('user/logout', [UserController::class, 'logout']);
+
     Route::get('user/favorites', [UserController::class, 'getFavorites']);
+    Route::get('user/nearby', [UserController::class, 'getNearby']);
     Route::get('user/{user}/followers', [UserController::class, 'getFollowers']);
     Route::get('user/{user}/following', [UserController::class, 'getFollowing']);
     Route::post('user/follow/{id}', [UserController::class, 'follow']);
@@ -191,13 +200,6 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('user/discard/{id}', [UserController::class, 'discardUser']);
     Route::put('user/undiscard/{id}', [UserController::class, 'unDiscardUser']);
     Route::put('user/swipe/{id}', [UserController::class, 'swipe']);
-    Route::put('user/transfer-token/{user}', [UserController::class, 'transferToken']);
-    Route::put('user/set-pin', [UserController::class, 'setPin']);
-    Route::put('user/send-pin-reset-token', [UserController::class, 'sendResetToken']);
-    Route::put('user/reset-pin', [UserController::class, 'resetPin']);
-    Route::put('user/lock-dating-section', [UserController::class, 'lockDatingSection']);
-    Route::put('user/unlock-dating-section', [UserController::class, 'unlockDatingSection']);
-    Route::delete('user/logout', [UserController::class, 'logout']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);

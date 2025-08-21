@@ -53,6 +53,12 @@ class UserController extends Controller
         return ProfileResource::collection($users);
     }
 
+    public function getNearby(Request $request)
+    {
+        $users = User::whereHas('profile')->limit(10)->get();
+        return ProfileResource::collection($users);
+    }
+
     public function getCreators(Request $request)
     {
         $users = User::whereHas('profile')
