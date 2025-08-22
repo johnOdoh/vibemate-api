@@ -12,7 +12,8 @@ class Profile extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'dob' => 'date',
+        'dob' => 'datetime',
+        'location' => 'array'
     ];
 
     public function user()

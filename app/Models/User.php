@@ -3,10 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -44,6 +45,39 @@ class User extends Authenticatable
             'is_social' => 'boolean'
         ];
     }
+
+    // public function getLocation()
+    // {
+    //     $location = $this->profile->location;
+    //     if ($location) {
+    //         return [
+    //             'lon' => $location['longitude'],
+    //             'lat' => $location['latitude']
+    //         ];
+    //     }
+    //     return ['lon' => 0, 'lat' => 0];
+    // }
+
+    public function scopeGetDistance(Builder $query, float $lat, float $lng, int $radius = 100, string $unit = 'miles')
+    {
+        $earthRadius = $unit === 'km' ? 6371 : 3959;
+        return $query
+            ->select('users.*') // keep base user columns
+            ->join('profiles', 'profiles.user_id', '=', 'users.id')
+            // ->whereNotNull('profiles.location')
+            // ->whereRaw("JSON_EXTRACT(profiles.location, '$.latitude') IS NOT NULL")
+            // ->whereRaw("JSON_EXTRACT(profiles.location, '$.longitude') IS NOT NULL")
+            ->selectRaw("
+                $earthRadius * acos(
+                    cos(radians(?))
+                    * cos(radians(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(profiles.location, '$.latitude')), 0)))
+                    * cos(radians(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(profiles.location, '$.longitude')), 0)) - radians(?))
+                    + sin(radians(?))
+                    * sin(radians(COALESCE(JSON_UNQUOTE(JSON_EXTRACT(profiles.location, '$.latitude')), 0)))
+                ) AS distance
+            ", [$lat, $lng, $lat]);
+    }
+
 
     public function profile()
     {

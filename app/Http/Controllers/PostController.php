@@ -16,6 +16,7 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
+        $user = $request->user();
         // $current_location = getCountryFromIp();
         // $following = request()->user()->following->pluck('id');
         // $query = Post::query();
@@ -32,10 +33,18 @@ class PostController extends Controller
         // });
         // $posts = $query->orderByDesc('id')->get();
         $posts = Post::latest()->get();
-        if(!$request->user()->was_active) {
-            $request->user()->was_active = true;
-            $request->user()->save();
+        if(!$user->was_active) {
+            $user->was_active = true;
+            $user->save();
         }
+        $user->profile()->update([
+            'location' => [
+                'longitude' => $request->longitude ?? 0,
+                'latitude' => $request->latitude ?? 0,
+                'city' => $request->state ?? $user->profile->city,
+                'country' => $request->country ?? $user->profile->country,
+            ]
+        ]);
         return PostResource::collection($posts);
     }
 

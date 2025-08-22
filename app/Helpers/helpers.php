@@ -158,8 +158,9 @@ function formatNumber($num)
         return round($num / 1000000, 1) . 'M';
     } elseif ($num >= 1000) {
         return round($num / 1000, 1) . 'k';
+    } else {
+        return round($num);
     }
-    return $num;
 }
 
 function getExchangeRates()

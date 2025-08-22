@@ -19,14 +19,25 @@ class UserController extends Controller
 {
     public function index()
     {
-        // return getLocation('Bernhardhaven', 'British Indian Ocean Territory (Chagos Archipelago');
-        $my_location = getLocation(request()->user()->profile->city, request()->user()->profile->country);
-        $users = User::where('id', '!=', request()->user()->id)->whereHas('profile')->limit(10)->get();
-        return DatingResource::collection(
-            $users->map(fn($user) => new DatingResource($user, $my_location))
-        );
+        $user = request()->user();
+        $user->profile()->update([
+            'location' => [
+                'longitude' => $request->longitude ?? 0,
+                'latitude' => $request->latitude ?? 0,
+                'city' => $request->state ?? $user->profile->city,
+                'country' => $request->country ?? $user->profile->country,
+            ]
+        ]);
+        $lat = $user->profile->location['latitude'];
+        $lng = $user->profile->location['longitude'];
+        $users = User::whereNot('users.id', $user->id)
+            ->whereHas('profile')
+            ->getDistance($lat, $lng)
+            ->limit(10)
+            ->get();
+        return DatingResource::collection($users);
 
-        $profile = request()->user()->profile;
+        $profile = $user->profile;
         $interests = $profile->user->interests->pluck('name');
         $interested_in = $profile->connect_with;
         $gender = $profile->gender;
@@ -55,11 +66,24 @@ class UserController extends Controller
 
     public function getNearby(Request $request)
     {
-        $my_location = getLocation(request()->user()->profile->city, request()->user()->profile->country);
-        $users = User::whereHas('profile')->limit(10)->get();
-        return DatingResource::collection(
-            $users->map(fn($user) => new DatingResource($user, $my_location))
-        );
+        $user = request()->user();
+        $user->profile()->update([
+            'location' => [
+                'longitude' => $request->longitude ?? 0,
+                'latitude' => $request->latitude ?? 0,
+                'city' => $request->state ?? $user->profile->city,
+                'country' => $request->country ?? $user->profile->country,
+            ]
+        ]);
+        // $my_location = getLocation($user->profile->city, request()->user()->profile->country);
+        $lat = $user->profile->location['latitude'];
+        $lng = $user->profile->location['longitude'];
+
+        $users = User::getDistance($lat, $lng)
+            ->having('distance', '<', 200)
+            ->orderBy('distance')
+            ->get();
+        return DatingResource::collection($users);
     }
 
     public function getCreators(Request $request)

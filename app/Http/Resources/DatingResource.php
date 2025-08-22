@@ -7,13 +7,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class DatingResource extends JsonResource
 {
-    protected $my_distance;
+    // protected $my_distance;
 
-    public function __construct($resource, $my_distance)
-    {
-        parent::__construct($resource);
-        $this->my_distance = $my_distance;
-    }
+    // public function __construct($resource, $my_distance)
+    // {
+    //     parent::__construct($resource);
+    //     $this->my_distance = $my_distance;
+    // }
     /**
      * Transform the resource into an array.
      *
@@ -28,7 +28,8 @@ class DatingResource extends JsonResource
             'age' => $this->profile->dob->age,
             'city' => $this->profile->city,
             'country' => $this->profile->country,
-            'distance' => formatNumber(getDistanceInMiles($this->my_distance, getLocation($this->profile->city, $this->profile->country), 'miles')). ' miles away',
+            // 'distance' => formatNumber(getDistanceInMiles($request->user()->getLocation(), $this->getLocation(), 'miles')). ' miles away',
+            'distance' => formatNumber($this->distance). ' miles away',
             'bio' => $this->profile->bio,
             'height' => $this->discovery ? $this->discovery->height : null,
             'education' => $this->discovery ?  $this->discovery->education : null,
