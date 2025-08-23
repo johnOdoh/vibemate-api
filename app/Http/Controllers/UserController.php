@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\Gift;
 use App\Models\User;
+use App\Models\Profile;
 use App\Mail\PinResetToken;
 use App\Models\Notification;
 use Illuminate\Http\Request;
@@ -363,6 +365,20 @@ class UserController extends Controller
         $request->user()->save();
         $user->save();
         return response()->json(['message' => 'Token transfer successful.'], 200);
+    }
+
+    public function sendGift(Request $request, Gift $gift)
+    {
+        $request->validate([
+            'username' => 'required|string|exists:profiles,username'
+        ]);
+        if ($request->user()->wallet < $gift->price) {
+            return response()->json(['message' => 'Insufficient token balance.'], 403);
+        }
+        $profile = Profile::where('username', $request->username)->first();
+        $request->user()->decrement('wallet', $gift->price);
+        $profile->user->increment('wallet', $gift->price);
+        return response()->json(['message' => 'Gift Sent successful.'], 200);
     }
 
     public function setPin(Request $request)

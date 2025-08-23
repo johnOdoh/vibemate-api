@@ -201,6 +201,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('user/discard/{id}', [UserController::class, 'discardUser']);
     Route::put('user/undiscard/{id}', [UserController::class, 'unDiscardUser']);
     Route::put('user/swipe/{id}', [UserController::class, 'swipe']);
+    Route::post('user/gift/{gift}', [UserController::class, 'sendGift']);
 
     Route::resource('comment', CommentController::class);
     Route::resource('competition', CompetitionController::class);
