@@ -19,7 +19,7 @@ use App\Http\Resources\ProfileResource;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = request()->user();
         $user->profile()->update([
