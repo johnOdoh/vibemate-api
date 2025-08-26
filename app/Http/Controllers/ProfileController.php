@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\UserResource;
 use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\ProfileResource;
+use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\ProfileResource;
 use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
@@ -131,7 +132,7 @@ class ProfileController extends Controller
             'lastname.regex' => 'Last name must contain only letters, hyphens, and apostrophes. No spaces allowed.'
         ]);
 
-        $imageName = $request->username.'.'.$request->file('image')->getClientOriginalExtension();
+        $imageName = $request->username.'.'.$request->file('image')->extension();
         $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
         $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
@@ -213,7 +214,8 @@ class ProfileController extends Controller
         return response()->json(['message' => 'Profile updated successfully']);
     }
 
-    public function changePassword(Request $request) {
+    public function changePassword(Request $request)
+    {
         $request->validate([
             'old_password' => 'required|string',
             'new_password' => 'required|string|min:8|confirmed',
@@ -231,7 +233,8 @@ class ProfileController extends Controller
         return response()->json(['message' => 'Password changed successfully']);
     }
 
-    public function changeImage(Request $request) {
+    public function changeImage(Request $request)
+    {
         $request->validate([
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:5120',
                 function ($attribute, $value, $fail) use ($request) {
@@ -243,9 +246,13 @@ class ProfileController extends Controller
             ],
         ]);
         $user = $request->user();
-        $imageName = $user->profile->image;
-        if ($request->file('image')->storeAs('profile_images', $imageName, 'public'))
+        File::delete(public_path('storage/'.$user->profile->image));
+        $imageName = $user->profile->username.'.'.$request->file('image')->extension();
+        // return $imageName;
+        if ($path = $request->file('image')->storeAs('profile_images', $imageName, 'public')) {
+            $user->profile()->update(['image' => $path]);
             return response()->json(['message' => 'Profile image updated successfully']);
+        }
         else
             return response()->json(['message' => 'Failed to update profile image'], 500);
     }
