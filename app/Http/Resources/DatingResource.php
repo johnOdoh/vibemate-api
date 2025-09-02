@@ -23,6 +23,7 @@ class DatingResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'profile_id' => $this->profile->id,
             'firstname' => $this->profile->firstname,
             'image' => asset('storage/'.$this->profile->image),
             'age' => $this->profile->dob->age,

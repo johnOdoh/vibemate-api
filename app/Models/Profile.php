@@ -35,4 +35,17 @@ class Profile extends Model
     {
         $this->attributes['lastname'] = ucwords(strtolower(trim($value)));
     }
+
+    public function visited()
+    {
+        return $this->belongsToMany(Profile::class, 'visitors', 'visitor_id', 'visited_id')
+            ->withPivot('count')
+            ->withTimestamps();
+    }
+
+    public function visitors()
+    {
+        return $this->belongsToMany(Profile::class, 'visitors', 'visited_id', 'visitor_id')
+            ->withPivot('count');
+    }
 }

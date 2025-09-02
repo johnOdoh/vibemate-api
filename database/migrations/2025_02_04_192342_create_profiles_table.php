@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('profile_views')->default(0);
             $table->text('favorites')->default('');
             $table->text('discarded')->default('');
+            $table->text('saved_posts')->default('');
             $table->string('visibility')->default('public');
             $table->boolean('show_dating_section')->default(true);
             $table->timestamps();

@@ -50,8 +50,18 @@ class PostController extends Controller
 
     public function getReels($id)
     {
-        $posts = Post::where('user_id', $id)->where('has_video', true)->orderByDesc('created_at')->get();
+        $posts = Post::where('user_id', $id)->where('has_video', true)->latest()->get();
         return ReelResource::collection($posts);
+    }
+
+    public function getSaved(Request $request)
+    {
+        $saved = explode(',', $request->user()->profile->saved_posts);
+        $posts = Post::whereIn('id', $saved)
+                    ->orderByRaw("FIELD(id, " . implode(',', $saved) . ")")
+                    ->get();
+        return PostResource::collection($posts);
+
     }
 
     /**
@@ -216,6 +226,26 @@ class PostController extends Controller
     public function getTopHashtags()
     {
         return Post::getTopHashtags(10, 7);
+    }
+
+     public function savePost(Request $request, $id)
+    {
+        $user = $request->user();
+        $saved = empty($user->profile->saved_posts) ? [] : explode(',', $user->profile->saved_posts);
+        if(!in_array($id, $saved)) {
+            $user->profile->update(['saved_posts' => implode(',', array_merge($saved, [$id]))]);
+        }
+        return response()->json(['message' => 'Post Saved.'], 200);
+    }
+
+    public function unsavePost(Request $request, $id)
+    {
+        $user = $request->user();
+        $saved = empty($user->profile->saved_posts) ? [] : explode(',', $user->profile->saved_posts);
+        if(in_array($id, $saved)) {
+            $user->profile->update(['saved_posts' => implode(',', array_diff($saved, [$id]))]);
+        }
+        return response()->json(['message' => 'Post Unsaved.'], 200);
     }
 
     /**

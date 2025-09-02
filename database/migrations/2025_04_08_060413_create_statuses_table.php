@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('statuses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('content');
+            $table->string('content')->nullable();
+            $table->string('caption')->nullable();
+            $table->string('color')->nullable();
+            $table->string('mosic_url')->nullable();
             $table->string('type'); // text, image, video
             $table->timestamps();
         });

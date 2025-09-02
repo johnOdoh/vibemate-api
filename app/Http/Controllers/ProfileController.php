@@ -41,6 +41,19 @@ class ProfileController extends Controller
             ]);
     }
 
+    public function getVisitors(Request $request)
+    {
+        return $request->user()->profile->visitors
+            ->map(fn ($profile) => [
+                'id' => $profile->user->id,
+                'username' => $profile->username,
+                'firstname' => $profile->firstname,
+                'lastname' => $profile->lastname,
+                'image' => asset('storage/' . $profile->image),
+                'visited_count' => $profile->pivot->count
+            ]);
+    }
+
     public function checkUsername(Request $request)
     {
         $suggestions = [];
@@ -171,16 +184,33 @@ class ProfileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, $id)
     {
-        $profile = Profile::where('user_id', $id)->first();
+        $profile = Profile::findOrFail($id);
         if (!$profile->user->discovery()->exists()) {
             $profile->user->discovery()->create();
+        }
+        if ($request->user()->profile->visited()->where('visited_id', $id)->exists()) {
+            $request->user()->profile->visited()->updateExistingPivot($id, ['count' => DB::raw('count + 1')]);
+        } else {
+            $request->user()->profile->visited()->attach($id);
         }
         return response()->json([
             'user' => new UserResource($profile->user),
             'profile' => new ProfileResource($profile, true)
         ]);
+    }
+
+    public function markAsVisited(Request $request, $id)
+    {
+        if (!Profile::where('id', $id)->exists())
+            return response()->json(['message' => 'Profile not found'], 404);
+        if ($request->user()->profile->visited()->where('visited_id', $id)->exists()) {
+            $request->user()->profile->visited()->updateExistingPivot($id, ['count' => DB::raw('count + 1')]);
+        } else {
+            $request->user()->profile->visited()->attach($id);
+        }
+        return response()->json(['message' => 'Profile marked as visited']);
     }
 
     /**

@@ -65,6 +65,7 @@ class StatusController extends Controller
         // ]);
         $request->validate([
             'color' => 'nullable|string|max:191',
+            'music_url' => 'nullable|string|max:191',
             'content' => ['nullable', 'required_without:caption', 'file', 'mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv', 'max:5120',
                 function ($attribute, $value, $fail) use ($request) {
                     $file = $request->file($attribute);
@@ -106,6 +107,7 @@ class StatusController extends Controller
             'caption' => $request->caption ?? null,
             'type' => $type,
             'color' => $request->color ?? null,
+            'music_url' => $request->music_url ?? null
         ]);
         // $content = $type = null;
         // foreach($request->status as $key => $value) {

@@ -148,14 +148,19 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('payment/giftcard/order/{productId}', [PaymentController::class, 'orderGiftCard']);
 
     Route::get('post/{id}/reels', [PostController::class, 'getReels']);
+    Route::get('post/saved', [PostController::class, 'getSaved']);
     Route::get('post/getTopHashtags', [PostController::class, 'getTopHashtags']);
     Route::post('post/like/{post}', [PostController::class, 'like']);
     Route::put('post/unlike/{post}', [PostController::class, 'unlike']);
+    Route::put('post/save/{id}', [PostController::class, 'savePost']);
+    Route::put('post/unsave/{id}', [PostController::class, 'unsavePost']);
 
+    Route::get('profile/search', [ProfileController::class, 'search']);
+    Route::get('profile/visitors', [ProfileController::class, 'getVisitors']);
     Route::post('profile/check-username', [ProfileController::class, 'checkUsername']);
+    Route::post('profile/visit/{id}', [ProfileController::class, 'markAsVisited']);
     Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
     Route::put('profile/change-image', [ProfileController::class, 'changeImage']);
-    Route::get('profile/search', [ProfileController::class, 'search']);
 
     Route::get('status/get-viewers/{status}', [StatusController::class, 'getViewers']);
 
