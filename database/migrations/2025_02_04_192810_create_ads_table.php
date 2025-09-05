@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('ads', function (Blueprint $table) {
             $table->id();
-            $table->string('image');
+            $table->string('file');
             $table->string('target_url');
             $table->decimal('amount', 10, 2);
             $table->string('action');
             $table->string('regions');
             $table->string('screen');
+            $table->boolean('is_image');
             $table->date('start');
             $table->date('end');
             $table->unsignedBigInteger('no_of_clicks')->default(0);

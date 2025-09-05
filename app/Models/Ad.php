@@ -7,4 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Ad extends Model
 {
     protected $guarded = [];
+    protected $casts = [
+        'start' => 'date',
+        'end' => 'date',
+        'is_image' => 'boolean'
+    ];
 }

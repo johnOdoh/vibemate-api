@@ -8,6 +8,17 @@ use App\Models\Interest;
 
 class AdController extends Controller
 {
+    public function index()
+    {
+        return Ad::latest()->get()->map(fn ($ad) => [
+            'id' => $ad->id,
+            'action' => $ad->action,
+            'is_image' => $ad->is_image,
+            'target_url' => $ad->target_url,
+            'file' => $ad->is_image ? "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg" : "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+        ]);
+    }
+
     public function incrementViews($id)
     {
         $ad = Ad::find($id);
