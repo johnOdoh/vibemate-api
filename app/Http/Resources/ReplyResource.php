@@ -21,7 +21,7 @@ class ReplyResource extends JsonResource
             'user' => [
                 'id' => $this->user->id,
                 'username' => $this->user->profile->username,
-                'image' => asset('storage/'.$this->user->profile->image)
+                'image' => $this->user->profile->image_url
             ]
         ];
     }

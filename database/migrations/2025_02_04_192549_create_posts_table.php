@@ -19,12 +19,12 @@ return new class extends Migration
             $table->text('body')->nullable();
             $table->unsignedBigInteger('no_of_engagements')->default(0);
             $table->unsignedBigInteger('most_engagements_points')->default(0);
-            $table->string('hashtags')->nullable();
+            $table->string('hashtags')->index()->nullable();
             $table->string('privacy');
             $table->string('status')->default('approved');
             $table->string('remark')->nullable();
             $table->string('location')->nullable();
-            $table->string('meta_location');
+            $table->string('meta_location')->index();
             $table->boolean('allow_comments');
             $table->boolean('allow_like_counts');
             $table->boolean('has_video')->default(false);

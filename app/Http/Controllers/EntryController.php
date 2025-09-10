@@ -7,6 +7,7 @@ use App\Models\Competition;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Resources\EntryResource;
+use Illuminate\Support\Facades\Storage;
 
 class EntryController extends Controller
 {
@@ -55,19 +56,18 @@ class EntryController extends Controller
         $file = $request->file('file');
         // $cloudinary->uploadApi()->upload;
         if(str_starts_with($file->getMimeType(), 'image/')) {
-            $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('entries/images', $fileName, 'public');
-            // return moderateImage($path);
-            $moderationResult = moderateImage($path);
+            $moderationResult = moderateImage($file->getMimeType(), true);
             if(!$moderationResult['status']) {
                 $data['status'] = 'pending';
                 $data['remark'] = $moderationResult['reason'];
             }
+            $path = 'entries/images/'.$file->hashname();
+            Storage::disk('s3')->put($path, file_get_contents($file), 'public');
         }
         else {
-            $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-            $path = $file->storeAs('entries/videos', $fileName, 'public');
-            $data['media_id'] = moderateVideo($path);
+            $path = 'entries/videos/'.$file->hashname();
+            Storage::disk('s3')->put($path, file_get_contents($file), 'public');
+            // $data['media_id'] = moderateVideo($path);
         }
         unset($data['file']);
         $data['url'] = $path;
@@ -139,7 +139,7 @@ class EntryController extends Controller
         if(request()->user()->id !== $entry->user_id)
             return response()->json(['message' => 'You are not authorized to delete this entry'], 403);
         if($entry->url){
-            unlink(public_path('storage/'.$entry->url));
+            Storage::disk('s3')->delete($entry->url);
         }
         $entry->delete();
         return response()->noContent();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class VerificationController extends Controller
 {
@@ -44,11 +45,11 @@ class VerificationController extends Controller
             'url' => 'nullable|url',
             'reason' => 'required|string|max:255',
         ]);
-        $fileName = $request->user()->profile->username.'-front.'.$request->file('front')->getClientOriginalExtension();
-        $data['front'] = $request->file('front')->storeAs('verifications', $fileName, 'public');
+        $fileName = $request->user()->profile->username.'-front.'.$request->file('front')->extension();
+        Storage::disk('s3')->put("verifications/$fileName", file_get_contents($request->file('front')), 'public');
         if ($request->hasFile('back')) {
-            $fileName = $request->user()->profile->username.'-back.'.$request->file('back')->getClientOriginalExtension();
-            $data['back'] = $request->file('back')->storeAs('verifications', $fileName, 'public');
+            $fileName = $request->user()->profile->username.'-back.'.$request->file('back')->extension();
+            Storage::disk('s3')->put("verifications/$fileName", file_get_contents($request->file('back')), 'public');
         }
         $request->user()->verification()->create($data);
         return response()->json(['message' => 'Verification request submitted successfully.'], 201);

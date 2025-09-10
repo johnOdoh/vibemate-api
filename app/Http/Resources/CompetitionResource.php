@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class CompetitionResource extends JsonResource
 {
@@ -31,11 +32,11 @@ class CompetitionResource extends JsonResource
             'prize_1' => $this->prize_1,
             'prize_2' => $this->prize_2,
             'prize_3' => $this->prize_3,
-            'image' => asset('storage/'.$this->image),
+            'image' => Storage::disk('s3')->url($this->image),
             'user' => [
                 'firstname' => $this->user->profile->firstname,
                 'lastname' => $this->user->profile->lastname,
-                'image' => asset('storage/'.$this->user->profile->image)
+                'image' => $this->user->profile->image_url
             ]
         ];
     }

@@ -17,16 +17,14 @@ use App\Services\GetStreamService;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) //on success, user should be directed to page to enter email verification token
+    public function register(Request $request)
     {
         $data = $request->validate([
-            // 'username' => 'required|string|regex:/^[a-zA-Z0-9_]+$/|min:3|max:20|unique:users,username',
-            // 'firstname' => 'required|string',
-            // 'lastname' => 'required|string',
             'email' => 'required|string|email|unique:users,email',
             'password' => 'required|string|min:8',
             'referrer' => 'nullable|string',
-            'isSocial' => 'required|boolean'
+            'isSocial' => 'required|boolean',
+            'messaging_api_id' => 'nullable|string'
         ]);
 
         // $data = $validator->getData();
@@ -42,7 +40,8 @@ class AuthController extends Controller
             'password' => Hash::make($data['password']),
             'is_verified' => $verified,
             'email_token' => $token,
-            'is_social' => $data['isSocial']
+            'is_social' => $data['isSocial'],
+            'messaging_api_id' => $data['messaging_api_id']
         ]);
         DB::beginTransaction();
         try {
@@ -58,14 +57,13 @@ class AuthController extends Controller
         }
         if (!$data['isSocial']) return response()->json(['message' => 'User created successfully'], 201);
         else {
-            $streamService = new GetStreamService();
-            $stream_token = $streamService->getUserToken($user->id);
+            // $streamService = new GetStreamService();
+            // $stream_token = $streamService->getUserToken($user->id);
             $token =  $user->createToken("android device")->plainTextToken;
             return response()->json([
                 'message' => 'User created successfully',
                 'user' => new UserResource($user),
-                'token' => $token,
-                'stream_token' => $stream_token
+                'token' => $token
             ], 201);
         }
     }
@@ -102,8 +100,8 @@ class AuthController extends Controller
             if(Hash::check($request->password, $user->password)) {//if user entered correct password
                 if($user->is_verified) {
                     $user->token = $user->createToken("android device")->plainTextToken;
-                    $streamService = new GetStreamService();
-                    $user->stream_token = $streamService->getUserToken($user->id);
+                    // $streamService = new GetStreamService();
+                    // $user->stream_token = $streamService->getUserToken($user->id);
                     return new LoginResource($user);
                 }  //if user has verified account
                 else return response()->json(['message' => 'User Unverified'], 403); //if user has not verified their email
@@ -121,13 +119,13 @@ class AuthController extends Controller
             $user->email_token = null;
             $user->save();
             $token =  $user->createToken("android device")->plainTextToken;
-            $streamService = new GetStreamService();
-            $stream_token = $streamService->getUserToken($user->id);
+            // $streamService = new GetStreamService();
+            // $stream_token = $streamService->getUserToken($user->id);
             return response()->json([
                 'message' => 'Email Verification Successful',
                 'user' => new UserResource($user),
                 'token' => $token,
-                'stream_token' => $stream_token
+                // 'stream_token' => $stream_token
             ], 201);
         }
         else return response()->json(['message' => 'Invalid token'], 403); // entered wrong token

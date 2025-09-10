@@ -26,13 +26,12 @@ class LoginResource extends JsonResource
                 'phone' => $this->profile->phone,
                 'here_for' => $this->profile->here_for,
                 'bio' => $this->profile->bio,
-                'image' => asset('storage/'.$this->profile->image),
+                'image' => $this->profile->image_url,
                 'city' => $this->profile->city,
                 'country' => $this->profile->country,
                 'interests' => $this->interests->pluck('name'),
             ] : null,
-            'token' => $this->token,
-            'stream_token' => $this->stream_token,
+            'token' => $this->token
         ];
     }
 }

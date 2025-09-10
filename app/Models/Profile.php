@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Profile extends Model
 {
@@ -15,6 +16,11 @@ class Profile extends Model
         'dob' => 'datetime',
         'location' => 'array'
     ];
+
+    public function getImageUrlAttribute(): string
+    {
+        return Storage::disk('s3')->url($this->image);
+    }
 
     public function user()
     {

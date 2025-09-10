@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Resources\ProfileResource;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
@@ -146,7 +147,10 @@ class ProfileController extends Controller
         ]);
 
         $imageName = $request->username.'.'.$request->file('image')->extension();
-        $path = $request->file('image')->storeAs('profile_images', $imageName, 'public');
+        $path = "profile_images/$imageName";
+        if (!Storage::disk('s3')->put($path, file_get_contents($request->file('image')), 'public')) {
+            return response()->json(['message' => 'Failed to upload profile image'], 500);
+        }
         $data['image'] = $path;
         $data['user_id'] = $request->user()->id;
         // $data['meta_location'] = getCountryFromIp();
@@ -276,11 +280,7 @@ class ProfileController extends Controller
             ],
         ]);
         $user = $request->user();
-        File::delete(public_path('storage/'.$user->profile->image));
-        $imageName = $user->profile->username.'.'.$request->file('image')->extension();
-        // return $imageName;
-        if ($path = $request->file('image')->storeAs('profile_images', $imageName, 'public')) {
-            $user->profile()->update(['image' => $path]);
+        if (Storage::disk('s3')->put($user->profile->image, file_get_contents($request->file('image')), 'public')) {
             return response()->json(['message' => 'Profile image updated successfully']);
         }
         else

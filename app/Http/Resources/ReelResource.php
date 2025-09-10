@@ -14,20 +14,16 @@ class ReelResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $url = array_values(array_filter(explode(', ', $this->file_url), fn ($file) => str_contains($file, '/videos/')))[0] ?? '';
-        $thumbnail = str_replace('posts/videos', 'thumbnails', $url);
-        $thumbnail = str_replace(['.mp4', '.mov', '.avi', '.wmv', '.mkv', '.webm', '.flv'], '.png', $thumbnail);
         return [
             'id' => $this->id,
             'posted_by' => [
                 'id' => $this->user->id,
-                'username' => $this->user->profile ? $this->user->profile->username : null,
-                'image' => $this->user->profile ? asset('storage/'.$this->user->profile->image) : null,
+                'username' => $this->user->profile->username,
+                'image' => $this->user->profile->image_url,
             ],
             'body' => $this->body,
             'hashtags' => $this->hashtags,
-            'file_url' => asset('storage/'.$url),
-            'thumbnail' => asset('storage/'.$thumbnail),
+            'file_url' => $this->video_urls,
             'likes_count' => $this->likes->count(),
             'is_liked' => $this->likes->contains('user_id', $request->user()->id),
             'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->where('is_active', true)->exists() || $request->user()->id === $this->user->id,

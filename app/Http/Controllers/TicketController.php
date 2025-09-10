@@ -6,6 +6,7 @@ use App\Models\Ticket;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Http\Resources\TicketResource;
+use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
@@ -41,9 +42,9 @@ class TicketController extends Controller
 
         if ($request->hasFile('attachment')) {
             $attachment = $request->file('attachment');
-            $filename = time() . '.' . $attachment->getClientOriginalExtension();
-            $attachment->move(public_path('attachments'), $filename);
-            $data['attachment'] = $filename;
+            $path = 'tickets/' . $attachment->hashName();
+            Storage::disk('s3')->put($path, file_get_contents($attachment), 'public');
+            $data['attachment'] = $path;
         }
         $data['user_id'] = $request->user()->id;
         $data['ticket_number'] = strtoupper(Str::random(2)).rand(10000000, 99999999); // Generate a random ticket number
@@ -68,7 +69,7 @@ class TicketController extends Controller
     public function destroy(Ticket $ticket)
     {
         if($ticket->attachment) {
-            unlink(public_path('storage/'.$ticket->attachment));
+            Storage::disk('s3')->delete($ticket->attachment);
         }
         $ticket->delete();
         return response()->json(['message' => 'Ticket deleted'], 200);

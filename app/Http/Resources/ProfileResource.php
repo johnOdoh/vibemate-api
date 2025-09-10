@@ -4,8 +4,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-use function Laravel\Prompts\form;
-
 class ProfileResource extends JsonResource
 {
     protected bool $showExtra;
@@ -33,7 +31,7 @@ class ProfileResource extends JsonResource
             'phone' => $this->phone,
             'here_for' => $this->here_for,
             'bio' => $this->bio,
-            'image' => asset('storage/'.$this->image),
+            'image' => $this->image_url,
             'city' => $this->city,
             'country' => $this->country,
             'interests' => $this->user->interests->pluck('name'),

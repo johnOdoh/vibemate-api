@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class NotificationResource extends JsonResource
 {
@@ -19,7 +20,7 @@ class NotificationResource extends JsonResource
             'user_id' => $this->user_id,
             'action' => $this->action,
             'action_id' => $this->action_id,
-            'image' => $this->image ? asset('storage/'.$this->image) : null,
+            'image' => $this->image ? Storage::disk('s3')->url($this->image) : null,
             'comment' => $this->comment,
             'message' => $this->message,
             'is_read' => $this->is_read,

@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class EntryResource extends JsonResource
 {
@@ -16,11 +17,11 @@ class EntryResource extends JsonResource
         return [
             'id' => $this->id,
             'competition_id' => $this->competition_id,
-            'file_url' => asset('storage/'.$this->url),
+            'file_url' => Storage::disk('s3')->url($this->url),
             'posted_by' => [
                 'id' => $this->user->id,
                 'username' => $this->user->profile->username,
-                'image' => asset('storage/'.$this->user->profile->image),
+                'image' => $this->user->profile->image_url,
             ],
             'no_of_likes' => formatNumber($this->likes()->count()),
             'no_of_comments' => formatNumber($this->comments()->count()),

@@ -5,6 +5,7 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Post extends Model
@@ -16,7 +17,8 @@ class Post extends Model
     protected $casts = [
         'allow_comments' => 'boolean',
         'allow_like_counts' => 'boolean',
-        'has_video' => 'boolean'
+        'has_video' => 'boolean',
+        'file_url' => 'array'
     ];
 
     public static function getTopHashtags($limit, $duration)
@@ -42,6 +44,22 @@ class Post extends Model
 
         // Return the top N hashtags
         return array_slice($hashtagCounts, 0, $limit, true);
+    }
+
+    public function getFileUrlsAttribute(): array
+    {
+        return collect($this->file_url ?? [])
+            ->map(fn ($file) => Storage::disk('s3')->url($file))
+            ->toArray();
+    }
+
+    public function getVideoUrlsAttribute(): array
+    {
+        return collect($this->file_url ?? [])
+            ->filter(fn ($file) => str_contains($file, '/videos/'))
+            ->map(fn ($file) => Storage::disk('s3')->url($file))
+            ->values()
+            ->toArray();
     }
 
     public function user()

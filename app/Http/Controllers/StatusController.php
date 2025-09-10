@@ -6,6 +6,7 @@ use App\Http\Resources\StatusResource;
 use App\Http\Resources\StatusViewersResource;
 use App\Models\Status;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StatusController extends Controller
 {
@@ -91,19 +92,19 @@ class StatusController extends Controller
         if ($request->hasFile("content")) {
             $file = $request->file("content");
             if(str_starts_with($file->getMimeType(), 'image/')) {
-                $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                $content = $file->storeAs('statuses/images', $fileName, 'public');
+                $fileName = 'statuses/images/'.$file->hashname();
+                Storage::disk('s3')->put($fileName, file_get_contents($file) , 'public');
                 $type = 'image';
             }
             else {
-                $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                $content = $file->storeAs('statuses/videos', $fileName, 'public');
+                $fileName = 'statuses/videos/'.$file->hashname();
+                Storage::disk('s3')->put($fileName, file_get_contents($file) , 'public');
                 $type = 'video';
             }
         } else $type = 'text';
         Status::create([
             'user_id' => request()->user()->id,
-            'content' => $content ?? null,
+            'content' => $filename ?? null,
             'caption' => $request->caption ?? null,
             'type' => $type,
             'color' => $request->color ?? null,
@@ -180,10 +181,7 @@ class StatusController extends Controller
             return response()->json(['message' => 'You are not authorized to delete this story'], 403);
         }
         if ($status->type !== 'text') {
-            $path = public_path('storage/'.$status->content);
-            if (file_exists($path)) {
-                unlink($path);
-            }
+            Storage::disk('s3')->delete($status->content);
         }
         $status->delete();
         return response()->json(['message' => 'Story deleted successfully'], 200);

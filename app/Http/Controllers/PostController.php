@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\ReelResource;
 use App\Jobs\GenerateVideoThumbnail;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -50,7 +51,10 @@ class PostController extends Controller
 
     public function getReels($id)
     {
-        $posts = Post::where('user_id', $id)->where('has_video', true)->latest()->get();
+        $posts = Post::where('user_id', $id)
+            ->where('has_video', true)
+            ->latest()
+            ->get();
         return ReelResource::collection($posts);
     }
 
@@ -94,27 +98,27 @@ class PostController extends Controller
         if($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 if(str_starts_with($file->getMimeType(), 'image/')) {
-                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $file_loc = $file->storeAs('posts/images', $fileName, 'public');
-                    $path[] = $file_loc;
-                    $moderationResult = moderateImage($file_loc);
+                    $moderationResult = moderateImage($file->getRealPath(), true);
                     if(!$moderationResult['status']) {
                         $data['status'] = 'pending';
                         $data['remark'] = $moderationResult['reason'];
                     }
+                    $fileName = 'posts/images/'.$file->hashname();
+                    Storage::disk('s3')->put($fileName, file_get_contents($file), 'public');
+                    $path[] = $fileName;
                 }
                 else {
-                    $fileName = microtime(true);
-                    $fileNameWithExtension = $fileName.'.'.$file->getClientOriginalExtension();
-                    $path[] = $file->storeAs('posts/videos', $fileNameWithExtension, 'public');
+                    $fileName = 'posts/videos/'.$file->hashname();
+                    Storage::disk('s3')->put($fileName, file_get_contents($file), 'public');
+                    $path[] = $fileName;
                     $data['has_video'] = true;
-                    GenerateVideoThumbnail::dispatch($fileNameWithExtension, $fileName)->onQueue('thumbnails');
+                    // GenerateVideoThumbnail::dispatch($fileNameWithExtension, $fileName)->onQueue('thumbnails');
                 }
             }
         }
         unset($data['files']);
         if(!empty($data['body']) && !screenInput($data['body'])) $data['status'] = 'pending';
-        $data['file_url'] = implode(', ', $path);
+        $data['file_url'] = $path;
         $data['hashtags'] = !empty($data['hashtags']) ? implode(', ', $data['hashtags']) : null;
         $data['user_id'] = $request->user()->id;
         $data['meta_location'] = getCountryFromIp();
@@ -156,23 +160,22 @@ class PostController extends Controller
             'files.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,mp4,mov,avi,wmv,mkv,webm,flv'
         ]);
         if($post->file_url){
-            $files = explode(', ', $post->file_url);
-            foreach ($files as $file) {
-                unlink(public_path('storage/'.$file));
+            foreach ($post->file_url as $file) {
+                Storage::disk('s3')->delete($file);
             }
         }
         $path = [];
         if($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 if(str_starts_with($file->getMimeType(), 'image/')) {
-                    $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
-                    $file_loc = $file->storeAs('posts/images', $fileName, 'public');
-                    $path[] = $file_loc;
-                    $moderationResult = moderateImage($file_loc);
+                    $moderationResult = moderateImage($file->getRealPath(), true);
                     if(!$moderationResult['status']) {
                         $data['status'] = 'pending';
                         $data['remark'] = $moderationResult['reason'];
                     }
+                    $fileName = 'posts/images/'.$file->hashname();
+                    Storage::disk('s3')->put($fileName, file_get_contents($file), 'public');
+                    $path[] = $fileName;
                 }
                 else {
                     $fileName = microtime(true).'.'.$file->getClientOriginalExtension();
@@ -181,9 +184,9 @@ class PostController extends Controller
             }
         }
         unset($data['files']);
-        if($data['body'] && !screenInput($data['body'])) $data['status'] = 'pending';
-        $data['file_url'] = implode(', ', $path);
-        $data['hashtags'] = implode(', ', $data['hashtags']);
+        if(!empty($data['body']) && !screenInput($data['body'])) $data['status'] = 'pending';
+        $data['file_url'] = $path;
+        $data['hashtags'] = !empty($data['hashtags']) ? implode(', ', $data['hashtags']) : null;
         $post->update($data);
         return response()->json(['message' => 'Post updated successfully']);;
     }
@@ -256,7 +259,7 @@ class PostController extends Controller
         if($post->file_url){
             $files = explode(', ', $post->file_url);
             foreach ($files as $file) {
-                unlink(public_path('storage/'.$file));
+                Storage::disk('s3')->delete($file);
             }
         }
         $post->delete();

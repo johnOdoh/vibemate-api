@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CompetitionResource;
 use App\Models\Competition;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\CompetitionResource;
 
 class CompetitionController extends Controller
 {
@@ -88,8 +89,8 @@ class CompetitionController extends Controller
         // }
         $user = $request->user();
         // $request->user()->wallet -= ($data['prize'] + (0.1 * $data['prize']));
-        $imageName = time().'-'.$user->id.'.'.$request->file('image')->getClientOriginalExtension();
-        $path = $request->file('image')->storeAs('competitions', $imageName, 'public');
+        $path = 'competitions/'.$request->file('image')->hashName();
+        Storage::disk('s3')->put($path, file_get_contents($request->file('image')), 'public');
         if(!screenInput($data['name']) || !screenInput($data['description'])) {
             $data['status'] = 'pending';
         }
@@ -143,7 +144,8 @@ class CompetitionController extends Controller
         ], [
             'hashtag.regex' => 'hashtag must start with a # and contain only lowercase letters and numbers.'
         ]);
-        if($request->hasFile('image'))  $request->file('image')->storeAs('competitions', $competition->image, 'public');
+        if($request->hasFile('image'))
+            Storage::disk('s3')->put($competition->image, file_get_contents($request->file('image')), 'public');
         unset($data['image']);
         $competition->update($data);
         return response()->json(['message' => 'Competition updated successfully'], 200);
@@ -158,7 +160,7 @@ class CompetitionController extends Controller
             return response()->json(['message' => 'You are not authorized to delete this competition.'], 403);
         if($competition->phase !== 'upcoming')
             return response()->json(['message' => 'You can no longer delete this competition.'], 403);
-        unlink(public_path('storage/'.$competition->image));
+        Storage::disk('s3')->delete($competition->image);
         $competition->user->wallet += ($competition->prize + (0.1 * $competition->prize));
         $competition->user->save();
         $competition->delete();

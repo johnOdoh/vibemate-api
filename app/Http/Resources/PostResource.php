@@ -30,7 +30,7 @@ class PostResource extends JsonResource
             'body' => $this->body,
             'hashtags' => $this->hashtags,
             'location' => $this->location,
-            'file_url' => $this->file_url ? array_map(fn($file) => asset('storage/' . $file), explode(', ', $this->file_url))  : [],
+            'file_url' => $this->file_urls,
             'created_at' => $this->created_at,
             'posted_by' => [
                 'id' => $this->user->id,

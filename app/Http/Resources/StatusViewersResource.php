@@ -15,7 +15,7 @@ class StatusViewersResource extends JsonResource
     {
         return[
             'username' => $this->profile->username,
-            'image' => asset('storage/'.$this->profile->image),
+            'image' => $this->profile->image_url,
             'viewed_at' => $this->pivot->created_at
         ];
     }

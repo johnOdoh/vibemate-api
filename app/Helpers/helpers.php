@@ -26,7 +26,7 @@ function getCountryFromIp()
     try {
         $reader = new Reader($dbPath);
         $record = $reader->country($ip);
-        $country = $record->country->name;
+        $country = "{$record->continent->name}, {$record->country->name}";
     } catch (\Throwable $th) {
         $country = 'Unknown';
     }

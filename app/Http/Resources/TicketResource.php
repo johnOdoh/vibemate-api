@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class TicketResource extends JsonResource
 {
@@ -19,10 +20,10 @@ class TicketResource extends JsonResource
             'ticket_number' => $this->ticket_number,
             'type' => $this->type,
             'subject' => $this->subject,
-            // 'description' => $this->description,
-            // 'priority' => $this->priority,
+            'description' => $this->description,
+            'priority' => $this->priority,
             'status' => $this->status,
-            // 'attachment' => $this->attachment ? asset('attachments/' . $this->attachment) : null,
+            'attachment' => $this->attachment ? Storage::disk('s3')->url($this->attachment) : null,
             'created_at' => $this->created_at->format('M d, Y'),
         ];
     }

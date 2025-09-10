@@ -19,7 +19,8 @@ return new class extends Migration
             $table->decimal('wallet', 10, 2)->default(0);
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_subscribed')->default(false);
-            $table->enum('badge_status', ['paid', 'active', 'unpaid'])->default('unpaid'); //paid, active, unpaid
+            $table->enum('badge_status', ['paid', 'active', 'unpaid'])->default('unpaid');
+            $table->string('messaging_api_id')->nullable();
             $table->string('dating_section_pin')->nullable();
             $table->string('status')->default('active');
             $table->unsignedBigInteger('no_of_swipes')->default(0);
