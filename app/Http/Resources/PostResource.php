@@ -34,8 +34,8 @@ class PostResource extends JsonResource
             'created_at' => $this->created_at,
             'posted_by' => [
                 'id' => $this->user->id,
-                'username' => $this->user->profile ? $this->user->profile->username : null,
-                'image' => $this->user->profile ? asset('storage/'.$this->user->profile->image) : null,
+                'username' => $this->user->profile->username,
+                'image' => $this->user->profile->image_url
             ],
             // 'updated_at' => $this->updated_at,
             'likes' => $this->likes->pluck('user_id'),
