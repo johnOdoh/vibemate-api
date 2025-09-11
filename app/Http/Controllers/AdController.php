@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ad;
 use App\Models\Gift;
 use App\Models\Interest;
+use Illuminate\Support\Facades\Storage;
 
 class AdController extends Controller
 {
@@ -15,7 +16,7 @@ class AdController extends Controller
             'action' => $ad->action,
             'is_image' => $ad->is_image,
             'target_url' => $ad->target_url,
-            'file' => $ad->is_image ? "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerJoyrides.jpg" : "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+            'file' => Storage::disk('s3')->url($ad->file)
         ]);
     }
 

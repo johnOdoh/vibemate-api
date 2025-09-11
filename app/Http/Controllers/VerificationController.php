@@ -43,13 +43,18 @@ class VerificationController extends Controller
             'front' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'back' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'url' => 'nullable|url',
-            'reason' => 'required|string|max:255',
+            'reason' => 'required|string|max:255'
         ]);
+        if ($request->user()->verification()->exists()) {
+            return response()->json(['message' => 'You have already submitted a verification request.'], 403);
+        }
         $fileName = $request->user()->profile->username.'-front.'.$request->file('front')->extension();
         Storage::disk('s3')->put("verifications/$fileName", file_get_contents($request->file('front')), 'public');
+        $data['front'] = "verifications/$fileName";
         if ($request->hasFile('back')) {
             $fileName = $request->user()->profile->username.'-back.'.$request->file('back')->extension();
             Storage::disk('s3')->put("verifications/$fileName", file_get_contents($request->file('back')), 'public');
+            $data['back'] = "verifications/$fileName";
         }
         $request->user()->verification()->create($data);
         return response()->json(['message' => 'Verification request submitted successfully.'], 201);

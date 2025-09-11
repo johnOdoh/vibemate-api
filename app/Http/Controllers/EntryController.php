@@ -56,7 +56,7 @@ class EntryController extends Controller
         $file = $request->file('file');
         // $cloudinary->uploadApi()->upload;
         if(str_starts_with($file->getMimeType(), 'image/')) {
-            $moderationResult = moderateImage($file->getMimeType(), true);
+            $moderationResult = moderateImage($file->getRealPath(), true);
             if(!$moderationResult['status']) {
                 $data['status'] = 'pending';
                 $data['remark'] = $moderationResult['reason'];
