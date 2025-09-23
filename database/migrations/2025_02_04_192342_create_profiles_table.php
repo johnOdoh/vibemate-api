@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('gender');
             // $table->float('height', 6, 2);
             $table->date('dob');
-            $table->json('location');
+            $table->json('location')->nullable();
             $table->string('here_for');
             $table->string('connect_with');
             $table->string('image');
@@ -30,10 +30,9 @@ return new class extends Migration
             $table->string('country');
             $table->unsignedBigInteger('profile_views')->default(0);
             $table->unsignedInteger('weekly_profile_views')->default(0);
-            $table->string('profile_views')->default(0);
-            $table->text('favorites')->default('');
-            $table->text('discarded')->default('');
-            $table->text('saved_posts')->default('');
+            $table->text('favorites');
+            $table->text('discarded');
+            $table->text('saved_posts');
             $table->string('visibility')->default('public');
             $table->boolean('show_dating_section')->default(true);
             $table->timestamps();

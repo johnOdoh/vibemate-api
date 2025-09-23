@@ -53,7 +53,7 @@ class CompetitionController extends Controller
             'type' => 'required|string',
             'category' => 'required|string',
             'is_multiple' => 'required|boolean',
-            'prize' => ['required', 'numeric', 'min:10000',
+            'prize' => ['required', 'numeric', 'min:1000',
                 function ($attribute, $value, $fail) use ($request) {
                     if ($request->is_multiple) {
                         if ($request->prize_1 + $request->prize_2 + $request->prize_3 != $value) {
@@ -82,13 +82,13 @@ class CompetitionController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:5120'
         ], [
             'hashtag.regex' => 'hashtag must start with a # and contain only lowercase letters and numbers.',
-            'prize.min' => 'The reward must be at least 10,000 VBM tokens.',
+            'prize.min' => 'The reward must be at least 1,000 VBM tokens.',
         ]);
-        // if($request->user()->wallet < ($data['prize'] + (0.2 * $data['prize']))) {
+        // if($request->user()->wallet < ($data['prize'] + (0.1 * $data['prize']))) {
         //     return response()->json(['message' => 'Insufficient funds.'], 403);
         // }
         $user = $request->user();
-        // $request->user()->wallet -= ($data['prize'] + (0.1 * $data['prize']));
+        $request->user()->wallet -= $data['prize'] + (0.1 * $data['prize']);
         $path = 'competitions/'.$request->file('image')->hashName();
         Storage::disk('s3')->put($path, file_get_contents($request->file('image')), 'public');
         if(!screenInput($data['name']) || !screenInput($data['description'])) {

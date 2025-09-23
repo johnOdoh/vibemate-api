@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->enum('role', ['admin', 'moderator', 'super admin'])->default('admin');
-            $table->text('status')->default('active'); // active, suspended
-            $table->text('permissions')->nullable();
+            $table->string('status')->default('active'); // active, suspended
+            $table->string('permissions')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->timestamps();
