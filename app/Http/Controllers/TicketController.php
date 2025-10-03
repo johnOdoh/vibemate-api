@@ -12,7 +12,7 @@ class TicketController extends Controller
 {
     public function index()
     {
-        $tickets = request()->user()->tickets()->orderBy('created_at', 'desc')->get();
+        $tickets = request()->user()->tickets()->latest()->get();
         // $tickets = Ticket::orderBy('created_at', 'desc')->get();
         return response()->json([
             'tickets' => TicketResource::collection($tickets),

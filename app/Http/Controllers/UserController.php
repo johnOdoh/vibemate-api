@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Gift;
 use App\Models\User;
 use App\Models\Profile;
+use App\Mail\ProfileLike;
 use App\Mail\PinResetToken;
 use App\Models\Notification;
 use Illuminate\Http\Request;
@@ -33,7 +34,9 @@ class UserController extends Controller
         $lat = $user->profile->location['latitude'];
         $lng = $user->profile->location['longitude'];
         $users = User::whereNot('users.id', $user->id)
-            ->whereHas('profile')
+            ->whereHas('profile', function ($q) {
+                $q->where('show_dating_section', true);
+            })
             ->getDistance($lat, $lng)
             ->limit(10)
             ->get();
@@ -164,6 +167,7 @@ class UserController extends Controller
             $user->profile->increment('profile_views');
             $user->profile->increment('weekly_profile_views');
             $request->user()->increment('no_of_swipes');
+            Mail::to($user)->send(new ProfileLike($request->user()->profile->firstname));
             if($request->user()->liked_by()->where('sender_id', $id)->exists()) {//if user has been liked by this user already
                 // update the pivot table to show that there is a match
                 $request->user()->liked_by()->updateExistingPivot($id, ['is_matched' => true]);

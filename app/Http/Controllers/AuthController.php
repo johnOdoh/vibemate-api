@@ -13,7 +13,6 @@ use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\LoginResource;
-use App\Services\GetStreamService;
 
 class AuthController extends Controller
 {
@@ -32,7 +31,7 @@ class AuthController extends Controller
         $verified = false;
         if (!$data['isSocial']) {
             $token = random_int(100000, 999999);
-            Mail::to($data['email'])->send(new VerifyEmail($token));
+            Mail::to($data['email'])->queue(new VerifyEmail($token));
         }
         else $verified = true;
         $user = new User([
@@ -136,7 +135,7 @@ class AuthController extends Controller
         $user = User::firstWhere('email', $request->email);
         if(!$user) return response()->json(['message' => 'User not found'], 404);
         $token = random_int(100000, 999999);
-        Mail::to($request->email)->send(new VerifyEmail($token));
+        Mail::to($request->email)->queue(new VerifyEmail($token));
         $user->email_token = $token;
         $user->save();
         return response()->json(['message' => 'Verification token resent'], 200);
@@ -147,7 +146,7 @@ class AuthController extends Controller
         $user = User::firstWhere('email', $request->email);
         if(!$user) return response()->json(['message' => 'User not found'], 404);
         $token = random_int(100000, 999999);
-        Mail::to($request->email)->send(new ResetToken($token));
+        Mail::to($request->email)->queue(new ResetToken($token));
         $user->reset_token = $token;
         $user->save();
         return response()->json(['message' => 'Password reset token sent'], 200);

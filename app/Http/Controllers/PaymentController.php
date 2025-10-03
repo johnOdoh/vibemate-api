@@ -2,26 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\User;
 use Stripe\StripeClient;
 use App\Models\Transaction;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Mail\CompleteProfile;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
 class PaymentController extends Controller
 {
     public function getPlans()
     {
-        $plans = DB::table('plans')->get();
-        return $plans->map(fn ($plan) => [
-                'id' => $plan->id,
-                'name' => $plan->name,
-                'amount' => $plan->amount,
-                'interval' => $plan->interval,
-            ]);
+    User::without('profile')
+        // ->where('created_at', Carbon::yesterday())
+        ->limit(10)
+        ->chunk(5, function ($users) {
+            $users->each(function ($user) {
+                Mail::to($user)->send(new CompleteProfile());
+            });
+        });
+        // $plans = DB::table('plans')->get();
+        // return $plans->map(fn ($plan) => [
+        //         'id' => $plan->id,
+        //         'name' => $plan->name,
+        //         'amount' => $plan->amount,
+        //         'interval' => $plan->interval,
+        //     ]);
     }
 
     public function createPaypalPayment(Request $request)

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('content')->nullable();
             $table->string('caption')->nullable();
             $table->string('color')->nullable();
-            $table->string('mosic_url')->nullable();
+            $table->string('music_url')->nullable();
             $table->string('type'); // text, image, video
             $table->timestamps();
         });

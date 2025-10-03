@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Profile;
+use App\Mail\NearbyJoined;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\ProfileResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -158,7 +160,12 @@ class ProfileController extends Controller
         unset($data['interests']);
         $profile = new Profile($data);
         $user = $request->user()->referredBy()->first();
-
+        $location = [
+            'longitude' => $request->longitude ?? 0,
+            'latitude' => $request->latitude ?? 0,
+            'city' => $request->state ?? $profile->city,
+            'country' => $request->country ?? $profile->country,
+        ];
         DB::beginTransaction();
         try {
             if($user) {
@@ -174,6 +181,14 @@ class ProfileController extends Controller
             $request->user()->interests()->attach($request->interests);
 
             DB::commit(); // If everything succeeds, commit the transaction
+            $profile->User()->where('users.is_subscribed', true)
+                ->getDistance($location['latitude'], $location['longitude'])
+                ->having('distance', '<', 20)
+                ->chunk(100, function ($users) {
+                    $users->each(function ($user) {
+                        Mail::to($user)->send(new NearbyJoined($user->profile->firstname));
+                    });
+                });
             return response()->json([
                 'message' => 'Profile created successfully',
                 'profile' => new ProfileResource($profile)

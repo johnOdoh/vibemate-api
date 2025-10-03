@@ -78,7 +78,6 @@ class User extends Authenticatable
             ", [$lat, $lng, $lat]);
     }
 
-
     public function profile()
     {
         return $this->hasOne(Profile::class);
