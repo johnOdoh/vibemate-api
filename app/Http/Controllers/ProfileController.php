@@ -7,7 +7,6 @@ use App\Mail\NearbyJoined;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\UserResource;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Resources\ProfileResource;
@@ -300,6 +299,18 @@ class ProfileController extends Controller
         }
         else
             return response()->json(['message' => 'Failed to update profile image'], 500);
+    }
+
+    public function updateSetting(Request $request)
+    {
+        $request->validate([
+            'setting' => 'required|string|in:email_notifications,receive_messages,online_status,top_picks,enable_discovery,global',
+            'value' => 'required|boolean'
+        ]);
+        $user = $request->user();
+        $user->profile->{$request->setting} = $request->value;
+        $user->profile->save();
+        return response()->json(['message' => 'Setting updated successfully']);
     }
 
     /**

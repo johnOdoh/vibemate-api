@@ -181,28 +181,28 @@ class CompetitionController extends Controller
     public function end(Competition $competition)
     {
         if($competition->status !== 'approved') return response()->json(['message' => 'Competition has not been approved.'], 403);
-        if($competition->phase === 'ended') return response()->json(['message' => 'Competition has already ended.'], 403);
-        $competition->phase = 'ended';
+        if($competition->phase === 'expired') return response()->json(['message' => 'Competition has already ended.'], 403);
+        $competition->phase = 'expired';
         $competition->save();
         if($competition->is_multiple) {
             $competition->entries()->orderBy('no_of_engagements', 'desc')->take(3)->get()->each(function ($entry, $key) use ($competition) {
                 if($key === 0) {
                     $entry->user->increment('wallet', $competition->prize_1);
-                    Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize_1, '1st'));
+                    Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize_1, '1st', $competition->hashtag));
                 }
                 if($key === 1) {
                     $entry->user->increment('wallet', $competition->prize_2);
-                    Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize_2, '2nd'));
+                    Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize_2, '2nd', $competition->hashtag));
                 }
                 if($key === 2) {
                     $entry->user->increment('wallet', $competition->prize_3);
-                    Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize_3, '3rd'));
+                    Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize_3, '3rd', $competition->hashtag));
                 }
             });
         }else {
             $entry = $competition->entries()->orderBy('no_of_engagements', 'desc')->first();
             $entry->user->increment('wallet', $competition->prize);
-            Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize, '1st'));
+            Mail::to($entry->user)->send(new CompetitionWinner($entry->user->profile->firstname, $competition->name, $competition->prize, '1st', $competition->hashtag));
         }
         return response()->json(['message' => 'Competition has ended.'], 200);
     }

@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('lastname');
             $table->text('bio')->nullable();
             $table->string('gender');
-            // $table->float('height', 6, 2);
             $table->date('dob');
             $table->json('location')->nullable();
             $table->string('here_for');
@@ -30,11 +29,17 @@ return new class extends Migration
             $table->string('country');
             $table->unsignedBigInteger('profile_views')->default(0);
             $table->unsignedInteger('weekly_profile_views')->default(0);
-            $table->text('favorites');
-            $table->text('discarded');
-            $table->text('saved_posts');
+            $table->text('favorites')->nullable();
+            $table->text('discarded')->nullable();
+            $table->text('saved_posts')->nullable();
             $table->string('visibility')->default('public');
             $table->boolean('show_dating_section')->default(true);
+            $table->boolean('email_notifications')->default(true);
+            $table->boolean('receive_messages')->default(true);
+            $table->boolean('online_status')->default(true);
+            $table->boolean('top_picks')->default(true);
+            $table->boolean('enable_discovery')->default(true);
+            $table->boolean('global')->default(true);
             $table->timestamps();
         });
     }

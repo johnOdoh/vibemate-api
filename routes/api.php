@@ -161,6 +161,7 @@ ROute::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('profile/visit/{id}', [ProfileController::class, 'markAsVisited']);
     Route::put('profile/change-password', [ProfileController::class, 'changePassword']);
     Route::put('profile/change-image', [ProfileController::class, 'changeImage']);
+    Route::put('profile/settings', [ProfileController::class, 'updateSetting']);
 
     Route::get('status/get-viewers/{status}', [StatusController::class, 'getViewers']);
 

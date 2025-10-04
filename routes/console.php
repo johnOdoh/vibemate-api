@@ -54,13 +54,13 @@ Schedule::call(function () {
         $most_engaged_post->user->increment('wallet', 100);
         Mail::to($most_engaged_post->user)->send(new WinnerMail($most_engaged_post->user->profile->firstname, 'Most Engaged Post', $most_engaged_post->most_engagements_points));
     }
-    Profile::update(['weekly_profile_views' => 0]);
-    User::update([
+    Profile::query()->update(['weekly_profile_views' => 0]);
+    Post::query()->update(['most_engagements_points' => 0]);
+    User::query()->update([
         'most_popular_points' => 0,
         'most_followed_points' => 0,
         'most_matches_points' => 0
     ]);
-    Post::update(['most_engagements_points' => 0]);
 })->weekly();
 
 Schedule::call(function () {
@@ -69,7 +69,7 @@ Schedule::call(function () {
         'created_at' => Carbon::now(),
         'updated_at' => Carbon::now()
     ]);
-    User::update([
+    User::query()->update([
         'no_of_swipes' => 0,
         'was_active' => false
     ]);

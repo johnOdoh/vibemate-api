@@ -1,9 +1,9 @@
 <x-mail::message>
-# 🏆 Congratulations {{ $firstname }}! You won the {{ $competition }} Challenge!
+# 🏆 Congratulations {{ $firstname }}! You got {{ $position }} position in the {{ $competition }} Challenge!
 
 Hi {{ $firstname }},
 
-Big congratulations are in order. You’ve officially secured {{ $position }} place in the {{ $competition }} Challenge on Vibemate! 🎉🔥
+Big congratulations are in order. You’ve officially secured {{ $position }} place in the {{ $competition }} <em>({{ $hashtag }})</em> Challenge on Vibemate! 🎉🔥
 
 Your energy, creativity, and consistency stood out, and the community has noticed. As a reward for your achievement, you’ve earned {{ $prize }}VBM which has been credited to your wallet.
 

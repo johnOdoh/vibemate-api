@@ -20,7 +20,8 @@ class CompetitionWinner extends Mailable implements ShouldQueue
         public $firstname,
         public $competition,
         public $prize,
-        public $position
+        public $position,
+        public $hashtag
     )
     {}
 
@@ -30,7 +31,7 @@ class CompetitionWinner extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "You did it—#1 in the $this->competition!",
+            subject: "You did it. $this->position in the $this->competition challenge!",
         );
     }
 

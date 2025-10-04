@@ -35,17 +35,27 @@ class ProfileResource extends JsonResource
             'city' => $this->city,
             'country' => $this->country,
             'interests' => $this->user->interests->pluck('name'),
-            $this->mergeWhen($this->showExtra, [
-                'posts_count' => formatNumber($this->user->posts->count()),
-                // 'followers' => $this->user->followers()->where('is_active', true)->get()->map(fn($follower) => [
-                //     'id' => $follower->id,
-                // ]),
-                'followers_count' => formatNumber($this->user->followers()->where('is_active', true)->count()),
-                'following_count' => formatNumber($this->user->following()->where('is_active', true)->count()),
-                'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->where('is_active', true)->exists() || $request->user()->id === $this->user->id,
-                'likes_count' => formatNumber($this->user->liked_by->count()),
-                'posts' => PostResource::collection($this->user->posts)
+            $this->mergeWhen(!$this->showExtra, [
+                'email_notifications' => $this->email_notifications,
+                'enable_discovery' => $this->enable_discovery,
+                'online_status' => $this->online_status,
+                'receive_messages' => $this->receive_messages,
+                'global' => $this->global,
+                'top_picks' => $this->top_picks,
             ]),
+            $this->mergeWhen($this->showExtra, function() use ($request) {
+                return [
+                    'posts_count' => formatNumber($this->user->posts->count()),
+                    // 'followers' => $this->user->followers()->where('is_active', true)->get()->map(fn($follower) => [
+                    //     'id' => $follower->id,
+                    // ]),
+                    'followers_count' => formatNumber($this->user->followers()->where('is_active', true)->count()),
+                    'following_count' => formatNumber($this->user->following()->where('is_active', true)->count()),
+                    'is_following' => $this->user->followers()->where('follower_id', $request->user()->id)->where('is_active', true)->exists() || $request->user()->id === $this->user->id,
+                    'likes_count' => formatNumber($this->user->liked_by->count()),
+                    'posts' => PostResource::collection($this->user->posts)
+                ];
+            }),
         ];
     }
 }

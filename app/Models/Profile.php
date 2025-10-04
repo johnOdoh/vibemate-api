@@ -14,7 +14,13 @@ class Profile extends Model
 
     protected $casts = [
         'dob' => 'datetime',
-        'location' => 'array'
+        'location' => 'array',
+        'email_notifications' => 'boolean',
+        'enable_discovery' => 'boolean',
+        'online_status' => 'boolean',
+        'receive_messages' => 'boolean',
+        'global' => 'boolean',
+        'top_picks' => 'boolean'
     ];
 
     public function getImageUrlAttribute(): string
