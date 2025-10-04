@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Profile;
 use App\Mail\NearbyJoined;
 use Illuminate\Http\Request;
@@ -165,6 +166,14 @@ class ProfileController extends Controller
             'city' => $request->state ?? $profile->city,
             'country' => $request->country ?? $profile->country,
         ];
+        User::where('users.is_subscribed', true)
+            ->getDistance($location['latitude'], $location['longitude'])
+            ->having('distance', '<', 20)
+            ->chunk(100, function ($users) {
+                $users->each(function ($user) {
+                    Mail::to($user)->send(new NearbyJoined($user->profile->firstname));
+                });
+            });
         DB::beginTransaction();
         try {
             if($user) {
@@ -180,7 +189,7 @@ class ProfileController extends Controller
             $request->user()->interests()->attach($request->interests);
 
             DB::commit(); // If everything succeeds, commit the transaction
-            $profile->User()->where('users.is_subscribed', true)
+            User::where('users.is_subscribed', true)
                 ->getDistance($location['latitude'], $location['longitude'])
                 ->having('distance', '<', 20)
                 ->chunk(100, function ($users) {

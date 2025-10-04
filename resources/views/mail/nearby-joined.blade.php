@@ -13,11 +13,11 @@ This could be your chance to:
     <li>Grow your circle with real connections close to home</li>
 </ul>
 
-Don’t let this opportunity pass you by—your next great connection might be just around the corner.
-
 <x-mail::button :url="''" :style="true">
 See who joined
 </x-mail::button>
+
+Don’t let this opportunity pass you by—your next great connection might be just around the corner.
 
 Stay connected, <br>
 The {{ config('app.name') }} Team 💜
