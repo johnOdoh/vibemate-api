@@ -34,10 +34,6 @@ class PostController extends Controller
         // });
         // $posts = $query->orderByDesc('id')->get();
         $posts = Post::latest()->get();
-        if(!$user->was_active) {
-            $user->was_active = true;
-            $user->save();
-        }
         $user->profile()->update([
             'location' => [
                 'longitude' => $request->longitude ?? 0,

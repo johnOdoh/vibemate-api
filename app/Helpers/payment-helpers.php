@@ -3,10 +3,12 @@
 use App\Models\Transaction;
 use App\Models\Subscription;
 use App\Enums\SubscriptionStatus;
+use App\Mail\SubscriptionSuccess;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
 
-function activateSubscription($subscription_id)
+function activateSubscription($subscription_id, $updateId = null)
 {
     $subscription = Subscription::where('subscription_id', $subscription_id)->first();
     if (!$subscription) {
@@ -17,8 +19,10 @@ function activateSubscription($subscription_id)
     $subscription->end = now()->addDays($interval);
     $subscription->start = now();
     $subscription->status = SubscriptionStatus::Active->value;
+    $updateId ? $subscription->subscription_id = $updateId : null;
     $subscription->user->is_subscribed = true;
     $subscription->push();
+    Mail::to($subscription->user)->send(new SubscriptionSuccess($subscription->user->profile->firstname));
     return true;
 }
 

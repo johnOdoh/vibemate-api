@@ -28,6 +28,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\EntryCommentReplyController;
+use App\Http\Middleware\MarkAsActive;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -65,7 +66,7 @@ Route::post('sightengine/video-moderation/callback', function (Request $request)
     return response()->noContent();
 })->name('sightengine.video-moderation.callback');
 
-ROute::group(['middleware' => 'auth:sanctum'], function () {
+ROute::group(['middleware' => ['auth:sanctum', 'markAsActive']], function () {
     Route::post('ad/increment-views/{id}', [AdController::class, 'incrementViews']);
     Route::post('ad/increment-clicks/{id}', [AdController::class, 'incrementClicks']);
     // Route::post('ad/create-gift', [AdController::class, 'createGift']);

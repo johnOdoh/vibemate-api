@@ -22,8 +22,8 @@ return new class extends Migration
             $table->string('status')->default(SubscriptionStatus::Pending->value);
             $table->boolean('auto_renew')->default(true);
             $table->string('mode');
-            $table->timestamp('start');
-            $table->timestamp('end');
+            $table->timestamp('start')->index();
+            $table->timestamp('end')->index();
             $table->timestamps();
         });
     }

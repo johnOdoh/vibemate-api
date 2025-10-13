@@ -38,6 +38,19 @@ class SubscriptionController extends Controller
         return response()->json(['url' => $response['links'][0]['href']]);
     }
 
+    public function paypalSubscriptionSuccess(Request $request)
+    {
+        $subscription = Subscription::where('subscription_id', $request->subscription_id)->firstOrFail();
+        activateSubscription($subscription->subscription_id);
+        return response()->json(['message' => 'Subscription activated']);
+    }
+
+    public function paypalSubscriptionCancel(Request $request)
+    {
+        Subscription::where('subscription_id', $request->subscription_id)->delete();
+        return response()->json(['message' => 'Subscription cancelled']);
+    }
+
     public function cancelPaypalSubscription($subscription_id)
     {
         $provider = new PayPalClient();
@@ -52,7 +65,6 @@ class SubscriptionController extends Controller
         $provider->getAccessToken();
         $provider->suspendSubscription($subscription_id, 'Suspended by user');
         return suspendSubscription($subscription_id);
-
     }
 
     public function reactivatePaypalSubscription($subscription_id)
@@ -61,21 +73,6 @@ class SubscriptionController extends Controller
         $provider->getAccessToken();
         $provider->activateSubscription($subscription_id, 'Reactivated by user');
         return reactivateSubscription($subscription_id);
-    }
-
-    public function paypalSubscriptionSuccess(Request $request)
-    {
-        $subscription = Subscription::where('subscription_id', $request->subscription_id)->firstOrFail();
-        $subscription->status = SubscriptionStatus::Active->value;
-        $subscription->user->is_subscribed = true;
-        $subscription->push();
-        return response()->json(['message' => 'Subscription activated']);
-    }
-
-    public function paypalSubscriptionCancel(Request $request)
-    {
-        Subscription::where('subscription_id', $request->subscription_id)->delete();
-        return response()->json(['message' => 'Subscription cancelled']);
     }
 
     public function createStripeSubscription(Request $request, Plan $plan)
@@ -124,10 +121,11 @@ class SubscriptionController extends Controller
         $stripe = new StripeClient(env('STRIPE_SECRET'));
         $session = $stripe->checkout->sessions->retrieve($request->session_id);
         $subscription = Subscription::where('subscription_id', $session->client_reference_id)->firstOrFail();
-        $subscription->status = SubscriptionStatus::Active->value;
-        $subscription->user->is_subscribed = true;
-        $subscription->subscription_id = $session->subscription;
-        $subscription->push();
+        activateSubscription($subscription->subscription_id, $session->subscription);
+        // $subscription->status = SubscriptionStatus::Active->value;
+        // $subscription->user->is_subscribed = true;
+        // $subscription->subscription_id = $session->subscription;
+        // $subscription->push();
         return response()->json(['message' => 'Subscription activated']);
     }
 
@@ -197,9 +195,7 @@ class SubscriptionController extends Controller
     public function paystackSubscriptionSuccess(Request $request)
     {
         $subscription = Subscription::where('subscription_id', $request->reference)->firstOrFail();
-        $subscription->status = SubscriptionStatus::Active->value;
-        $subscription->user->is_subscribed = true;
-        $subscription->push();
+        activateSubscription($subscription->subscription_id);
         return response()->json(['message' => 'Subscription activated']);
     }
 

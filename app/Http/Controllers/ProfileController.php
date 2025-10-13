@@ -213,17 +213,19 @@ class ProfileController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $profile = Profile::findOrFail($id);
-        if (!$profile->user->discovery()->exists()) {
-            $profile->user->discovery()->create();
+        $user = User::findOrFail($id);
+        $profile = $user->profile;
+        if (!$user->discovery()->exists()) {
+            $user->discovery()->create();
         }
-        if ($request->user()->profile->visited()->where('visited_id', $id)->exists()) {
-            $request->user()->profile->visited()->updateExistingPivot($id, ['count' => DB::raw('count + 1')]);
+        if ($request->user()->profile->visited()->where('visited_id', $profile->id)->exists()) {
+            $request->user()->profile->visited()
+                ->updateExistingPivot($profile->id, ['count' => DB::raw('count + 1')]);
         } else {
-            $request->user()->profile->visited()->attach($id);
+            $request->user()->profile->visited()->attach($profile->id);
         }
         return response()->json([
-            'user' => new UserResource($profile->user),
+            'user' => new UserResource($user),
             'profile' => new ProfileResource($profile, true)
         ]);
     }

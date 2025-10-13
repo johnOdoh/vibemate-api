@@ -33,6 +33,7 @@ return new class extends Migration
             $table->unsignedInteger('most_followed_points')->default(0);
             $table->unsignedInteger('most_matches_points')->default(0);
             $table->boolean('was_active')->default(true);
+            $table->timestamp('last_seen')->nullable();
             $table->timestamps();
         });
 

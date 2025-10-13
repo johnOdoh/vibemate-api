@@ -24,8 +24,8 @@ class Post extends Model
     public static function getTopHashtags($limit, $duration)
     {
         $posts = DB::table('posts')
-        ->where('created_at', '>=', Carbon::now()->subDays($duration))
-        ->pluck('hashtags'); // Get only the hashtags column
+            ->where('created_at', '>=', Carbon::now()->subDays($duration))
+            ->pluck('hashtags'); // Get only the hashtags column
 
         $hashtagCounts = [];
 
