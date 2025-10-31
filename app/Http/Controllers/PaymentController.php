@@ -19,21 +19,13 @@ class PaymentController extends Controller
 {
     public function getPlans()
     {
-    User::without('profile')
-        // ->where('created_at', Carbon::yesterday())
-        ->limit(10)
-        ->chunk(5, function ($users) {
-            $users->each(function ($user) {
-                Mail::to($user)->send(new CompleteProfile());
-            });
-        });
-        // $plans = DB::table('plans')->get();
-        // return $plans->map(fn ($plan) => [
-        //         'id' => $plan->id,
-        //         'name' => $plan->name,
-        //         'amount' => $plan->amount,
-        //         'interval' => $plan->interval,
-        //     ]);
+        $plans = DB::table('plans')->get();
+        return $plans->map(fn ($plan) => [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'amount' => $plan->amount,
+                'interval' => $plan->interval,
+            ]);
     }
 
     public function createPaypalPayment(Request $request)

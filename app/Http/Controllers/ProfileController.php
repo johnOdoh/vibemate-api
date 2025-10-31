@@ -132,7 +132,7 @@ class ProfileController extends Controller
             'here_for' => 'required|array',
             'interests' => 'required|array',
             'interests.*' => 'integer',
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:5120',
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240',
                 function ($attribute, $value, $fail) use ($request) {
                     $moderation_result = moderateImage($request->file($attribute)->getRealPath(), true);
                     if(!$moderation_result['status']) {
@@ -295,7 +295,7 @@ class ProfileController extends Controller
     public function changeImage(Request $request)
     {
         $request->validate([
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:5120',
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:10240',
                 function ($attribute, $value, $fail) use ($request) {
                     $moderation_result = moderateImage($request->file($attribute)->getRealPath(), true);
                     if(!$moderation_result['status']) {
