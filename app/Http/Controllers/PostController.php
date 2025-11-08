@@ -56,12 +56,14 @@ class PostController extends Controller
 
     public function getSaved(Request $request)
     {
+        if (empty($request->user()->profile->saved_posts)) {
+            return collect();
+        }
         $saved = explode(',', $request->user()->profile->saved_posts);
         $posts = Post::whereIn('id', $saved)
                     ->orderByRaw("FIELD(id, " . implode(',', $saved) . ")")
                     ->get();
         return PostResource::collection($posts);
-
     }
 
     /**
